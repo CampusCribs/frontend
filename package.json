@@ -1,9 +1,9 @@
 {
-  "name": "react-ts-swc-tailwind-vite-bun-template",
+  "name": "campuscribs-frontend",
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "author": "yakovliam",
+  "author": "campuscribs",
   "scripts": {
     "dev": "bunx --bun vite",
     "build": "bunx --bun vite build",

@@ -6,7 +6,8 @@ const Layout = () => {
   return (
     <div
       className="flex flex-col
-        min-h-screen">
+        min-h-screen"
+    >
       <div className="sticky top-0 z-50 bg-white">
         <Header />
       </div>
@@ -14,9 +15,7 @@ const Layout = () => {
         <Outlet />
       </div>
 
-      <div className="sticky bottom-0 z-50 bg-white">
-        <Footer />
-      </div>
+      <Footer />
     </div>
   );
 };

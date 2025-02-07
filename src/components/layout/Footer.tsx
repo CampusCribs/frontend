@@ -1,4 +1,11 @@
-import { CircleUserRound, Home, LogOut, Menu, Settings } from "lucide-react";
+import {
+  CircleUserRound,
+  Home,
+  LogIn,
+  LogOut,
+  Menu,
+  Settings,
+} from "lucide-react";
 import { AnimatePresence } from "motion/react";
 import { useState } from "react";
 import * as motion from "motion/react-client";
@@ -8,7 +15,7 @@ const pages = [
   { title: "Browse", icon: <Home />, link: "/" },
   { title: "Profile", icon: <CircleUserRound />, link: "/" },
   { title: "Settings", icon: <Settings />, link: "/" },
-  { title: "Logout", icon: <LogOut />, link: "/" },
+  { title: "LogIn", icon: <LogIn />, link: "/login" },
 ];
 
 const Footer = () => {
@@ -18,10 +25,10 @@ const Footer = () => {
     <div className="relative border-b">
       {/* Menu Button - Always Visible */}
       <div
-        className="bg-amber-900 rounded-full w-20 shadow-2xl h-20 flex items-center justify-center  mb-5 ml-5"
+        className="bg-amber-950 rounded-full w-20 shadow-2xl h-20 flex items-center justify-center  mb-5 ml-5"
         onClick={() => setOpen(!open)}
       >
-        <Menu size={32} />
+        <Menu color="white" size={40} />
       </div>
 
       {/* Overlay & Animated Menu */}
@@ -38,7 +45,7 @@ const Footer = () => {
             }}
             exit={{ opacity: 0, scale: 0, x: -50, y: 50 }}
             key="box"
-            className="absolute bottom-0 left-0 bg-amber-900 h-[300px] w-[200px] rounded-xl rounded-bl-none flex items-center justify-center text-left flex-col shadow-lg"
+            className="absolute bottom-0 left-0 bg-amber-950 h-[300px] w-[200px] rounded-xl rounded-bl-none flex items-center text-white justify-center text-left flex-col shadow-lg"
             onClick={() => setOpen(false)}
           >
             <div>
@@ -48,8 +55,8 @@ const Footer = () => {
                   className="flex flex-row mx-4 my-4  text-left "
                   onClick={() => navigate(item.link)}
                 >
-                  <p className="mr-2 hover:cursor-pointer">{item.icon}</p>
-                  <p className="hover:cursor-pointer">{item.title}</p>
+                  <div className="mr-2 cursor-pointer">{item.icon}</div>
+                  <div className="cursor-pointer">{item.title}</div>
                 </div>
               ))}
             </div>

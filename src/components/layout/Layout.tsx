@@ -15,7 +15,9 @@ const Layout = () => {
         <Outlet />
       </div>
 
-      <Footer />
+      <div className="sticky left-0 bottom-0">
+        <Footer />
+      </div>
     </div>
   );
 };

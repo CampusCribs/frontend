@@ -1,12 +1,9 @@
-import { CircleUserRound, Menu, Search } from "lucide-react";
+import { CircleUserRound, Search } from "lucide-react";
 
 const Header = () => {
   return (
     <div className="flex justify-between items-center p-4">
       <div className="flex items-center gap-2">
-        <div>
-          <Menu />
-        </div>
         <div className="text-2xl font-bold">Campus Cribs</div>
       </div>
 

@@ -1,11 +1,4 @@
-import {
-  CircleUserRound,
-  Home,
-  LogIn,
-  LogOut,
-  Menu,
-  Settings,
-} from "lucide-react";
+import { CircleUserRound, Home, LogIn, Menu, Settings } from "lucide-react";
 import { AnimatePresence } from "motion/react";
 import { useState } from "react";
 import * as motion from "motion/react-client";
@@ -13,7 +6,7 @@ import { useNavigate } from "react-router";
 
 const pages = [
   { title: "Browse", icon: <Home />, link: "/" },
-  { title: "Profile", icon: <CircleUserRound />, link: "/" },
+  { title: "Profile", icon: <CircleUserRound />, link: "/profile" },
   { title: "Settings", icon: <Settings />, link: "/" },
   { title: "LogIn", icon: <LogIn />, link: "/login" },
 ];
@@ -21,6 +14,7 @@ const pages = [
 const Footer = () => {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
+
   return (
     <div className="relative border-b">
       {/* Menu Button - Always Visible */}

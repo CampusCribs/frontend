@@ -25,7 +25,7 @@ const Footer = () => {
     <div className="relative border-b">
       {/* Menu Button - Always Visible */}
       <div
-        className="bg-amber-950 rounded-full w-20 shadow-2xl h-20 flex items-center justify-center  mb-5 ml-5"
+        className="bg-black rounded-full w-20 shadow-2xl h-20 flex items-center justify-center  mb-5 ml-5"
         onClick={() => setOpen(!open)}
       >
         <Menu color="white" size={40} />
@@ -39,13 +39,13 @@ const Footer = () => {
             animate={{
               opacity: 1,
               scale: 1,
-              x: 0,
-              y: 4,
+              x: 20,
+              y: -20,
               transition: { duration: 0.1 },
             }}
             exit={{ opacity: 0, scale: 0, x: -50, y: 50 }}
             key="box"
-            className="absolute bottom-0 left-0 bg-amber-950 h-[300px] w-[200px] rounded-xl rounded-bl-none flex items-center text-white justify-center text-left flex-col shadow-lg"
+            className="absolute bottom-0 left-0 bg-black h-[300px] w-[200px] rounded-xl rounded-bl-none flex items-center text-white justify-center text-left flex-col shadow-lg"
             onClick={() => setOpen(false)}
           >
             <div>

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router";
 import { z } from "zod";
 
 const LoginSchema = z.object({
@@ -13,12 +14,13 @@ const LoginForm = () => {
     email: "",
     password: "",
   });
-
+  const navigate = useNavigate();
   const [errors, setErrors] = useState<Partial<UserLogin>>({});
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
+    setErrors({});
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -28,6 +30,7 @@ const LoginForm = () => {
       setErrors({});
       // Form is valid, proceed with submission
       console.log("Form data:", formData);
+      navigate("/");
     } catch (error) {
       if (error instanceof z.ZodError) {
         const fieldErrors = error.flatten().fieldErrors;
@@ -45,23 +48,32 @@ const LoginForm = () => {
         <input
           name="email"
           title="Email"
-          className=" border rounded-lg p-2 bg-white text-black"
+          className=" border rounded-lg p-3 bg-white text-black w-full"
           placeholder="Email"
           value={formData.email}
           onChange={handleChange}
         />
-        {errors.email && <p>{errors.email}</p>}
+        {errors.email && <p className="text-yellow-200">{errors.email}</p>}
         <input
           name="password"
           title="password"
           placeholder="Password"
           type="password"
-          className="border rounded-lg p-2 bg-white text-black my-3"
+          className="border rounded-lg p-3 bg-white text-black my-3 w-full"
           value={formData.password}
           onChange={handleChange}
         />
-        {errors.password && <p>{errors.password}</p>}
-        <button type="submit">Login</button>
+        {errors.password && (
+          <p className="text-yellow-200">{errors.password}</p>
+        )}
+        <div className="w-full flex flex-row-reverse">
+          <button
+            type="submit"
+            className="bg-blue-500 rounded-full p-2 px-6 text-lg shadow-xl"
+          >
+            Login
+          </button>
+        </div>
       </form>
     </div>
   );

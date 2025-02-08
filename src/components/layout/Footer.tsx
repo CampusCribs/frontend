@@ -7,7 +7,7 @@ import { useNavigate } from "react-router";
 const pages = [
   { title: "Browse", icon: <Home />, link: "/" },
   { title: "Profile", icon: <CircleUserRound />, link: "/profile" },
-  { title: "Settings", icon: <Settings />, link: "/" },
+  { title: "Settings", icon: <Settings />, link: "/settings" },
   { title: "LogIn", icon: <LogIn />, link: "/login" },
 ];
 

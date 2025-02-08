@@ -25,7 +25,7 @@ const Bio = () => {
           needs, please let me know. Thanks!😂😂
         </div>
         <div className="border-b mt-6 relative w-full border-black flex justify-center items-center">
-          <div className="absolute bg-white p-1 bottom-[-17px] border-b-2 rounded-full  border-black">
+          <div className="absolute bg-white p-1 bottom-[-17 px] border-b-2 rounded-full  border-black">
             <Home className="" size={40} />
           </div>
         </div>

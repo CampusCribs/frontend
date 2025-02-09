@@ -1,9 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router";
 import { z } from "zod";
-import { DatePickerDemo, DatePickerWithRange } from "./Calendar";
-import { Calendar } from "@/components/ui/calendar";
-import { DateRange } from "react-day-picker";
+import CalendarComponent from "./CalendarComponent";
 
 const PostSchema = z.object({
   title: z.string().min(6, "Title must be at least 6 characters"),
@@ -16,6 +14,7 @@ type PostInfo = z.infer<typeof PostSchema>;
 
 const AddPostPage = () => {
   const [date, setDate] = React.useState<Date | undefined>(new Date());
+  const [date2, setDate2] = React.useState<Date | undefined>(new Date());
   const [formData, setFormData] = useState<PostInfo>({
     title: "",
     description: "",
@@ -62,7 +61,7 @@ const AddPostPage = () => {
             value={formData.title}
             onChange={handleChange}
           />
-          {errors.title && <p className="text-yellow-200">{errors.title}</p>}
+          {errors.title && <p className="text-red-500">{errors.title}</p>}
           <input
             name="description"
             title="description"
@@ -73,7 +72,19 @@ const AddPostPage = () => {
             onChange={handleChange}
           />
           {errors.description && (
-            <p className="text-yellow-200">{errors.description}</p>
+            <p className="text-red-500">{errors.description}</p>
+          )}
+          <input
+            name="price"
+            title="price"
+            placeholder="price"
+            type="text"
+            className="border rounded-lg p-3 bg-white text-black my-3 w-full shadow-xl"
+            value={formData.description}
+            onChange={handleChange}
+          />
+          {errors.description && (
+            <p className="text-red-500">{errors.description}</p>
           )}
           <input
             name="description"
@@ -85,7 +96,7 @@ const AddPostPage = () => {
             onChange={handleChange}
           />
           {errors.description && (
-            <p className="text-yellow-200">{errors.description}</p>
+            <p className="text-red-500">{errors.description}</p>
           )}
           <input
             name="description"
@@ -97,7 +108,7 @@ const AddPostPage = () => {
             onChange={handleChange}
           />
           {errors.description && (
-            <p className="text-yellow-200">{errors.description}</p>
+            <p className="text-red-500">{errors.description}</p>
           )}
           <input
             name="description"
@@ -109,21 +120,10 @@ const AddPostPage = () => {
             onChange={handleChange}
           />
           {errors.description && (
-            <p className="text-yellow-200">{errors.description}</p>
+            <p className="text-red-500">{errors.description}</p>
           )}
-          <input
-            name="description"
-            title="description"
-            placeholder="description"
-            type="text"
-            className="border rounded-lg p-3 bg-white text-black my-3 w-full shadow-xl"
-            value={formData.description}
-            onChange={handleChange}
-          />
-          {errors.description && (
-            <p className="text-yellow-200">{errors.description}</p>
-          )}
-          <DatePickerDemo />
+          <CalendarComponent setData={setDate} />
+          <CalendarComponent />
           <div className="w-full flex flex-row-reverse">
             <button
               type="submit"

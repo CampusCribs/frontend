@@ -13,8 +13,6 @@ const PostSchema = z.object({
 type PostInfo = z.infer<typeof PostSchema>;
 
 const AddPostPage = () => {
-  const [date, setDate] = React.useState<Date | undefined>(new Date());
-  const [date2, setDate2] = React.useState<Date | undefined>(new Date());
   const [formData, setFormData] = useState<PostInfo>({
     title: "",
     description: "",
@@ -122,8 +120,8 @@ const AddPostPage = () => {
           {errors.description && (
             <p className="text-red-500">{errors.description}</p>
           )}
-          <CalendarComponent setData={setDate} />
-          <CalendarComponent />
+          <CalendarComponent begin={true} />
+          <CalendarComponent begin={false} />
           <div className="w-full flex flex-row-reverse">
             <button
               type="submit"

@@ -1,4 +1,11 @@
-import { CircleUserRound, Home, LogIn, Menu, Settings } from "lucide-react";
+import {
+  CirclePlus,
+  CircleUserRound,
+  Home,
+  LogIn,
+  Menu,
+  Settings,
+} from "lucide-react";
 import { AnimatePresence } from "motion/react";
 import { useState } from "react";
 import * as motion from "motion/react-client";
@@ -6,6 +13,7 @@ import { useNavigate } from "react-router";
 
 const pages = [
   { title: "Browse", icon: <Home />, link: "/" },
+  { title: "Post", icon: <CirclePlus />, link: "/post" },
   { title: "Profile", icon: <CircleUserRound />, link: "/profile" },
   { title: "Settings", icon: <Settings />, link: "/settings" },
   { title: "LogIn", icon: <LogIn />, link: "/login" },

@@ -1,10 +1,10 @@
 import { BrowserRouter, Routes, Route } from "react-router";
 import Layout from "@/components/layout/Layout";
-import HomePage from "./pages/Home/HomePage";
-import LoginPage from "./pages/Login/LoginPage";
-import ProfilePage from "./pages/Profile/ProfilePage";
-import SettingsPage from "./pages/Settings/SettingsPage";
-import AddPostPage from "./pages/Add/AddPostPage";
+import HomePage from "./Pages/Home/HomePage";
+import LoginPage from "./Pages/Login/LoginPage";
+import ProfilePage from "./Pages/Profile/ProfilePage";
+import SettingsPage from "./Pages/Settings/SettingsPage";
+import AddPostPage from "./Pages/Add/AddPostPage";
 
 function App() {
   return (

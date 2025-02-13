@@ -8,6 +8,8 @@ const PostSchema = z.object({
   description: z.string().min(6, "Description must be at least 6 characters"),
   price: z.number().min(1, "Price must be at least 1"),
   roomates: z.number().min(1, "Roomates must be at least 1"),
+  beginDate: z.date(),
+  endDate: z.date(),
 });
 
 type PostInfo = z.infer<typeof PostSchema>;
@@ -18,6 +20,8 @@ const AddPostPage = () => {
     description: "",
     price: 0,
     roomates: 0,
+    beginDate: new Date(),
+    endDate: new Date(),
   });
   const navigate = useNavigate();
   const [errors, setErrors] = useState<Partial<PostInfo>>({});
@@ -45,21 +49,24 @@ const AddPostPage = () => {
   };
   return (
     <div className="w-full h-full">
-      <h1 className="text-4xl text-center w">Add Post</h1>
+      <h1 className="text-4xl text-left pl-6 pb-5">Add Post</h1>
       <div className="flex flex-col bg-Card w-[300px] h-">
         <form
           onSubmit={handleSubmit}
           className="flex flex-col justify-center items-center"
         >
-          <input
-            name="title"
-            title="title"
-            className=" border rounded-lg p-3 bg-white text-black w-full shadow-xl "
-            placeholder="title"
-            value={formData.title}
-            onChange={handleChange}
-          />
-          {errors.title && <p className="text-red-500">{errors.title}</p>}
+          <div className="flex ">
+            <h1 className="semibold ">Title:</h1>
+            <input
+              name="title"
+              title="title"
+              className=" border rounded-lg p-3 bg-white text-black w-full shadow-xl "
+              placeholder="title"
+              value={formData.title}
+              onChange={handleChange}
+            />
+            {errors.title && <p className="text-red-500">{errors.title}</p>}
+          </div>
           <input
             name="description"
             title="description"

@@ -56,7 +56,7 @@ const AddPostPage = () => {
           className="flex flex-col justify-center items-center"
         >
           <div className="flex ">
-            <h1 className="semibold ">Title:</h1>
+            <h1 className="semibold mr-5">Title:</h1>
             <input
               name="title"
               title="title"

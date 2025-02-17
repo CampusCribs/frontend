@@ -58,34 +58,40 @@ const AddPostPage = () => {
           onSubmit={handleSubmit}
           className="flex flex-col justify-center items-center w-full"
         >
-          <div className="pl-3 flex flex-col w-full">
-            <Label htmlFor="title">Title:</Label>
-            <Input
+          <div className="pl-3 flex flex-col w-full my-2">
+            <Label htmlFor="title" className="">
+              Title:
+            </Label>
+            <input
               name="title"
               title="title"
-              className=" border rounded-lg p-3 bg-white text-black w-full shadow-xl "
-              placeholder="Title"
+              placeholder="title"
+              type="text"
+              className="border rounded-lg p-3 bg-white text-black my-3 w-full shadow-xl"
               value={formData.title}
               onChange={handleChange}
             />
-            {errors.title && <p className="text-red-500">{errors.title}</p>}
+            {errors.price && <p className="text-red-500">{errors.price}</p>}
           </div>
-          <div className="pl-3 flex w-full my-2">
-            <h1 className="semibold mr-5">Description:</h1>
-            <textarea
+          <div className="pl-3 flex flex-col w-full my-2">
+            <Label htmlFor="description" className="">
+              Description:
+            </Label>
+            <input
               name="description"
               title="description"
               placeholder="description"
-              className="border rounded-lg p-3 mr-3 bg-white text-black  w-full shadow-xl"
-              value={formData.description}
+              type="text"
+              className="border rounded-lg p-3 bg-white text-black my-3 w-full shadow-xl"
+              value={formData.price}
               onChange={handleChange}
             />
-            {errors.description && (
-              <p className="text-red-500">{errors.description}</p>
-            )}
+            {errors.price && <p className="text-red-500">{errors.price}</p>}
           </div>
-          <div className="flex w-full my-2">
-            <h1 className="semibold mr-5">Price:</h1>
+          <div className="pl-3 flex flex-col w-full my-2">
+            <Label htmlFor="price" className="">
+              Price:
+            </Label>
             <input
               name="price"
               title="price"

@@ -1,155 +1,46 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router";
-import { z } from "zod";
-import CalendarComponent from "./CalendarComponent";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-const PostSchema = z.object({
-  title: z.string().min(6, "Title must be at least 6 characters"),
-  description: z.string().min(6, "Description must be at least 6 characters"),
-  price: z.number().min(1, "Price must be at least 1"),
-  roomates: z.number().min(1, "Roomates must be at least 1"),
-  beginDate: z.date(),
-  endDate: z.date(),
-});
-
-type PostInfo = z.infer<typeof PostSchema>;
+import { useState } from "react";
+import AddPostPageOne from "./AddPostFormOne";
+import AddPostPageTwo from "./AddPostPageTwo";
+import { ArrowLeftIcon } from "lucide-react";
 
 const AddPostPage = () => {
-  const [formData, setFormData] = useState<PostInfo>({
-    title: "",
-    description: "",
-    price: 0,
-    roomates: 0,
-    beginDate: new Date(),
-    endDate: new Date(),
-  });
-  const navigate = useNavigate();
-  const [errors, setErrors] = useState<Partial<PostInfo>>({});
+  const [move, setMove] = useState(false);
+  const [submit, setSubmit] = useState(false);
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-    setErrors({});
+  const moveBack = () => {
+    if (move) {
+      setMove(!move);
+    }
   };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      PostSchema.parse(formData);
-      setErrors({});
-      // Form is valid, proceed with submission
-      console.log("Form data:", formData);
-      navigate("/");
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        const fieldErrors = error.flatten().fieldErrors;
-        setErrors(fieldErrors);
-      }
+  const moveForward = () => {
+    if (!move) {
+      setMove(!move);
+    }
+    if (move) {
+      console.log("Submit");
+      setSubmit(true);
     }
   };
   return (
-    <div className="w-full h-full">
-      <h1 className="text-4xl text-left pl-6 pb-5">Add Post</h1>
+    <div className={`w-full h-full`}>
+      <div className="flex justify-start pl-4" onClick={moveBack}>
+        <ArrowLeftIcon size={40} />
+      </div>
+      <div className="w-full flex justify-center items-center">
+        <h1 className="text-4xl flex ">Add Post</h1>
+      </div>
       <div className="flex flex-col bg-Card w-full ">
-        <form
-          onSubmit={handleSubmit}
-          className="flex flex-col justify-center items-center w-full"
-        >
-          <div className="pl-3 flex flex-col w-full my-2">
-            <Label htmlFor="title" className="">
-              Title:
-            </Label>
-            <input
-              name="title"
-              title="title"
-              placeholder="title"
-              type="text"
-              className="border rounded-lg p-3 bg-white text-black my-3 w-full shadow-xl"
-              value={formData.title}
-              onChange={handleChange}
-            />
-            {errors.price && <p className="text-red-500">{errors.price}</p>}
-          </div>
-          <div className="pl-3 flex flex-col w-full my-2">
-            <Label htmlFor="description" className="">
-              Description:
-            </Label>
-            <input
-              name="description"
-              title="description"
-              placeholder="description"
-              type="text"
-              className="border rounded-lg p-3 bg-white text-black my-3 w-full shadow-xl"
-              value={formData.price}
-              onChange={handleChange}
-            />
-            {errors.price && <p className="text-red-500">{errors.price}</p>}
-          </div>
-          <div className="pl-3 flex flex-col w-full my-2">
-            <Label htmlFor="price" className="">
-              Price:
-            </Label>
-            <input
-              name="price"
-              title="price"
-              placeholder="price"
-              type="text"
-              className="border rounded-lg p-3 bg-white text-black my-3 w-full shadow-xl"
-              value={formData.price}
-              onChange={handleChange}
-            />
-            {errors.price && <p className="text-red-500">{errors.price}</p>}
-          </div>
-          <input
-            name="description"
-            title="description"
-            placeholder="description"
-            type="text"
-            className="border rounded-lg p-3 bg-white text-black my-3 w-full shadow-xl"
-            value={formData.description}
-            onChange={handleChange}
-          />
-          {errors.description && (
-            <p className="text-red-500">{errors.description}</p>
-          )}
-          <input
-            name="description"
-            title="description"
-            placeholder="description"
-            type="text"
-            className="border rounded-lg p-3 bg-white text-black my-3 w-full shadow-xl"
-            value={formData.description}
-            onChange={handleChange}
-          />
-          {errors.description && (
-            <p className="text-red-500">{errors.description}</p>
-          )}
-          <input
-            name="description"
-            title="description"
-            placeholder="description"
-            type="text"
-            className="border rounded-lg p-3 bg-white text-black my-3 w-full shadow-xl"
-            value={formData.description}
-            onChange={handleChange}
-          />
-          {errors.description && (
-            <p className="text-red-500">{errors.description}</p>
-          )}
-          <CalendarComponent begin={true} />
-          <CalendarComponent begin={false} />
-          <div className="w-full flex flex-row-reverse">
-            <button
-              type="submit"
-              className="bg-blue-500 text-white rounded-full p-2 px-6 text-lg shadow-xl"
-            >
-              Submit
-            </button>
-          </div>
-        </form>
+        <AddPostPageOne hide={move} submit={submit} errorGoBack={moveBack} />
+        <AddPostPageTwo hide={!move} submit={submit} />
+        <div className="flex flex-row-reverse justify-between p-4">
+          <button
+            type="submit"
+            className="bg-blue-500 text-white rounded-full p-2 px-6 text-lg shadow-xl"
+            onClick={moveForward}
+          >
+            {move ? "Submit" : "Next"}
+          </button>
+        </div>
       </div>
     </div>
   );

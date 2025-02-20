@@ -15,6 +15,9 @@ const AddPostPage = () => {
   const moveForward = () => {
     if (!move) {
       setMove(!move);
+      if (submit) {
+        setSubmit(false);
+      }
     }
     if (move) {
       console.log("Submit");

@@ -77,22 +77,23 @@ const AddPostPageOne = ({ hide, submit, errorGoBack }: props) => {
               value={formData.title}
               onChange={handleChange}
             />
-            {errors.price && <p className="text-red-500">{errors.price}</p>}
+            {errors.title && <p className="text-red-500">{errors.title}</p>}
           </div>
           <div className="pl-3 flex flex-col w-full my-2">
             <Label htmlFor="description" className="">
               Description:
             </Label>
-            <input
+            <textarea
               name="description"
               title="description"
               placeholder="description"
-              type="text"
               className="border rounded-lg p-3 bg-white text-black my-3 w-full shadow-xl"
-              value={formData.price}
+              value={formData.description}
               onChange={handleChange}
             />
-            {errors.price && <p className="text-red-500">{errors.price}</p>}
+            {errors.description && (
+              <p className="text-red-500">{errors.description}</p>
+            )}
           </div>
           <div className="pl-3 flex flex-col w-full my-2">
             <Label htmlFor="price" className="">
@@ -109,42 +110,23 @@ const AddPostPageOne = ({ hide, submit, errorGoBack }: props) => {
             />
             {errors.price && <p className="text-red-500">{errors.price}</p>}
           </div>
-          <input
-            name="description"
-            title="description"
-            placeholder="description"
-            type="text"
-            className="border rounded-lg p-3 bg-white text-black my-3 w-full shadow-xl"
-            value={formData.description}
-            onChange={handleChange}
-          />
-          {errors.description && (
-            <p className="text-red-500">{errors.description}</p>
-          )}
-          <input
-            name="description"
-            title="description"
-            placeholder="description"
-            type="text"
-            className="border rounded-lg p-3 bg-white text-black my-3 w-full shadow-xl"
-            value={formData.description}
-            onChange={handleChange}
-          />
-          {errors.description && (
-            <p className="text-red-500">{errors.description}</p>
-          )}
-          <input
-            name="description"
-            title="description"
-            placeholder="description"
-            type="text"
-            className="border rounded-lg p-3 bg-white text-black my-3 w-full shadow-xl"
-            value={formData.description}
-            onChange={handleChange}
-          />
-          {errors.description && (
-            <p className="text-red-500">{errors.description}</p>
-          )}
+          <div className="pl-3 flex flex-col w-full my-2">
+            <Label htmlFor="price" className="">
+              Number of roommates:
+            </Label>
+            <input
+              name="roommates"
+              title="roommates"
+              placeholder="roommates"
+              type="number"
+              className="border rounded-lg p-3 bg-white text-black my-3 w-full shadow-xl"
+              value={formData.roomates}
+              onChange={handleChange}
+            />
+            {errors.roomates && (
+              <p className="text-red-500">{errors.roomates}</p>
+            )}
+          </div>
         </form>
       </div>
     </div>

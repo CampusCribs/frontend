@@ -1,6 +1,5 @@
 import { Outlet } from "react-router";
 import Header from "./Header";
-import Footer from "./Footer";
 
 const Layout = () => {
   return (
@@ -15,9 +14,7 @@ const Layout = () => {
         <Outlet />
       </div>
 
-      <div className="sticky left-0 bottom-0">
-        <Footer />
-      </div>
+      <div className="sticky left-0 bottom-0">{/* <Footer /> */}</div>
     </div>
   );
 };

@@ -1,4 +1,3 @@
-import { CircleUserRound, Search } from "lucide-react";
 import { useNavigate } from "react-router";
 
 const Header = () => {
@@ -14,14 +13,14 @@ const Header = () => {
         </div>
       </div>
 
-      <div className="flex items-center gap-2">
+      {/* <div className="flex items-center gap-2">
         <div className="cursor-pointer" onClick={() => navigate("/profile")}>
           <CircleUserRound />
         </div>
         <div>
           <Search />
         </div>
-      </div>
+      </div> */}
     </div>
   );
 };

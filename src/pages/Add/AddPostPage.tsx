@@ -33,7 +33,7 @@ const AddPostPage = () => {
         <h1 className="text-4xl flex ">Add Post</h1>
       </div>
       <div className="flex flex-col bg-Card w-full ">
-        <AddPostPageOne hide={move} submit={submit} errorGoBack={moveBack} />
+        <AddPostPageOne hide={move} next={submit} errorGoBack={moveBack} />
         <AddPostPageTwo hide={!move} submit={submit} />
         <div className="flex flex-row-reverse justify-between p-4">
           <button

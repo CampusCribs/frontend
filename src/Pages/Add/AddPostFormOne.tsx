@@ -3,11 +3,12 @@ import { useNavigate } from "react-router";
 import { z } from "zod";
 
 import { Label } from "@/components/ui/label";
+
 const PostSchema = z.object({
-  title: z.string().min(6, "Title must be at least 6 characters"),
+  title: z.string().min(5, "Title must be at least 6 characters"),
   description: z.string().min(6, "Description must be at least 6 characters"),
   price: z.number().min(1, "Price must be at least 1"),
-  roomates: z.number().min(1, "Roomates must be at least 1"),
+  roommates: z.number().min(1, "Roomates must be at least 1"),
   beginDate: z.date(),
   endDate: z.date(),
 });
@@ -16,16 +17,16 @@ type PostInfo = z.infer<typeof PostSchema>;
 
 type props = {
   hide: boolean;
-  submit: boolean;
+  next: boolean;
   errorGoBack: () => void;
 };
 
-const AddPostPageOne = ({ hide, submit, errorGoBack }: props) => {
+const AddPostPageOne = ({ hide, next, errorGoBack }: props) => {
   const [formData, setFormData] = useState<PostInfo>({
     title: "",
     description: "",
     price: 0,
-    roomates: 0,
+    roommates: 0,
     beginDate: new Date(),
     endDate: new Date(),
   });
@@ -36,17 +37,18 @@ const AddPostPageOne = ({ hide, submit, errorGoBack }: props) => {
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
+
     setFormData({ ...formData, [name]: value });
     setErrors({});
   };
 
   useEffect(() => {
-    if (submit) {
+    if (next) {
       try {
         PostSchema.parse(formData);
         setErrors({});
         // Form is valid, proceed with submission
-        console.log("Form data:", formData);
+
         navigate("/");
       } catch (error) {
         if (error instanceof z.ZodError) {
@@ -56,7 +58,7 @@ const AddPostPageOne = ({ hide, submit, errorGoBack }: props) => {
         }
       }
     }
-  }, [submit]);
+  }, [next]);
   return (
     <div className={`w-full h-full ${hide ? "hidden" : "flex"}`}>
       <div className="flex flex-col bg-Card w-full ">
@@ -111,7 +113,7 @@ const AddPostPageOne = ({ hide, submit, errorGoBack }: props) => {
             {errors.price && <p className="text-red-500">{errors.price}</p>}
           </div>
           <div className="pl-3 flex flex-col w-full my-2">
-            <Label htmlFor="price" className="">
+            <Label htmlFor="roommates" className="">
               Number of roommates:
             </Label>
             <input
@@ -120,11 +122,12 @@ const AddPostPageOne = ({ hide, submit, errorGoBack }: props) => {
               placeholder="roommates"
               type="number"
               className="border rounded-lg p-3 bg-white text-black my-3 w-full shadow-xl"
-              value={formData.roomates}
+              value={formData.roommates}
               onChange={handleChange}
+              max={10}
             />
-            {errors.roomates && (
-              <p className="text-red-500">{errors.roomates}</p>
+            {errors.roommates && (
+              <p className="text-red-500">{errors.roommates}</p>
             )}
           </div>
         </form>

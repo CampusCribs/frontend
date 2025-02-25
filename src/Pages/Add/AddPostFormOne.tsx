@@ -1,13 +1,16 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router";
+import React, { useState } from "react";
 import { z } from "zod";
 
 import { Label } from "@/components/ui/label";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "@/state/store";
+import { setPostData } from "@/state/slices/Post";
+
 const PostSchema = z.object({
   title: z.string().min(6, "Title must be at least 6 characters"),
   description: z.string().min(6, "Description must be at least 6 characters"),
   price: z.number().min(1, "Price must be at least 1"),
-  roomates: z.number().min(1, "Roomates must be at least 1"),
+  roommates: z.number().min(1, "Roomates must be at least 1"),
   beginDate: z.date(),
   endDate: z.date(),
 });
@@ -16,47 +19,46 @@ type PostInfo = z.infer<typeof PostSchema>;
 
 type props = {
   hide: boolean;
-  submit: boolean;
-  errorGoBack: () => void;
+  moveForward: () => void;
 };
 
-const AddPostPageOne = ({ hide, submit, errorGoBack }: props) => {
+const AddPostPageOne = ({ hide, moveForward }: props) => {
+  const current = useSelector(
+    (state: RootState) => state.persistedReducer.PostData
+  );
   const [formData, setFormData] = useState<PostInfo>({
     title: "",
     description: "",
     price: 0,
-    roomates: 0,
+    roommates: 0,
     beginDate: new Date(),
     endDate: new Date(),
   });
-  const navigate = useNavigate();
+  const dispatch = useDispatch<AppDispatch>();
   const [errors, setErrors] = useState<Partial<PostInfo>>({});
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
+    if (name === "price" || name === "roommates") {
+      setFormData({ ...formData, [name]: parseInt(value) });
+      return;
+    }
     setFormData({ ...formData, [name]: value });
     setErrors({});
   };
-
-  useEffect(() => {
-    if (submit) {
-      try {
-        PostSchema.parse(formData);
-        setErrors({});
-        // Form is valid, proceed with submission
-        console.log("Form data:", formData);
-        navigate("/");
-      } catch (error) {
-        if (error instanceof z.ZodError) {
-          const fieldErrors = error.flatten().fieldErrors;
-          setErrors(fieldErrors);
-          errorGoBack();
-        }
+  const handleNext = () => {
+    try {
+      PostSchema.parse(formData);
+      dispatch(setPostData({ ...formData, ...current }));
+      moveForward();
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        setErrors(error.formErrors.fieldErrors);
       }
     }
-  }, [submit]);
+  };
   return (
     <div className={`w-full h-full ${hide ? "hidden" : "flex"}`}>
       <div className="flex flex-col bg-Card w-full ">
@@ -118,16 +120,24 @@ const AddPostPageOne = ({ hide, submit, errorGoBack }: props) => {
               name="roommates"
               title="roommates"
               placeholder="roommates"
-              type="number"
               className="border rounded-lg p-3 bg-white text-black my-3 w-full shadow-xl"
-              value={formData.roomates}
+              value={formData.roommates}
               onChange={handleChange}
             />
-            {errors.roomates && (
-              <p className="text-red-500">{errors.roomates}</p>
+            {errors.roommates && (
+              <p className="text-red-500">{errors.roommates}</p>
             )}
           </div>
         </form>
+        <div className="flex flex-row-reverse justify-between p-4">
+          <button
+            type="submit"
+            className="bg-blue-500 text-white rounded-full p-2 px-6 text-lg shadow-xl"
+            onClick={handleNext}
+          >
+            Next
+          </button>
+        </div>
       </div>
     </div>
   );

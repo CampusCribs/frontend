@@ -2,25 +2,30 @@ import { Label } from "@radix-ui/react-label";
 import React, { useEffect, useState } from "react";
 import CalendarComponent from "./CalendarComponent";
 import { Input } from "@/components/ui/input";
+import { useSelector } from "react-redux";
+import { RootState } from "@/state/store";
 
 type Props = {
   hide: boolean;
-  submit: boolean;
 };
 
-const AddPostPageTwo = ({ hide, submit }: Props) => {
+const AddPostPageTwo = ({ hide }: Props) => {
   const [images, setImages] = useState<File[]>([]);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const current = useSelector(
+    (state: RootState) => state.persistedReducer.PostData
+  );
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       setImages([...images, ...Array.from(e.target.files)]);
     }
   };
+  // handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {};
   useEffect(() => {
-    if (submit) {
-      console.log("page two submit");
+    console.log(current);
+    if (hide) {
+      // set the info to state
     }
-  }, [submit]);
+  }, [hide]);
   return (
     <div className={`${hide ? "hidden" : "flex"}`}>
       <div className="flex flex-col w-full">
@@ -40,7 +45,7 @@ const AddPostPageTwo = ({ hide, submit }: Props) => {
           <Label htmlFor="title" className="">
             Upload images:
           </Label>
-          <Input type="file" accept="image/*" onChange={handleChange} />
+          <Input type="file" accept="image/*" onChange={handleFileUpload} />
         </div>
         <div className="p-3 flex flex-row flex-wrap w-full items-center justify-left">
           {images &&

@@ -22,7 +22,7 @@ const CalendarComponent = ({ begin }: props) => {
   const current = useSelector(
     (state: RootState) => state.persistedReducer.PostData
   );
-  const [date, setDate] = useState<Date>();
+  const [date, setDate] = useState<Date>(new Date());
 
   useEffect(() => {
     if (date) {

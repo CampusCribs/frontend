@@ -5,14 +5,13 @@ import { Label } from "@/components/ui/label";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/state/store";
 import { setPostData } from "@/state/slices/Post";
+import { useEffect } from "react";
 
 const PostSchema = z.object({
   title: z.string().min(6, "Title must be at least 6 characters"),
   description: z.string().min(6, "Description must be at least 6 characters"),
   price: z.number().min(1, "Price must be at least 1"),
   roommates: z.number().min(1, "Roomates must be at least 1"),
-  beginDate: z.date(),
-  endDate: z.date(),
 });
 
 type PostInfo = z.infer<typeof PostSchema>;
@@ -31,12 +30,9 @@ const AddPostPageOne = ({ hide, moveForward }: props) => {
     description: "",
     price: 0,
     roommates: 0,
-    beginDate: new Date(),
-    endDate: new Date(),
   });
   const dispatch = useDispatch<AppDispatch>();
   const [errors, setErrors] = useState<Partial<PostInfo>>({});
-
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
@@ -51,7 +47,13 @@ const AddPostPageOne = ({ hide, moveForward }: props) => {
   const handleNext = () => {
     try {
       PostSchema.parse(formData);
-      dispatch(setPostData({ ...formData, ...current }));
+      dispatch(
+        setPostData({
+          ...formData,
+          BeginDate: current.BeginDate,
+          EndDate: current.EndDate,
+        })
+      );
       moveForward();
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -59,6 +61,9 @@ const AddPostPageOne = ({ hide, moveForward }: props) => {
       }
     }
   };
+  useEffect(() => {
+    console.log(current);
+  }, [current]);
   return (
     <div className={`w-full h-full ${hide ? "hidden" : "flex"}`}>
       <div className="flex flex-col bg-Card w-full ">

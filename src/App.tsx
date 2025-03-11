@@ -1,11 +1,11 @@
 import { BrowserRouter, Routes, Route } from "react-router";
 import Layout from "@/components/layout/Layout";
-import HomePage from "./Pages/Home/HomePage";
-import LoginPage from "./Pages/Login/LoginPage";
-import ProfilePage from "./Pages/Profile/ProfilePage";
-import SettingsPage from "./Pages/Settings/SettingsPage";
-import AddPostPage from "./Pages/Add/AddPostPage";
-import IndividualPage from "./pages/Individual/IndividualPage";
+import HomePage from "./webpages/Home/HomePage";
+import LoginPage from "./webpages/Login/LoginPage";
+import ProfilePage from "./webpages/Profile/ProfilePage";
+import SettingsPage from "./webpages/Settings/SettingsPage";
+import AddPostPage from "./webpages/Add/AddPostPage";
+import IndividualPage from "./webpages/Individual/IndividualPage";
 
 function App() {
   return (

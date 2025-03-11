@@ -1,9 +1,13 @@
-import React from "react";
+import IndividualSlider from "./IndividualSlider";
 
-type Props = {};
-
-const IndividualPage = (props: Props) => {
-  return <div>IndividualPage</div>;
+const IndividualPage = () => {
+  return (
+    <div>
+      <div>
+        <IndividualSlider />
+      </div>
+    </div>
+  );
 };
 
 export default IndividualPage;

@@ -5,7 +5,6 @@ import { ArrowLeftIcon } from "lucide-react";
 
 const AddPostPage = () => {
   const [move, setMove] = useState(false);
-  const [submit, setSubmit] = useState(false);
 
   const moveBack = () => {
     if (move) {
@@ -15,13 +14,6 @@ const AddPostPage = () => {
   const moveForward = () => {
     if (!move) {
       setMove(!move);
-      if (submit) {
-        setSubmit(false);
-      }
-    }
-    if (move) {
-      console.log("Submit");
-      setSubmit(true);
     }
   };
   return (

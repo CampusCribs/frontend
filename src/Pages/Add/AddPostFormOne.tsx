@@ -38,7 +38,10 @@ const AddPostPageOne = ({ hide, moveForward }: props) => {
   ) => {
     const { name, value } = e.target;
     if (name === "price" || name === "roommates") {
-      setFormData({ ...formData, [name]: parseInt(value) });
+      if (Number.isNaN(parseInt(value))) {
+        setFormData({ ...formData, [name]: 0 });
+        return;
+      } else setFormData({ ...formData, [name]: parseInt(value) });
       return;
     }
     setFormData({ ...formData, [name]: value });

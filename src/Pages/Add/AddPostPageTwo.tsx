@@ -4,12 +4,14 @@ import CalendarComponent from "./CalendarComponent";
 import { Input } from "@/components/ui/input";
 import { useSelector } from "react-redux";
 import { RootState } from "@/state/store";
+import { useNavigate } from "react-router";
 
 type Props = {
   hide: boolean;
 };
 
 const AddPostPageTwo = ({ hide }: Props) => {
+  const navigate = useNavigate();
   const [images, setImages] = useState<File[]>([]);
   const current = useSelector(
     (state: RootState) => state.persistedReducer.PostData
@@ -19,13 +21,12 @@ const AddPostPageTwo = ({ hide }: Props) => {
       setImages([...images, ...Array.from(e.target.files)]);
     }
   };
-  // handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {};
-  useEffect(() => {
+  const handleSubmit = () => {
     console.log(current);
-    if (hide) {
-      // set the info to state
-    }
-  }, [hide]);
+    //submit the images to some cloud storage and data to database
+    //navigate("/posts/:id");
+    navigate("/posts/1234");
+  };
   return (
     <div className={`${hide ? "hidden" : "flex"}`}>
       <div className="flex flex-col w-full">
@@ -45,7 +46,12 @@ const AddPostPageTwo = ({ hide }: Props) => {
           <Label htmlFor="title" className="">
             Upload images:
           </Label>
-          <Input type="file" accept="image/*" onChange={handleFileUpload} />
+          <Input
+            type="file"
+            accept="image/*"
+            onChange={handleFileUpload}
+            className="w-[300px]"
+          />
         </div>
         <div className="p-3 flex flex-row flex-wrap w-full items-center justify-left">
           {images &&
@@ -60,6 +66,14 @@ const AddPostPageTwo = ({ hide }: Props) => {
                 className="w-32 h-32 object-cover m-2 border border-black rounded-xl shadow-xl "
               />
             ))}
+        </div>
+        <div className="flex flex-row-reverse p-5 px-10">
+          <button
+            className="bg-blue-500 text-white p-3 rounded-full shadow-xl"
+            onClick={handleSubmit}
+          >
+            Submit
+          </button>
         </div>
       </div>
     </div>

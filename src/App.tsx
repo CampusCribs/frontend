@@ -5,6 +5,7 @@ import LoginPage from "./Pages/Login/LoginPage";
 import ProfilePage from "./Pages/Profile/ProfilePage";
 import SettingsPage from "./Pages/Settings/SettingsPage";
 import AddPostPage from "./Pages/Add/AddPostPage";
+import IndividualPage from "./pages/Individual/IndividualPage";
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/post" element={<AddPostPage />} />
+          <Route path="/posts/1234" element={<IndividualPage />} />
         </Route>
         <Route path="/login" element={<LoginPage />} />
       </Routes>

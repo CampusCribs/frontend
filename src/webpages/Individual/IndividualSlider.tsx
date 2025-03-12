@@ -14,11 +14,17 @@ const SPRING_OPTIONS = {
   damping: 100,
 };
 
-const IndividualSlider = () => {
+const IndividualSlider = (props: { images: string[] }) => {
   const [imgIndex, setImgIndex] = useState(0);
 
   const dragX = useMotionValue(0);
 
+  props.images.push("https://picsum.photos/id/100/600/600");
+  props.images.push("https://picsum.photos/id/105/600/600");
+  props.images.push("https://picsum.photos/id/140/600/600");
+  props.images.push("https://picsum.photos/id/130/600/600");
+  props.images.push("https://picsum.photos/id/102/600/600");
+  console.log(props.images);
   useEffect(() => {
     const intervalRef = setInterval(() => {
       const x = dragX.get();
@@ -64,7 +70,7 @@ const IndividualSlider = () => {
         onDragEnd={onDragEnd}
         className="flex cursor-grab items-center active:cursor-grabbing"
       >
-        <Images imgIndex={imgIndex} />
+        <Images imgIndex={imgIndex} images={props.images} />
       </motion.div>
 
       <Dots imgIndex={imgIndex} setImgIndex={setImgIndex} />
@@ -72,19 +78,15 @@ const IndividualSlider = () => {
   );
 };
 
-const Images = (props: { imgIndex: number }) => {
+const Images = (props: { imgIndex: number; images: string[] }) => {
   return (
     <>
       {imgs.map((imgSrc, idx) => {
         return (
-          <motion.div
+          <motion.img
+            draggable={false}
             key={idx}
-            style={{
-              backgroundImage:
-                "https://images.pexels.com/photos/106399/pexels-photo-106399.jpeg",
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-            }}
+            src={props.images[idx]}
             animate={{
               scale: props.imgIndex === idx ? 1 : 0.85,
             }}

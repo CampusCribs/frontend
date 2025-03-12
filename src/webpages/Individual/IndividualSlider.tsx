@@ -9,9 +9,9 @@ const DRAG_BUFFER = 50;
 
 const SPRING_OPTIONS = {
   type: "spring",
-  mass: 3,
+  mass: 0.5,
   stiffness: 400,
-  damping: 50,
+  damping: 100,
 };
 
 const IndividualSlider = () => {
@@ -47,7 +47,7 @@ const IndividualSlider = () => {
   };
 
   return (
-    <div className="relative overflow-hidden bg-neutral-950 py-8">
+    <div className="relative overflow-hidden ">
       <motion.div
         drag="x"
         dragConstraints={{
@@ -68,7 +68,6 @@ const IndividualSlider = () => {
       </motion.div>
 
       <Dots imgIndex={imgIndex} setImgIndex={setImgIndex} />
-      <GradientEdges />
     </div>
   );
 };
@@ -81,17 +80,16 @@ const Images = (props: { imgIndex: number }) => {
           <motion.div
             key={idx}
             style={{
-              backgroundImage: `https://picsum.photos/id/${Math.floor(
-                Math.random() * (200 - 1) + 1
-              )}/600/600`,
+              backgroundImage:
+                "https://images.pexels.com/photos/106399/pexels-photo-106399.jpeg",
               backgroundSize: "cover",
               backgroundPosition: "center",
             }}
             animate={{
-              scale: props.imgIndex === idx ? 0.95 : 0.85,
+              scale: props.imgIndex === idx ? 1 : 0.85,
             }}
             transition={SPRING_OPTIONS}
-            className="aspect-video w-screen shrink-0 rounded-xl bg-neutral-800 object-cover"
+            className="aspect-square max-w-[600px] w-full shrink-0 rounded-xl bg-neutral-800 object-cover"
           />
         );
       })}
@@ -111,22 +109,13 @@ const Dots = (props: {
             key={idx}
             title="itterate"
             onClick={() => props.setImgIndex(idx)}
-            className={`h-3 w-3 rounded-full transition-colors ${
-              idx === props.imgIndex ? "bg-neutral-50" : "bg-neutral-500"
+            className={`h-3 w-3 rounded-full transition-colors shadow-xl ${
+              idx === props.imgIndex ? "bg-neutral-300" : "bg-neutral-500"
             }`}
           />
         );
       })}
     </div>
-  );
-};
-
-const GradientEdges = () => {
-  return (
-    <>
-      <div className="pointer-events-none absolute bottom-0 left-0 top-0 w-[10vw] max-w-[100px] bg-gradient-to-r from-neutral-950/50 to-neutral-950/0" />
-      <div className="pointer-events-none absolute bottom-0 right-0 top-0 w-[10vw] max-w-[100px] bg-gradient-to-l from-neutral-950/50 to-neutral-950/0" />
-    </>
   );
 };
 

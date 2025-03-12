@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, useMotionValue } from "framer-motion";
 
 const imgs = [1, 2, 3, 4, 5];
@@ -19,11 +19,6 @@ const IndividualSlider = (props: { images: string[] }) => {
 
   const dragX = useMotionValue(0);
 
-  props.images.push("https://picsum.photos/id/100/600/600");
-  props.images.push("https://picsum.photos/id/105/600/600");
-  props.images.push("https://picsum.photos/id/140/600/600");
-  props.images.push("https://picsum.photos/id/130/600/600");
-  props.images.push("https://picsum.photos/id/102/600/600");
   console.log(props.images);
   useEffect(() => {
     const intervalRef = setInterval(() => {
@@ -91,7 +86,7 @@ const Images = (props: { imgIndex: number; images: string[] }) => {
               scale: props.imgIndex === idx ? 1 : 0.85,
             }}
             transition={SPRING_OPTIONS}
-            className="aspect-square max-w-[600px] w-full shrink-0 rounded-xl bg-neutral-800 object-cover"
+            className="aspect-square max-w-[600px] w-full shrink-0 rounded-xl bg-neutral-800 object-cover shadow-lg"
           />
         );
       })}

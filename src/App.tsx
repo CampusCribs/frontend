@@ -14,7 +14,8 @@ function App() {
         <Route element={<Layout />}>
           <Route path="/" element={<HomePage />} />
           <Route path="/settings" element={<SettingsPage />} />
-          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/profile" element={<ProfilePage user />} />
+          <Route path="/profile/1234" element={<ProfilePage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/post" element={<AddPostPage />} />
           <Route path="/posts/1234" element={<IndividualPage />} />

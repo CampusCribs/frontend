@@ -34,13 +34,23 @@ const Bio = () => {
   );
 };
 
-const ProfilePage = () => {
-  return (
-    <div>
-      <Bio />
-      <p>what we do here?</p>
-    </div>
-  );
+const ProfilePage = (props: { user: boolean }) => {
+  if (props.user) {
+    return (
+      <div>
+        <Bio />
+        <p>what we do here?</p>
+      </div>
+    );
+  } else {
+    return (
+      <div>
+        <Bio />
+        this is foreign profile
+        <p>what we do here?</p>
+      </div>
+    );
+  }
 };
 
 export default ProfilePage;

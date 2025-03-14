@@ -1,5 +1,3 @@
-import { Sign } from "crypto";
-import { p } from "motion/react-client";
 import React, { useState } from "react";
 import { useNavigate } from "react-router";
 import { z } from "zod";
@@ -8,6 +6,7 @@ const SignupSchema = z.object({
   email: z.string().email("Invalid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
   confirmPassword: z.string().min(6, "Password must be at least 6 characters"),
+  userName: z.string().min(6, "Username must be at least 6 characters"),
   firstName: z.string().min(2, "First name must be at least 2 characters"),
   lastName: z.string().min(2, "Last name must be at least 2 characters"),
   phoneNumber: z
@@ -22,6 +21,7 @@ const SignupForm = () => {
     email: "",
     password: "",
     confirmPassword: "",
+    userName: "",
     firstName: "",
     lastName: "",
     phoneNumber: "",
@@ -46,7 +46,8 @@ const SignupForm = () => {
         return;
       }
       console.log("Form data:", formData);
-      //   navigate("/");
+      //TODO: Submit form data to server and attach cookie/jwt to response as well as make sure username is distinct
+      navigate("/");
     } catch (error) {
       if (error instanceof z.ZodError) {
         const fieldErrors = error.flatten().fieldErrors;
@@ -97,6 +98,17 @@ const SignupForm = () => {
           value={formData.email}
           onChange={handleChange}
         />
+        <input
+          name="userName"
+          title="userName"
+          placeholder="username"
+          className="border rounded-lg p-3 bg-white text-black my-1 w-full shadow-xl"
+          value={formData.userName}
+          onChange={handleChange}
+        />
+        {errors.userName && (
+          <p className="text-yellow-200">{errors.userName}</p>
+        )}
         {errors.email && <p className="text-yellow-200">{errors.email}</p>}
         <input
           name="phoneNumber"

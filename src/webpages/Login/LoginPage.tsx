@@ -10,7 +10,7 @@ const LoginPage = () => {
         <Undo2
           className="absolute top-5 left-5 text-white"
           size={40}
-          onClick={() => navigate("/")}
+          onClick={() => navigate(-1)}
         />
         <div className="flex items-center justify-center w-full flex-col h-full">
           <h1 className="w-full pb-20 text-6xl font-semibold text-white pl-10 font">

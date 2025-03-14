@@ -19,7 +19,6 @@ const IndividualSlider = (props: { images: string[] }) => {
 
   const dragX = useMotionValue(0);
 
-  console.log(props.images);
   useEffect(() => {
     const intervalRef = setInterval(() => {
       const x = dragX.get();

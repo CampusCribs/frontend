@@ -1,7 +1,6 @@
 import { ArrowLeftIcon } from "lucide-react";
 import IndividualSlider from "./IndividualSlider";
 import { useNavigate } from "react-router";
-import { motion } from "framer-motion";
 const initialState = {
   title: "I need a Roommate!",
   description:
@@ -52,10 +51,6 @@ const IndividualPage = () => {
         <div className="flex flex-col justify-center border-b">
           <div className="font-semibold text-xl">Johnny Smith </div>
           <div>@JohnnySmith1432</div>
-          <div className="flex">
-            <div className="text-xs font-light mr-2">(912)-222-8282</div>
-            <div className="text-xs font-light">Tasmith@mail.uc.edu</div>
-          </div>
         </div>
       </div>
       <div>
@@ -92,7 +87,7 @@ const IndividualPage = () => {
       </div>
       <div className="flex flex-row-reverse px-8 py-2">
         <button
-          className="bg-blue-500 rounded-full p-3 px-4 shadow-xl text-white underline "
+          className="bg-blue-500 rounded-full p-3 px-4 shadow-xl text-white underline cursor-pointer "
           onClick={() => navigate("/profile/1234")}
         >
           Contact

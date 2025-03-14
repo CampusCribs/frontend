@@ -1,8 +1,8 @@
 import { Undo2 } from "lucide-react";
-import LoginForm from "./LoginForm";
 import { useNavigate } from "react-router";
+import SignupForm from "./SignupForm";
 
-const LoginPage = () => {
+const SignupPage = () => {
   const navigate = useNavigate();
   return (
     <div className=" h-screen text-white bg-[conic-gradient(at_top_right,_var(--tw-gradient-stops))] from-emerald-100 via-pink-700 to-neutral-700 flex justify-center">
@@ -14,13 +14,13 @@ const LoginPage = () => {
         />
         <div className="flex items-center justify-center w-full flex-col h-full">
           <h1 className="w-full pb-20 text-6xl font-semibold text-white pl-10 font">
-            Login
+            Sign Up
           </h1>
-          <LoginForm />
+          <SignupForm />
         </div>
       </div>
     </div>
   );
 };
 
-export default LoginPage;
+export default SignupPage;

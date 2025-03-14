@@ -88,7 +88,7 @@ const IndividualPage = () => {
       <div className="flex flex-row-reverse px-8 py-2">
         <button
           className="bg-blue-500 rounded-full p-3 px-4 shadow-xl text-white underline cursor-pointer "
-          onClick={() => navigate("/profile/1234")}
+          onClick={() => navigate("/profile/johnnySmith1432")}
         >
           Contact
         </button>

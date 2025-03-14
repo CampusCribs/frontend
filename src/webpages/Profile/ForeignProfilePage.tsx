@@ -1,21 +1,24 @@
 import { Undo2 } from "lucide-react";
-import { useNavigate } from "react-router";
+import { useNavigate, useParams } from "react-router";
 
-const profiledata = {
-  image: "https://picsum.photos/id/10/600/600",
-  name: "Johny Rockets",
-  username: "johnnyrrockets",
-  bio: "Hey everyone, I'm Johnny! I need to get a place to stay in Cincinnati for the summer. I'm a student at UC and I'm looking for a place to stay near campus. I'm a pretty chill guy, I like to play video games and watch movies. I'm looking for a place with a private bathroom and a kitchen. I'm also looking for a place that's close to campus. I'm looking to move in by the end of May. If you have a place that fits my needs, please let me know. Thanks!😂😂",
-};
-const ProfilePage = () => {
-  //TODO: fetch users post data as well as profile data
+const ForeignProfilePage = () => {
+  const navigate = useNavigate();
+  const { userName } = useParams<{ userName: string }>();
+  console.log(userName);
+  //fetch data from server
+  const profiledata = {
+    image: "https://picsum.photos/id/10/600/600",
+    name: "Johny Rockets",
+    username: "johnnySmith1432",
+    bio: "Hey everyone, I'm Johnny! I need to get a place to stay in Cincinnati for the summer. I'm a student at UC and I'm looking for a place to stay near campus. I'm a pretty chill guy, I like to play video games and watch movies. I'm looking for a place with a private bathroom and a kitchen. I'm also looking for a place that's close to campus. I'm looking to move in by the end of May. If you have a place that fits my needs, please let me know. Thanks!😂😂",
+  };
+  //fetch post data from server
   const postdata = {
     id: "1234",
     title: "I need a Roommate! asap asap asap",
     image: "https://picsum.photos/id/100/600/600",
     price: 500,
   };
-  const navigate = useNavigate();
   return (
     <div>
       <div className="flex w-full">
@@ -40,7 +43,7 @@ const ProfilePage = () => {
       <div>
         <div
           className="m-9 relative text-xl text-white cursor-pointer"
-          onClick={() => navigate(`/posts/${postdata.id}`)}
+          onClick={() => navigate(`/posts/${id}`)}
         >
           <img
             src={postdata.image}
@@ -58,4 +61,4 @@ const ProfilePage = () => {
   );
 };
 
-export default ProfilePage;
+export default ForeignProfilePage;

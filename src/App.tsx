@@ -1,9 +1,11 @@
 import { BrowserRouter, Routes, Route } from "react-router";
 import Layout from "@/components/layout/Layout";
-import HomePage from "./pages/Home/HomePage";
-import LoginPage from "./pages/Login/LoginPage";
-import ProfilePage from "./pages/Profile/ProfilePage";
-import SettingsPage from "./pages/Settings/SettingsPage";
+import HomePage from "./Pages/Home/HomePage";
+import LoginPage from "./Pages/Login/LoginPage";
+import ProfilePage from "./Pages/Profile/ProfilePage";
+import SettingsPage from "./Pages/Settings/SettingsPage";
+import AddPostPage from "./Pages/Add/AddPostPage";
+import IndividualPage from "./pages/Individual/IndividualPage";
 
 function App() {
   return (
@@ -14,6 +16,8 @@ function App() {
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/post" element={<AddPostPage />} />
+          <Route path="/posts/1234" element={<IndividualPage />} />
         </Route>
         <Route path="/login" element={<LoginPage />} />
       </Routes>

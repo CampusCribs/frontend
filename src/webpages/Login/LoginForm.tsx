@@ -73,6 +73,12 @@ const LoginForm = () => {
           >
             Login
           </button>
+          <div
+            className="text-sm underline font-light mr-auto ml-2 cursor-pointer"
+            onClick={() => navigate("/signup")}
+          >
+            Dont have an account?
+          </div>
         </div>
       </form>
     </div>

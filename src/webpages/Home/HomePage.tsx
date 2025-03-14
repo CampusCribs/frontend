@@ -10,8 +10,8 @@ const HomePage = () => {
         className="flex flex-row justify-start gap-2 w-full 
       py-2 px-4 h-12"
       >
-        <Badge variant="outline">Sell</Badge>
-        <Badge variant="default">For you</Badge>
+        <Badge variant="outline">Lease</Badge>
+        <Badge variant="default">Sub-Lease</Badge>
         <Badge variant="outline">Local</Badge>
         <Badge variant="outline">More</Badge>
       </div>

@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Dot, MapPin } from "lucide-react";
+import { useNavigate } from "react-router";
 
 const HomePage = () => {
   return (
@@ -9,8 +10,8 @@ const HomePage = () => {
         className="flex flex-row justify-start gap-2 w-full 
       py-2 px-4 h-12"
       >
-        <Badge variant="outline">Sell</Badge>
-        <Badge variant="default">For you</Badge>
+        <Badge variant="outline">Lease</Badge>
+        <Badge variant="default">Sub-Lease</Badge>
         <Badge variant="outline">Local</Badge>
         <Badge variant="outline">More</Badge>
       </div>
@@ -44,9 +45,13 @@ const HomePage = () => {
 };
 
 const ResidenceCard = () => {
+  const navigate = useNavigate();
   return (
-    <Card className="rounded-none shadow-none p-0 m-0 w-full border-none">
-      <CardContent className="p-0 m-0 w-full border-none">
+    <Card
+      className="rounded-none shadow-none m-0 w-full border-none cursor-pointer p-1"
+      onClick={() => navigate("/posts/1234")}
+    >
+      <CardContent className="p-0 m-0 w-full border-none ">
         <img
           src={`https://picsum.photos/id/${Math.floor(
             Math.random() * (200 - 1) + 1

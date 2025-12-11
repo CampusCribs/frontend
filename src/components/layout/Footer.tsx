@@ -1,129 +1,61 @@
-import {
-  CircleUserRound,
-  Ghost,
-  Info,
-  LogIn,
-  LogOut,
-  Menu,
-  Settings,
-} from "lucide-react";
-import { AnimatePresence } from "motion/react";
-import { useState } from "react";
-import * as motion from "motion/react-client";
+import { Heart, House, MessageSquare, Users } from "lucide-react";
 import { useNavigate } from "react-router";
-import HatHouse from "../ui/HouseHat";
-import useEasyAuth from "@/hooks/use-easy-auth";
-import useLogin from "@/hooks/use-login";
-import useLogout from "@/hooks/use-logout";
 
 const Footer = () => {
-  const [open, setOpen] = useState(false);
+  const pathname = useActiveNav();
   const navigate = useNavigate();
-  const { user } = useEasyAuth();
-  const { login } = useLogin();
-  const { logout } = useLogout();
   return (
-    <>
-      {open && (
-        <div
-          className="fixed inset-0 bg-black opacity-30 z-50"
-          onClick={() => setOpen(false)}
-        ></div>
-      )}
-      <div className="relative w-10 z-50 ">
-        {/* Menu Button - Always Visible */}
-        <div
-          className="bg-black rounded-full w-20 shadow-2xl h-20 flex items-center justify-center  mb-5 ml-5"
-          onClick={() => setOpen(!open)}
-        >
-          <Menu color="white" size={40} />
-        </div>
-
-        {/* Overlay & Animated Menu */}
-        <AnimatePresence>
-          {open && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0, x: -50, y: 50 }}
-              animate={{
-                opacity: 1,
-                scale: 1,
-                x: 20,
-                y: 0,
-                transition: { duration: 0.1 },
-              }}
-              exit={{ opacity: 0, scale: 0, x: -30, y: 80 }}
-              key="box"
-              className="absolute bottom-0 left-0 bg-black p-5 rounded-xl rounded-bl-none flex items-center text-white justify-center text-left flex-col shadow-lg z-50"
-              onClick={() => setOpen(false)}
-            >
-              <div>
-                <div
-                  className="flex flex-row mx-4 my-4  text-left "
-                  onClick={() => navigate("/")}
-                >
-                  <div className="mr-2 cursor-pointer">
-                    <HatHouse />
-                  </div>
-                  <div className="cursor-pointer">Cribs</div>
-                </div>
-                <div
-                  className="flex flex-row mx-4 my-4  text-left "
-                  onClick={() => navigate("/profile")}
-                >
-                  <div className="mr-2 cursor-pointer">
-                    <CircleUserRound />
-                  </div>
-                  <div className="cursor-pointer">Profile</div>
-                </div>
-                {user?.access_token && (
-                  <div
-                    className="flex flex-row mx-4 my-4  text-left "
-                    onClick={() => navigate("/settings")}
-                  >
-                    <div className="mr-2 cursor-pointer">
-                      <Settings />
-                    </div>
-                    <div className="cursor-pointer">Settings</div>
-                  </div>
-                )}
-                <div
-                  className="flex flex-row mx-4 my-4  text-left "
-                  onClick={() => navigate("/support")}
-                >
-                  <div className="mr-2 cursor-pointer">
-                    <Info />
-                  </div>
-                  <div className="cursor-pointer">Support</div>
-                </div>
-                {user?.access_token ? null : (
-                  <div
-                    className="flex flex-row mx-4 my-4  text-left "
-                    onClick={login}
-                  >
-                    <div className="mr-2 cursor-pointer">
-                      <LogIn />
-                    </div>
-                    <div className="cursor-pointer">Login</div>
-                  </div>
-                )}
-                {user?.access_token ? (
-                  <div
-                    className="flex flex-row mx-4 my-4  text-left "
-                    onClick={logout}
-                  >
-                    <div className="mr-2 cursor-pointer">
-                      <LogOut />
-                    </div>
-                    <div className="cursor-pointer">Logout</div>
-                  </div>
-                ) : null}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+    <div className="w-full  bg-white shadow-xl border border-gray-600/10 flex py-4 ">
+      <div className="mx-auto flex items-center" onClick={() => navigate("/")}>
+        <House size={32} className={pathname === "" ? "" : "text-gray-500"} />
       </div>
-    </>
+      <div
+        className=" mx-auto flex items-center "
+        onClick={() => navigate("/community")}
+      >
+        <Users
+          size={32}
+          className={pathname === "community" ? "" : "text-gray-500"}
+        />
+      </div>
+      <div
+        className=" mx-auto flex items-center "
+        onClick={() => navigate("/chats")}
+      >
+        <MessageSquare
+          size={32}
+          className={pathname === "chats" ? "" : "text-gray-500"}
+        />
+      </div>
+      <div
+        className=" mx-auto flex items-center"
+        onClick={() => navigate("/favorites")}
+      >
+        <Heart
+          size={32}
+          className={pathname === "favorites" ? "" : "text-gray-500"}
+        />
+      </div>
+      <div
+        className="mx-auto flex items-center"
+        onClick={() => navigate("/profile")}
+      >
+        <div
+          className={`${pathname === "profile" ? "ring-4 ring-black/85" : ""} w-12 rounded-full h-12 object-cover overflow-clip`}
+        >
+          <img
+            alt="selfie"
+            src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS3krGAS5w7YyUrBn7Y55sqCFh13aR2La_dYQ&s"
+          />
+        </div>
+      </div>
+    </div>
   );
 };
-
+const useActiveNav = () => {
+  const pathname =
+    typeof window !== "undefined" ? window.location.pathname : "";
+  const activeNav = pathname.split("/")[1];
+  return activeNav;
+};
 export default Footer;

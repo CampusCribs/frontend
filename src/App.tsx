@@ -21,9 +21,13 @@ import About from "./pages/about/About";
 import { EmailChangeFlow } from "./pages/settings/account/EmailChangeFlow";
 import EmailInitiate from "./pages/settings/account/email/EmailInitiate";
 import EmailVerification from "./pages/settings/account/email/EmailVerification";
+import Favorited from "./pages/favorites/Favorited";
+import Chats from "./pages/chat/Chats";
+import Community from "./pages/community/Community";
 // import Partners from "./pages/partners/Partners";
 
 function App() {
+  localStorage.setItem("headerText", "CampusCribs");
   return (
     // Default font is Inter
     <div className="font-['Inter']">
@@ -38,29 +42,31 @@ function App() {
                 element={<ProfileUsernamePage />}
               />
               <Route path="/support" element={<SupportPage />} />
-
-              <Route element={<ProtectedRoute />}>
-                <Route path="/settings" element={<SettingsPage />} />
-                <Route path="/settings/general" element={<General />} />
-                <Route path="/settings/account" element={<Account />} />
-                <Route
-                  path="/settings/account/email"
-                  element={<EmailInitiate />}
-                />
-                <Route
-                  path="/settings/account/email-verification"
-                  element={<EmailVerification />}
-                />
-                <Route
-                  path="/settings/notifications"
-                  element={<Notifications />}
-                />
-                <Route path="/profile" element={<ProfilePage />}>
-                  <Route path=":username" element={<ProfileUsernamePage />} />
-                </Route>
-                <Route path="/profile/post" element={<Post />} />
-                <Route path="/profile/edit" element={<EditProfile />} />
+              <Route path="/community" element={<Community />} />
+              <Route path="/chats" element={<Chats />} />
+              <Route path="/favorites" element={<Favorited />} />
+              {/* <Route element={<ProtectedRoute />}> */}
+              <Route path="/settings" element={<SettingsPage />} />
+              <Route path="/settings/general" element={<General />} />
+              <Route path="/settings/account" element={<Account />} />
+              <Route
+                path="/settings/account/email"
+                element={<EmailInitiate />}
+              />
+              <Route
+                path="/settings/account/email-verification"
+                element={<EmailVerification />}
+              />
+              <Route
+                path="/settings/notifications"
+                element={<Notifications />}
+              />
+              <Route path="/profile" element={<ProfilePage />}>
+                <Route path=":username" element={<ProfileUsernamePage />} />
               </Route>
+              <Route path="/profile/post" element={<Post />} />
+              <Route path="/profile/edit" element={<EditProfile />} />
+              {/* </Route> */}
 
               <Route element={<ReverseProtectedRoute />}>
                 <Route path="/login" element={<LoginPage />} />

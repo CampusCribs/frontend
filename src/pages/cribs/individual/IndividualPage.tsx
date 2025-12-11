@@ -5,6 +5,7 @@ import { useGetPublicCribPostid } from "@/gen";
 import { buildThumbnailURL } from "@/lib/image-resolver";
 import Error from "@/pages/error/Error";
 import IndividualLoading from "./IndividualLoading";
+import { useEffect } from "react";
 const IndividualPage = () => {
   const navigate = useNavigate();
   //fetch images from server and pass them to the slider prop
@@ -19,6 +20,9 @@ const IndividualPage = () => {
     post?.data?.userId || "",
     post?.data?.userThumbnailId || ""
   );
+  useEffect(() => {
+    localStorage.setItem("headerText", "Crib Details");
+  }, []);
   if (post_isLoading) {
     return <IndividualLoading />;
   }

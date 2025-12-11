@@ -1,28 +1,42 @@
-import { Bell, CircleUserRound, Search } from "lucide-react";
+import { Bell, Dot, SquarePlus } from "lucide-react";
 import { useNavigate } from "react-router";
-import HeaderSearch from "./HeaderSearch";
-import { useState } from "react";
-import HatHouseBlack from "../ui/HatHouseBlack";
+
 import useEasyAuth from "@/hooks/use-easy-auth";
 import useAuthenticatedClientConfig from "@/hooks/use-authenticated-client-config";
 import { useHasUnreadNotifications } from "@/gen";
+
 const Header = () => {
   const navigate = useNavigate();
-  const [open, setOpen] = useState(false);
   const { user } = useEasyAuth();
   const config = useAuthenticatedClientConfig();
   const { data } = useHasUnreadNotifications({ ...config });
+  const pathname = useActiveNav();
+  let headerText;
+  if (pathname === "") {
+    headerText = "Cribs";
+  } else if (pathname === "community") {
+    headerText = "Community";
+  } else if (pathname === "chats") {
+    headerText = "Chats";
+  } else if (pathname === "favorites") {
+    headerText = "Favorites";
+  } else if (pathname === "profile") {
+    headerText = "Profile";
+  } else {
+    // Fallback for any other page
+    headerText = localStorage.getItem("headerText") ?? "CampusCribs";
+  }
+
   return (
-    <div className="flex justify-between items-center p-4">
+    <div className="flex justify-between items-center px-4 py-2 shadow">
       <div className="flex items-center gap-2">
         <div
           className="flex items-center text-2xl font-bold cursor-pointer"
           onClick={() => navigate("/")}
         >
-          <div className="flex items-center mr-2">
-            <HatHouseBlack />
-          </div>
-          Campus Cribs
+          <Dot width={48} height={48} />
+
+          <div className=" text-xl font-semibold">{headerText}</div>
         </div>
       </div>
 
@@ -45,16 +59,17 @@ const Header = () => {
             )}
           </div>
         )}
-        <div className="cursor-pointer" onClick={() => navigate("/profile")}>
-          <CircleUserRound />
-        </div>
-        <div className="cursor-pointer" onClick={() => setOpen(!open)}>
-          <Search />
+        <div className="flex items-center ">
+          <SquarePlus size={32} />
         </div>
       </div>
-      <HeaderSearch open={open} close={() => setOpen(!open)} />
     </div>
   );
 };
-
+const useActiveNav = () => {
+  const pathname =
+    typeof window !== "undefined" ? window.location.pathname : "";
+  const activeNav = pathname.split("/")[1];
+  return activeNav;
+};
 export default Header;

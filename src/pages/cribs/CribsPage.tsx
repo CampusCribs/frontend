@@ -4,6 +4,7 @@ import {
   Dot,
   ListFilter,
   MapPin,
+  Search,
   SearchX,
   ShieldOff,
 } from "lucide-react";
@@ -110,31 +111,14 @@ const CribsPage = () => {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col w-full  ">
-        <div className="flex flex-row justify-between gap-2 w-full p-2 h-12 overflow-hidden items-center">
-          <TagCarousel
-            tags={selectedTags}
-            setTags={(tag) => handleTagClick(tag)}
-            fetched_tags={tags?.data || []}
-            tag_error={tags_error}
-            tag_isLoading={tags_isLoading}
-          />
-
-          <div
-            className="flex flex-row rounded-full bg-white shadow-md p-2 gap-2 items-center justify-center border-neutral-200 border"
-            onClick={() => setOpenTag(!openTag)}
-          >
-            <ListFilter />
+        <div className="flex w-full p-2 justify-center items-center">
+          <div className="shadow-sm px-20 py-3 rounded-2xl flex justify-center bg-neutral-200 border border-black/10 font-semibold text-black/70 cursor-pointer w-full max-w-md">
+            <Search className="mr-2 text-black/70" /> Start your search
           </div>
         </div>
         <div className="flex flex-col">
-          <div className="flex flex-row justify-between gap-2 w-full p-2 h-12">
-            <div className="text-xl font-black">Today's Picks</div>
-            <div className="flex flex-row gap-2 items-center text-blue-400">
-              <div>
-                <MapPin width={16} height={16} />
-              </div>
-              <div className="text-lg font-bold">Cincinnati</div>
-            </div>
+          <div className="w-full flex my-3 ">
+            <div className="w-full h-70 bg-black/50 rounded-2xl mx-2"></div>
           </div>
           <div className="w-full ">
             {curated_isLoading && (

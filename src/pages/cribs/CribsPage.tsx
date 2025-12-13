@@ -18,6 +18,7 @@ import { buildImageURL } from "@/lib/image-resolver";
 
 import Lottie from "lottie-react";
 import house from "@/components/ui/houseanimation.json";
+import Footer from "@/components/layout/Footer";
 
 const CribsPage = () => {
   //variables to store the selected tags and the state of the tag selector and find the intersection of the tags
@@ -205,7 +206,7 @@ const CribsPage = () => {
   );
 };
 
-const ResidenceCard = ({
+export const ResidenceCard = ({
   userId,
   thumbnail,
   id,
@@ -296,37 +297,4 @@ const ResidenceCard = ({
   );
 };
 
-const Welcome = ({
-  setOpenWelcome,
-}: {
-  setOpenWelcome: (open: boolean) => void;
-}) => {
-  return (
-    <>
-      <div className="fixed inset-0 opacity-50 bg-black flex items-center justify-center z-50" />
-      <div className="fixed inset-0 flex items-center justify-center z-50">
-        <div className=" bg-white z-50 rounded-2xl py-10 p-6  shadow-lg text-center mx-10">
-          <h2 className="text-2xl font-bold mb-4">Welcome to Campus Cribs!</h2>
-          <p className="mb-4">Find subleases from fellow students</p>
-          <p className="mb-6">
-            {" "}
-            Discover affordable subleases from fellow students, post your own
-            listing, and connect with a trusted community right here at UC.
-            CampusCribs makes it simple, secure, and student-friendly to find
-            your next home near campus.
-          </p>
-          <button
-            className="bg-blue-500 text-white px-4 py-2 rounded cursor-pointer hover:bg-blue-600 transition-colors"
-            onClick={() => {
-              localStorage.setItem("firstVisit", "false");
-              setOpenWelcome(false);
-            }}
-          >
-            Start Exploring
-          </button>
-        </div>
-      </div>
-    </>
-  );
-};
 export default CribsPage;

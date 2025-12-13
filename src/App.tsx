@@ -24,6 +24,7 @@ import EmailVerification from "./pages/settings/account/email/EmailVerification"
 import Favorited from "./pages/favorites/Favorited";
 import Chats from "./pages/chat/Chats";
 import Community from "./pages/community/Community";
+import Home from "./pages/home/Home";
 // import Partners from "./pages/partners/Partners";
 
 function App() {
@@ -34,8 +35,10 @@ function App() {
       <BrowserRouter>
         <AnalyticsProvider>
           <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/about" element={<About />} />
             <Route element={<Layout />}>
-              <Route path="/" element={<CribsPage />} />
+              <Route path="/cribs" element={<CribsPage />} />
               <Route path="/cribs/:cribId" element={<IndividualPage />} />
               <Route
                 path="/profile/:username"

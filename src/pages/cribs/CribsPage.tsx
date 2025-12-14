@@ -1,29 +1,21 @@
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import {
-  CircleX,
-  Dot,
-  ListFilter,
-  MapPin,
-  Search,
-  SearchX,
-  ShieldOff,
-} from "lucide-react";
+import { CircleX, Dot, Search, SearchX, ShieldOff } from "lucide-react";
 import { useEffect, useState } from "react";
-import TagSelector from "./TagSelector";
+
 import { useInView } from "react-intersection-observer";
-import TagCarousel from "./TagCarousel";
+
 import { useNavigate } from "react-router";
-import { useGetPublicCuratedInfinite, useGetPublicTags } from "@/gen";
+import { useGetPublicCuratedInfinite } from "@/gen";
 import { buildImageURL } from "@/lib/image-resolver";
 
 import Lottie from "lottie-react";
 import house from "@/components/ui/houseanimation.json";
-import Footer from "@/components/layout/Footer";
+import GuidedSearch from "./GuidedSearch";
 
 const CribsPage = () => {
   //variables to store the selected tags and the state of the tag selector and find the intersection of the tags
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [openTag, setOpenTag] = useState(false);
+  const [openSearch, setOpenSearch] = useState<boolean>(false);
   const [verification, setVerification] = useState<
     "ANY" | "VERIFIED" | "UNVERIFIED"
   >("ANY");
@@ -36,27 +28,6 @@ const CribsPage = () => {
   const [maxPrice, setMaxPrice] = useState<number | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { ref, inView } = useInView();
-  const [openWelcome, setOpenWelcome] = useState<boolean>(false);
-
-  const setPriceRange = (min: number | null, max: number | null) => {
-    setMaxPrice(max);
-    setMinPrice(min);
-  };
-
-  const setRoommatesRange = (min: number | null, max: number | null) => {
-    setRoommatesMax(max);
-    setRoommatesMin(min);
-  };
-
-  const setDateRange = (min: string | null, max: string | null) => {
-    setStart(min);
-    setEnd(max);
-  };
-
-  useEffect(() => {
-    const firstVisit = localStorage.getItem("firstVisit");
-    setOpenWelcome(firstVisit === null);
-  }, []);
 
   function omitNullish<T extends Record<string, any>>(obj: T) {
     return Object.fromEntries(
@@ -89,20 +60,6 @@ const CribsPage = () => {
     isLoading: curated_isLoading,
   } = useGetPublicCuratedInfinite(params);
 
-  const {
-    data: tags,
-    error: tags_error,
-    isLoading: tags_isLoading,
-  } = useGetPublicTags({});
-
-  const handleTagClick = (tag: string) => {
-    setSelectedTags((prevTags) =>
-      prevTags.includes(tag)
-        ? prevTags.filter((t) => t !== tag)
-        : [...prevTags, tag]
-    );
-  };
-
   useEffect(() => {
     if (inView) {
       // call the generated function
@@ -113,14 +70,14 @@ const CribsPage = () => {
     <div className="flex flex-col gap-4">
       <div className="flex flex-col w-full  ">
         <div className="flex w-full p-2 justify-center items-center">
-          <div className="shadow-sm px-20 py-3 rounded-2xl flex justify-center bg-neutral-200 border border-black/10 font-semibold text-black/70 cursor-pointer w-full max-w-md">
+          <div
+            className="shadow-sm px-20 py-3 rounded-2xl flex justify-center bg-neutral-200 border border-black/10 font-semibold text-black/70 cursor-pointer w-full max-w-md"
+            onClick={() => setOpenSearch(!openSearch)}
+          >
             <Search className="mr-2 text-black/70" /> Start your search
           </div>
         </div>
         <div className="flex flex-col">
-          <div className="w-full flex my-3 ">
-            <div className="w-full h-70 bg-black/50 rounded-2xl mx-2"></div>
-          </div>
           <div className="w-full ">
             {curated_isLoading && (
               <div className="flex w-full h-[400px] justify-center items-center ">
@@ -177,31 +134,8 @@ const CribsPage = () => {
           <div />
           <div ref={ref} />
         </div>
-        <TagSelector
-          fetched_tags={tags?.data || []}
-          tag_error={tags_error}
-          tag_isLoading={tags_isLoading}
-          tags={selectedTags}
-          open={openTag}
-          closeTag={() => setOpenTag(!openTag)}
-          clearTags={() => setSelectedTags([])}
-          setTags={(tag: string) => {
-            handleTagClick(tag);
-          }}
-          maxPrice={maxPrice}
-          minPrice={minPrice}
-          roommatesMax={roommatesMax}
-          roommatesMin={roommatesMin}
-          startDate={start}
-          endDate={end}
-          verification={verification}
-          setVerification={setVerification}
-          setDateRange={setDateRange}
-          setRoommatesRange={setRoommatesRange}
-          setPriceRange={setPriceRange}
-        />
       </div>
-      {openWelcome && <Welcome setOpenWelcome={setOpenWelcome} />}
+      {openSearch && <GuidedSearch />}
     </div>
   );
 };

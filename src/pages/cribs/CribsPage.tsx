@@ -135,7 +135,7 @@ const CribsPage = () => {
           <div ref={ref} />
         </div>
       </div>
-      {openSearch && <GuidedSearch />}
+      {openSearch && <GuidedSearch setOpenSearch={setOpenSearch} />}
     </div>
   );
 };

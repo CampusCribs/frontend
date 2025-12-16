@@ -25,6 +25,8 @@ import Favorited from "./pages/favorites/Favorited";
 import Chats from "./pages/chat/Chats";
 import Community from "./pages/community/Community";
 import Home from "./pages/home/Home";
+import Map from "./pages/map/Map";
+import IndividualChat from "./pages/chat/IndividualChat";
 // import Partners from "./pages/partners/Partners";
 
 function App() {
@@ -44,9 +46,11 @@ function App() {
                 path="/profile/:username"
                 element={<ProfileUsernamePage />}
               />
+              <Route path="/map" element={<Map />} />
               <Route path="/support" element={<SupportPage />} />
               <Route path="/community" element={<Community />} />
               <Route path="/chats" element={<Chats />} />
+              <Route path="/chats/:chatId" element={<IndividualChat />} />
               <Route path="/favorites" element={<Favorited />} />
               {/* <Route element={<ProtectedRoute />}> */}
               <Route path="/settings" element={<SettingsPage />} />

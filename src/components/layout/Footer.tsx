@@ -1,4 +1,4 @@
-import { Heart, House, MessageSquare, Users } from "lucide-react";
+import { Heart, House, MapPlus, MessageSquare, Users } from "lucide-react";
 import { useNavigate } from "react-router";
 
 const Footer = () => {
@@ -18,6 +18,20 @@ const Footer = () => {
           className={`text-xs ${pathname === "cribs" ? "text-black" : "text-gray-500"}`}
         >
           Cribs
+        </div>
+      </div>
+      <div
+        className="mx-auto flex flex-col items-center"
+        onClick={() => navigate("/map")}
+      >
+        <MapPlus
+          size={32}
+          className={pathname === "map" ? "" : "text-gray-500"}
+        />
+        <div
+          className={`text-xs ${pathname === "map" ? "text-black" : "text-gray-500"}`}
+        >
+          Map
         </div>
       </div>
       <div

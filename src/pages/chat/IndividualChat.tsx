@@ -8,8 +8,8 @@ const IndividualChat = () => {
         <OtherChat />
         <MeChat />
       </div>
-      <div className="fixed bottom-15 w-full  border-t border-gray-200 p-2">
-        <div className="flex items-center">
+      <div className="fixed bottom-15 w-full  border-t border-gray-200 p-2 max-w-[600px] ">
+        <div className="flex items-center ">
           <input
             type="text"
             placeholder="Type a message..."

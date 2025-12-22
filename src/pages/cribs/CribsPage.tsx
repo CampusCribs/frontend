@@ -164,71 +164,97 @@ export const ResidenceCard = ({
 
   return (
     <Card
-      className="rounded-none  shadow-md m-0 w-full border-none cursor-pointer p-1"
+      className="group overflow-hidden border bg-white shadow-sm hover:shadow-md transition cursor-pointer"
       onClick={() => navigate(`/cribs/${id}`)}
-      key={id}
     >
-      <CardContent className="p-0 m-0 w-full border-none aspect-[4/3] ">
+      <CardContent className="p-0 aspect-[4/3] relative">
         <img
           src={thumbnail}
           alt="Residence"
-          className="object-cover aspect-[4/3] w-full h-full"
+          className="h-full w-full object-cover"
         />
-      </CardContent>
-      <CardFooter className="p-0 m-0 w-full px-4 py-2">
-        <div className="flex justify-between  w-full ">
-          <div className="flex items-center">
-            <div className="flex ">
-              <div className="text-md font-bold">${price}</div>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/15 to-transparent" />
+
+        <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between gap-3">
+          <div className="min-w-0">
+            <div className="text-white font-semibold text-sm truncate">
+              {location}
             </div>
-            <div className="flex justify-center  items-center">
-              <Dot width={24} height={24} />
-            </div>
-            <div className="flex w-full ">
-              <div className="text-md font-bold">{location}</div>
+            <div className="text-white/90 text-xs font-medium">
+              ${price} / mo
             </div>
           </div>
-          <div className="flex  items-center justify-center mr-5 w-full">
-            {ableToUse && iconKey != "" ? (
-              <div className="relative group">
-                <div className="absolute left-1/2 bottom-full translate-x-[-50%] mb-2 flex-col items-center group-hover:flex hidden ">
-                  <div className=" z-20 p-2 bg-white text-center rounded shadow text-sm">
-                    Student at the {name}
-                  </div>
-                </div>
-
-                <img
-                  title="UC Logo"
-                  className="w-10"
-                  src={import.meta.env.VITE_SCHOOL_LOGO + iconKey}
-                />
-              </div>
-            ) : !ableToUse && iconKey != "" ? (
-              <div className="relative group">
-                <div className="absolute left-1/2 bottom-full translate-x-[-50%] mb-2 flex-col items-center group-hover:flex hidden ">
-                  <div className=" z-20 p-2 bg-white text-center rounded shadow text-sm">
-                    Student at the {name}
-                  </div>
-                </div>
-                <div className="flex justify-center items-center w-full">
-                  <p className=" font-semibold text-lg italic ">UC</p>
-                </div>
-              </div>
-            ) : (
-              <div className="relative group">
-                <div className="absolute left-1/2 bottom-full translate-x-[-50%] mb-2 flex-col items-center group-hover:flex hidden ">
-                  <div className=" z-20 p-2 bg-white text-center rounded shadow text-sm">
-                    Not verified
-                  </div>
-                </div>
-                <ShieldOff />
-              </div>
-            )}
+          <div className="shrink-0">
+            <VerificationBadge
+              ableToUse={ableToUse}
+              iconKey={iconKey}
+              name={name}
+            />
           </div>
         </div>
+      </CardContent>
+
+      <CardFooter className="p-2 flex items-center justify-between">
+        <div className="text-xs text-gray-500">Jan-Dec | No Animals</div>
+        <span className="text-xs font-medium text-blue-600 group-hover:underline">
+          View
+        </span>
       </CardFooter>
     </Card>
   );
 };
+
+function VerificationBadge({
+  ableToUse,
+  iconKey,
+  name,
+}: {
+  ableToUse: boolean;
+  iconKey: string;
+  name: string;
+}) {
+  if (iconKey && ableToUse) {
+    return (
+      <div className="relative group">
+        <img
+          className="w-8 h-8 object-contain"
+          src={import.meta.env.VITE_SCHOOL_LOGO + iconKey}
+          alt="School logo"
+        />
+        <div className="absolute left-1/2 bottom-full -translate-x-1/2 mb-2 hidden group-hover:block">
+          <div className="z-20 px-2 py-1 bg-white rounded shadow text-xs whitespace-nowrap">
+            Student at {name}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (iconKey && !ableToUse) {
+    return (
+      <div className="relative group">
+        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100">
+          <p className="font-semibold text-xs italic">UC</p>
+        </div>
+        <div className="absolute left-1/2 bottom-full -translate-x-1/2 mb-2 hidden group-hover:block">
+          <div className="z-20 px-2 py-1 bg-white rounded shadow text-xs whitespace-nowrap">
+            Student at {name}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative group">
+      <ShieldOff className="w-5 h-5 text-gray-400" />
+      <div className="absolute left-1/2 bottom-full -translate-x-1/2 mb-2 hidden group-hover:block">
+        <div className="z-20 px-2 py-1 bg-white rounded shadow text-xs whitespace-nowrap">
+          Not verified
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default CribsPage;

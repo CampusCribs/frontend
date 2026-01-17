@@ -1,36 +1,181 @@
-import { ArrowLeftIcon, CircleUserRound } from "lucide-react";
+import {
+  ArrowLeftIcon,
+  Calendar,
+  CircleUserRound,
+  DollarSign,
+  Tag,
+  Users,
+} from "lucide-react";
 import IndividualSlider from "./IndividualSlider";
 import { useNavigate } from "react-router";
-import { useGetPublicCribPostid } from "@/gen";
-import { buildThumbnailURL } from "@/lib/image-resolver";
-import Error from "@/pages/error/Error";
-import IndividualLoading from "./IndividualLoading";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
+
+// MapLibre
+import Map, { Marker } from "react-map-gl/maplibre";
+import maplibregl from "maplibre-gl";
+import "maplibre-gl/dist/maplibre-gl.css";
+
+type Tag = { name: string };
+
+type FakePost = {
+  id: string;
+  userId: string;
+  userThumbnailUrl?: string;
+
+  firstName: string;
+  lastName: string;
+  username: string;
+  institutionName: string;
+
+  title: string;
+  description: string;
+  price: number;
+  roommates: number;
+  termStartDate: string; // ISO
+  termEndDate: string; // ISO
+
+  tags: Tag[];
+  mediaIds: string[];
+
+  location: { lat: number; lng: number; label: string };
+};
+
+const FAKE_POST: FakePost = {
+  id: "post_123",
+  userId: "user_abc",
+  userThumbnailUrl: "", // set a URL to show image
+
+  firstName: "Johnny",
+  lastName: "Edwards",
+  username: "johnnyedwards",
+  institutionName: "University of California, Berkeley",
+
+  title: "Sunny Private Room on Short Vine",
+  description:
+    "Private room in a 3BR. Walk to campus, in-unit laundry, furnished common area. Looking for someone clean + respectful. Close to restaurants and a bus stop.",
+  price: 850,
+  roommates: 2,
+  termStartDate: "2026-05-10T00:00:00.000Z",
+  termEndDate: "2026-08-15T00:00:00.000Z",
+
+  tags: [
+    { name: "Private bedroom" },
+    { name: "In-unit laundry" },
+    { name: "Furnished" },
+    { name: "Walkable" },
+    { name: "Utilities included" },
+    { name: "Desk included" },
+  ],
+
+  mediaIds: ["m1", "m2", "m3"],
+
+  location: { lat: 39.1279, lng: -84.5146, label: "Near Short Vine" },
+};
+
+function formatDateISO(iso: string) {
+  return new Date(iso).toISOString().split("T")[0];
+}
+
+const DetailRow = ({
+  label,
+  value,
+}: {
+  label: string;
+  value: React.ReactNode;
+}) => (
+  <div className="flex items-start justify-between gap-4 py-2">
+    <div className="text-sm text-slate-500">{label}</div>
+    <div className="text-sm font-medium text-slate-900 text-right">{value}</div>
+  </div>
+);
+
+/**
+ * Different map style: "framed card" with:
+ * - soft gradient header
+ * - rounded container
+ * - corner label chip
+ * - subtle marker with pulse ring
+ */
+const LocationMapCard = ({
+  lat,
+  lng,
+  label,
+}: {
+  lat: number;
+  lng: number;
+  label: string;
+}) => {
+  return (
+    <div className="px-5 mt-5">
+      <div className="rounded-3xl overflow-hidden border border-slate-200 bg-white shadow-sm">
+        {/* Header (different style than before) */}
+        <div className="px-4 py-3 bg-gradient-to-r from-slate-900 to-slate-700 text-white">
+          <div className="text-sm font-semibold">Location</div>
+          <div className="text-xs text-white/80 truncate">{label}</div>
+        </div>
+
+        {/* Map */}
+        <div className="relative h-56 w-full">
+          {/* little corner chip */}
+          <div className="absolute top-3 left-3 z-10">
+            <span className="rounded-full bg-white/95 backdrop-blur border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-900 shadow-sm">
+              Nearby
+            </span>
+          </div>
+
+          <Map
+            mapLib={maplibregl}
+            initialViewState={{ latitude: lat, longitude: lng, zoom: 14 }}
+            mapStyle="https://demotiles.maplibre.org/style.json"
+            style={{ width: "100%", height: "100%" }}
+            attributionControl={false}
+            // keep it “preview-like” so scroll doesn’t hijack the page
+            scrollZoom={false}
+            dragPan={false}
+            doubleClickZoom={false}
+            dragRotate={false}
+            touchZoomRotate={false}
+          >
+            <Marker latitude={lat} longitude={lng} anchor="center">
+              <div className="relative">
+                {/* pulse ring */}
+                <div className="absolute -inset-3 rounded-full bg-slate-900/15 animate-pulse" />
+                {/* pin dot */}
+                <div className="h-4 w-4 rounded-full bg-slate-900 ring-4 ring-white shadow-md" />
+              </div>
+            </Marker>
+          </Map>
+        </div>
+
+        {/* Footer actions */}
+        <div className="px-4 py-3 flex items-center justify-between">
+          <div className="text-xs text-slate-500">
+            Tap “Open in map” later (placeholder)
+          </div>
+          <button
+            type="button"
+            onClick={() => console.log("open map")}
+            className="rounded-full bg-slate-900 text-white px-4 py-2 text-xs font-semibold shadow-sm hover:bg-slate-800"
+          >
+            Open map
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const IndividualPage = () => {
   const navigate = useNavigate();
-  //fetch images from server and pass them to the slider prop
-  const id = window.location.pathname.split("/").pop() || "";
-  const {
-    data: post,
-    error: post_error,
-    isLoading: post_isLoading,
-  } = useGetPublicCribPostid(id);
+  const post = useMemo(() => FAKE_POST, []);
 
-  const thumbnailUrl = buildThumbnailURL(
-    post?.data?.userId || "",
-    post?.data?.userThumbnailId || ""
-  );
   useEffect(() => {
     localStorage.setItem("headerText", "Crib Details");
   }, []);
-  if (post_isLoading) {
-    return <IndividualLoading />;
-  }
-  if (post_error) {
-    return <Error />;
-  }
+
   return (
     <div className="mb-6">
+      {/* Back */}
       <div className="px-3 pt-3">
         <div
           onClick={() => window.history.back()}
@@ -40,97 +185,106 @@ const IndividualPage = () => {
           <span className="ml-2">Back</span>
         </div>
       </div>
+      {/* Slider */}
       <div>
         <IndividualSlider
-          images={post?.data?.mediaIds || []}
-          userId={post?.data?.userId || ""}
-          postId={post?.data?.id || ""}
+          images={post.mediaIds}
+          userId={post.userId}
+          postId={post.id}
         />
       </div>
-
-      {post && (
-        <>
-          <div className="flex ">
-            {post && !post.data.userThumbnailId && (
-              <div className="flex justify-center items-center ml-5">
-                <CircleUserRound size={70} />
-              </div>
+      {/* Profile header (you liked this) */}
+      <div className="px-5 pt-4">
+        <div className="flex flex-row items-center gap-4">
+          <div className="h-16 w-16 rounded-full overflow-hidden border shadow-sm bg-slate-100 grid place-items-center shrink-0">
+            {post.userThumbnailUrl ? (
+              <img
+                src={post.userThumbnailUrl}
+                alt="profile"
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <CircleUserRound size={40} className="text-slate-500" />
             )}
-            {post && post.data.userThumbnailId && (
-              <div>
-                <img
-                  alt="profile"
-                  src={thumbnailUrl}
-                  className="rounded-full h-24 m-5 w-24 object-cover shadow-2xl border"
-                />
-              </div>
-            )}
+          </div>
 
-            <div className="flex flex-col w-3/4">
-              <div className="text-lg font-medium px-4">
-                {post?.data.firstName} {post?.data.lastName}
-              </div>
-              <div className="px-5 font-light text-md">
-                @{post?.data.username}
-              </div>
-              <div className="text-wrap flex text-sm w-full mt-1 px-4 border-b pb-3">
-                {post?.data?.institutionName && (
-                  <div className="text-sm font-medium">
-                    {post.data.institutionName}
-                  </div>
+          <div className="flex flex-col min-w-0">
+            <h1 className="text-lg font-semibold text-slate-900 leading-tight truncate">
+              {post.firstName} {post.lastName}
+            </h1>
+            <p className="text-sm text-slate-600 leading-tight">
+              @{post.username}
+            </p>
+            <p className="text-xs text-slate-500 mt-1 truncate">
+              {post.institutionName}
+            </p>
+          </div>
+        </div>
+      </div>
+      {/* Post content */}
+      <div className="px-5 pt-4">
+        <div className="text-2xl font-semibold text-slate-900">
+          {post.title}
+        </div>
+        <div className="mt-2 text-base text-slate-700 break-words leading-relaxed">
+          {post.description}
+        </div>
+      </div>
+
+      {/* Details + tags block */}
+      <div className="my-10 px-5 text-md ">
+        {/* Price */}
+        <div className="flex items-baseline gap-2">
+          <DollarSign size={18} className="text-slate-400 shrink-0" />
+          <span className=" text-slate-900">${post.price} / month</span>
+        </div>
+
+        {/* Roommates */}
+        <div className="flex items-baseline gap-2 mt-1">
+          <Users size={18} className="text-slate-400 shrink-0" />
+          <span className="text-slate-900">{post.roommates} roommates</span>
+        </div>
+
+        {/* Lease */}
+        <div className="flex items-baseline gap-2 mt-1">
+          <Calendar size={18} className="text-slate-400 shrink-0" />
+          <span className="text-slate-900">
+            {formatDateISO(post.termStartDate)} →{" "}
+            {formatDateISO(post.termEndDate)}
+          </span>
+        </div>
+
+        {/* Tags */}
+        <div className="flex items-start gap-2 mt-2">
+          <Tag size={18} className="text-slate-400 mt-[2px] shrink-0" />
+          <div className="text-slate-600">
+            {post.tags.map((t, i) => (
+              <span key={`${t.name}-${i}`}>
+                {t.name}
+                {i < post.tags.length - 1 && (
+                  <span className="text-slate-400"> · </span>
                 )}
-              </div>
-            </div>
+              </span>
+            ))}
           </div>
-          <div>
-            <div className="text-3xl font-semibold p-4">{post.data.title}</div>
-            <div className="text-lg px-6 text-wrap wrap-break-word">
-              {post.data.description}
-            </div>
-            <div className="text-lg px-8 py-3 flex">
-              <div className="font-semibold flex mr-1">Price: </div>{" "}
-              {post.data.price}
-            </div>
-            <div className="text-lg pb-3 px-8 flex">
-              <div className="font-semibold mr-1">Roommates:</div>
-              {post.data.roommates}
-            </div>
-            <div className="text-lg px-8 flex mb-3">
-              <div className="mr-1 font-semibold">Lease from:</div>{" "}
-              {post.data.termStartDate &&
-                new Date(post.data.termStartDate)
-                  .toISOString()
-                  .split("T")[0]}{" "}
-              to{" "}
-              {post.data.termEndDate &&
-                new Date(post.data.termEndDate).toISOString().split("T")[0]}
-            </div>
-            <div className="text-lg px-8 flex">
-              <div className="mr-1 font-semibold">Tags:</div>
-            </div>
-            <div className="flex justify-center border rounded-xl mx-8 my-2 py-2">
-              <div className="flex max-w-[400px] flex-wrap p-4 justify-center">
-                {post.data.tags?.map((item, index) => (
-                  <div
-                    key={index}
-                    className="flex p-2 bg-black text-white m-1 rounded-full shadow-xl"
-                  >
-                    {item.name}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-          <div className="flex flex-row-reverse px-8 py-2">
-            <button
-              className="bg-blue-500 rounded-full p-3 px-4 shadow-xl text-white underline cursor-pointer "
-              onClick={() => navigate(`/profile/${post.data.username}`)}
-            >
-              Contact
-            </button>
-          </div>
-        </>
-      )}
+        </div>
+      </div>
+
+      {/* ✅ Map (different style) */}
+      <LocationMapCard
+        lat={post.location.lat}
+        lng={post.location.lng}
+        label={post.location.label}
+      />
+      {/* CTA */}
+      <div className="flex flex-row-reverse px-5 pt-5">
+        <button
+          className="bg-blue-500 rounded-full py-3 px-5 shadow-lg text-white font-semibold cursor-pointer active:scale-[0.99]"
+          onClick={() => navigate(`/chats/${post.username}`)}
+        >
+          Contact
+        </button>
+      </div>
     </div>
   );
 };

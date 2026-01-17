@@ -1,15 +1,19 @@
 import { Search } from "lucide-react";
+import { useState } from "react";
 import { useNavigate } from "react-router";
 
 function Chats() {
+  const [searchTerm, setSearchTerm] = useState("");
   return (
     <div className="w-full ">
       <div className=" flex items-center justify-center border-2 rounded-2xl py-1 px-3 m-3">
         <Search className="mr-2 text-black/70" />
         <input
+          value={searchTerm}
           type="text"
           placeholder="Search chats"
           className=" p-2  outline-none"
+          onChange={(e) => setSearchTerm(e.target.value)}
         />
       </div>
       {Array.from(Array(10).keys()).map((_, index) => (
@@ -42,7 +46,7 @@ const Chat = () => {
             </p>
           </div>
         </div>
-        <span className="text-sm text-gray-500">Time</span>
+        <span className="text-sm text-gray-500">10:53pm</span>
       </div>
     </div>
   );

@@ -2,13 +2,12 @@ import HatHouseBlack from "@/components/ui/HatHouseBlack";
 import { useNavigate } from "react-router";
 import { ResidenceCard } from "../cribs/CribsPage";
 import { Check, Lock, ShieldUser } from "lucide-react";
-import { useEffect } from "react";
 
 const Home = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="w-full">
+    <div className="w-full overflow-hidden ">
       {" "}
       <header className="flex justify-between items-center p-4 sticky top-0 bg-white/90 backdrop-blur border-b border-slate-200 z-50">
         <div

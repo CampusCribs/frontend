@@ -13,7 +13,7 @@ const Header = () => {
   const { data } = useHasUnreadNotifications({ ...config });
 
   return (
-    <div className="flex justify-between items-center px-4 py-2 shadow">
+    <div className="flex justify-between items-center px-4 py-2 shadow z-40">
       <div className="flex items-center gap-2 my-2">
         <div
           className="flex items-center text-2xl font-bold cursor-pointer"
@@ -46,7 +46,7 @@ const Header = () => {
           </div>
         )}
         <div className="flex items-center text-2xl font-bold cursor-pointer mr-3">
-          <SquarePlus onClick={() => navigate("/cribs/post")} size={28} />
+          <SquarePlus onClick={() => navigate("/profile/post")} size={28} />
         </div>
       </div>
     </div>

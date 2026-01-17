@@ -71,7 +71,7 @@ const CribsPage = () => {
       <div className="flex flex-col w-full  ">
         <div className="flex w-full p-2 justify-center items-center">
           <div
-            className="shadow-sm px-20 py-3 rounded-2xl flex justify-center bg-neutral-200 border border-black/10 font-semibold text-black/70 cursor-pointer w-full max-w-md"
+            className="shadow-sm px-20 py-3 rounded-2xl flex justify-center bg-neutral-100 border border-black/10 font-semibold text-black/70 cursor-pointer w-full max-w-md"
             onClick={() => setOpenSearch(!openSearch)}
           >
             <Search className="mr-2 text-black/70" /> Start your search
@@ -113,7 +113,7 @@ const CribsPage = () => {
               </div>
             )}
             <div className="grid grid-cols-2 gap-1 w-full p-2">
-              {curated &&
+              {/* {curated &&
                 curated.pages.map((item) =>
                   item.data.content?.map((residence) => (
                     <ResidenceCard
@@ -128,7 +128,20 @@ const CribsPage = () => {
                       ableToUse={residence.ableToUse || false}
                     />
                   ))
-                )}
+                )} */}
+              {Array.from({ length: 10 }).map((_, index) => (
+                <ResidenceCard
+                  key={index}
+                  userId={`user-${index}`}
+                  thumbnail="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQLbpGDcJYb2oBnoSKM5niQxRGJEEr9U3_CbA&s"
+                  id={`res-${index}`}
+                  price={900 + index * 50}
+                  location="CUF"
+                  name={`Residence ${index + 1}`}
+                  iconKey="https://1000logos.net/wp-content/uploads/2021/12/Cincinnati-Bearcats-Logo.jpg"
+                  ableToUse={index % 2 === 0}
+                />
+              ))}
             </div>
           </div>
           <div />
@@ -160,7 +173,7 @@ export const ResidenceCard = ({
   ableToUse: boolean;
 }) => {
   const navigate = useNavigate();
-  thumbnail = buildImageURL(userId, id, thumbnail);
+  // thumbnail = buildImageURL(userId, id, thumbnail);
 
   return (
     <Card
@@ -217,8 +230,8 @@ function VerificationBadge({
     return (
       <div className="relative group">
         <img
-          className="w-8 h-8 object-contain"
-          src={import.meta.env.VITE_SCHOOL_LOGO + iconKey}
+          className="w-8 h-8 object-cover rounded-full"
+          src={iconKey}
           alt="School logo"
         />
         <div className="absolute left-1/2 bottom-full -translate-x-1/2 mb-2 hidden group-hover:block">

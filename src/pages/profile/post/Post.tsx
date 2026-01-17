@@ -1,487 +1,526 @@
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import React, { useEffect, useState } from "react";
-import CalendarComponent from "@/components/ui/CalendarComponent";
-import { Badge } from "@/components/ui/badge";
-import { ArrowLeftIcon, X } from "lucide-react";
-import { useForm, Controller } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { postSchema, PostSchema } from "@/lib/schema/schema";
-import { Button } from "@/components/ui/button";
-import { FieldErrors } from "react-hook-form";
-import { toZonedTime } from "date-fns-tz";
-import {
-  useGetPublicTags,
-  usePutPostsDrafts,
-  useDeletePostsDraftsPostdraftidMediaDeleteMediaid,
-  useGetUsersMe,
-} from "@/gen";
-import useAuthenticatedClientConfig from "@/hooks/use-authenticated-client-config";
-import { useEnsurePostDraft } from "@/hooks/use-get-post-drafts";
-import { usePostDraftMediaUpload } from "@/lib/post-media-upload";
-import { useNavigate } from "react-router";
-import { useNotify } from "@/components/ui/Notify";
-import Spinner from "@/components/ui/Spinner";
+import React, { useMemo, useState } from "react";
 
-type postTag = {
-  id?: string;
-  name?: string;
-  tagCategoryId?: string;
+type Details = {
+  title: string;
+  description: string;
+  pricePerMonth: number | "";
+  address: string;
 };
 
-const Post = () => {
-  const config = useAuthenticatedClientConfig();
-  const notify = useNotify();
-  const navigate = useNavigate();
-  const [selectedTags, setSelectedTags] = useState<postTag[]>([]);
+type FormState = {
+  details: Details;
+  tags: string[];
+  images: File[];
+};
 
-  const editDraft = usePutPostsDrafts({
-    ...config,
-  });
-  const { mutateAsync: deleteMedia } =
-    useDeletePostsDraftsPostdraftidMediaDeleteMediaid({
-      ...config,
-    });
-  const {
-    data: user,
-    isLoading,
-    isError,
-    error,
-  } = useGetUsersMe({ ...config });
+type StepId = "details" | "tags" | "images";
 
-  const {
-    upload,
-    mediaId,
-    uploading,
-    error: uploadError,
-  } = usePostDraftMediaUpload();
+const STEPS: { id: StepId; label: string; helper: string }[] = [
+  {
+    id: "details",
+    label: "Details",
+    helper: "Title, description, price, location",
+  },
+  { id: "tags", label: "Tags", helper: "Add a few keywords to help search" },
+  { id: "images", label: "Images", helper: "Upload photos for the listing" },
+];
 
-  const {
-    data: tags,
-    error: tags_error,
-    isLoading: tags_isLoading,
-  } = useGetPublicTags({});
+export default function CreatePostOrchestrator() {
+  const [activeStepIndex, setActiveStepIndex] = useState(0);
 
-  const {
-    postDraft,
-    loading: postDraftLoading,
-    error: postDraftError,
-    refetch: refetchPostDraft,
-  } = useEnsurePostDraft();
-
-  const {
-    register,
-    handleSubmit,
-    reset,
-    control,
-    setValue,
-    formState: { errors },
-  } = useForm<PostSchema>({
-    resolver: zodResolver(postSchema),
-    defaultValues: {
+  const [state, setState] = useState<FormState>({
+    details: {
       title: "",
       description: "",
-      price: 0,
-      roommates: 0,
-      beginDate: new Date(),
-      endDate: new Date(),
-      tags: [],
+      pricePerMonth: "",
+      address: "",
     },
+    tags: [],
+    images: [],
   });
-  const onSubmit = (updatedPost: PostSchema) => {
-    const response = editDraft.mutateAsync({
-      data: {
-        ...updatedPost,
-        tags: selectedTags.map((tag) => ({
-          id: tag.id,
-          name: tag.name,
-        })),
-        termStartDate: updatedPost.beginDate.toISOString(),
-        termEndDate: updatedPost.endDate.toISOString(),
-        submit: true,
-      },
-    });
-    response
-      .then(async (res) => {
-        await notify({
-          title: "Post Updated 🎉",
-          message: "Your post has been successfully updated.",
-          buttonText: "Close",
-        });
-        navigate("/profile");
-      })
-      .catch(async (error) => {
-        console.error("Error updating post:", error);
-        await notify({
-          title: "Error",
-          message: "Failed to update post. Please try again.",
-          buttonText: "Close",
-        });
-      });
-  };
-  const onError = (errors: FieldErrors<PostSchema>) => {
-    console.error("Validation Errors:", errors);
-  };
-  const handleTagClick = (tag: postTag) => {
-    setSelectedTags((prevTags) =>
-      prevTags.includes(tag)
-        ? prevTags.filter((t) => t !== tag)
-        : [...prevTags, tag]
-    );
-  };
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || !postDraft?.id) return;
 
-    if ((postDraft.media && postDraft.media?.length >= 5) || false) {
-      await notify({
-        title: "Upload Limit Reached",
-        message: "You can only upload up to 5 images.",
-        buttonText: "Close",
-      });
-      return;
-    }
-    upload(postDraft.id, files[0])
-      .then(() => refetchPostDraft())
-      .catch(async (err) => {
-        console.error("Error uploading file:", err);
-        await notify({
-          title: "Upload Failed",
-          message: "Failed to upload image. Please try again.",
-          buttonText: "Close",
-        });
-      });
-    // reset the input value to allow re-uploading the same file
-    e.target.value = "";
-  };
+  const activeStep = STEPS[activeStepIndex]?.id ?? "details";
 
-  useEffect(() => {
-    if (postDraft && tags?.data) {
-      reset({
-        title: postDraft.title,
-        description: postDraft.description,
-        price: postDraft.price,
-        roommates: postDraft.roommates,
-        beginDate: toZonedTime(postDraft.termStartDate || "", "UTC"),
-        endDate: toZonedTime(postDraft.termEndDate || "", "UTC"),
-        tags: postDraft.tags,
-      });
-
-      // Ensure selected tags align with the full tag list
-      const matchedTags = tags.data.filter((tag) =>
-        postDraft.tags?.some((t) => t.id === tag.id)
+  const canGoNext = useMemo(() => {
+    if (activeStep === "details") {
+      const d = state.details;
+      return (
+        d.title.trim().length >= 3 &&
+        d.description.trim().length >= 10 &&
+        d.pricePerMonth !== "" &&
+        Number(d.pricePerMonth) > 0 &&
+        d.address.trim().length >= 5
       );
-      setSelectedTags(matchedTags);
     }
-  }, [postDraft?.id, tags?.data, reset]);
+    if (activeStep === "tags") return state.tags.length >= 1; // tweak if tags optional
+    if (activeStep === "images") return state.images.length >= 1; // tweak if images optional
+    return false;
+  }, [activeStep, state.details, state.tags.length, state.images.length]);
 
-  useEffect(() => {
-    setValue("tags", selectedTags, { shouldValidate: true });
-  }, [selectedTags, setValue]);
-  if (postDraftLoading) {
-    return <div>Loading...</div>;
+  function goNext() {
+    setActiveStepIndex((i) => Math.min(i + 1, STEPS.length - 1));
   }
-  if (postDraftError) {
-    return <div>Error: {postDraftError}</div>;
+
+  function goBack() {
+    setActiveStepIndex((i) => Math.max(i - 1, 0));
   }
+
+  function goTo(step: StepId) {
+    const idx = STEPS.findIndex((s) => s.id === step);
+    if (idx !== -1) setActiveStepIndex(idx);
+  }
+
+  async function handleSubmit() {
+    // TODO: wire to your API
+    console.log("SUBMIT", state);
+    alert("Submitted! (check console)");
+  }
+
   return (
-    <div>
-      <div>
-        <div className="px-3 pt-3">
-          <div onClick={() => window.history.back()}>
-            <ArrowLeftIcon size={40} />
+    <div className="mx-auto w-full max-w-3xl px-4 py-6">
+      <Stepper
+        steps={STEPS}
+        activeStep={activeStep}
+        activeStepIndex={activeStepIndex}
+        onStepClick={(step) => {
+          // allow clicking back only (common UX)
+          const idx = STEPS.findIndex((s) => s.id === step);
+          if (idx <= activeStepIndex) goTo(step);
+        }}
+      />
+
+      <div className="mt-4 rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+        {activeStep === "details" && (
+          <DetailsStep
+            value={state.details}
+            onChange={(next) => setState((s) => ({ ...s, details: next }))}
+          />
+        )}
+
+        {activeStep === "tags" && (
+          <TagsStep
+            value={state.tags}
+            onChange={(next) => setState((s) => ({ ...s, tags: next }))}
+          />
+        )}
+
+        {activeStep === "images" && (
+          <ImagesStep
+            value={state.images}
+            onChange={(next) => setState((s) => ({ ...s, images: next }))}
+          />
+        )}
+
+        <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <button
+            type="button"
+            onClick={goBack}
+            disabled={activeStepIndex === 0}
+            className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 shadow-sm transition hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Back
+          </button>
+
+          <div className="flex items-center gap-3">
+            {activeStep !== "images" ? (
+              <button
+                type="button"
+                onClick={goNext}
+                disabled={!canGoNext}
+                className="inline-flex items-center justify-center rounded-xl bg-zinc-900 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Next
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={handleSubmit}
+                disabled={!canGoNext}
+                className="inline-flex items-center justify-center rounded-xl bg-zinc-900 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Submit
+              </button>
+            )}
           </div>
-        </div>
-        <div className="flex w-full justify-center text-xl font-semibold">
-          Add Post
-        </div>
-      </div>
-      <form
-        onSubmit={handleSubmit(onSubmit, onError)}
-        className="flex flex-col items-center justify-center w-full h-full gap-y-4 py-5"
-      >
-        <div className="grid w-full max-w-sm items-center gap-1.5">
-          <Label htmlFor="title">Title</Label>
-          <Input
-            {...register("title")}
-            type="text"
-            id="title"
-            placeholder="Title"
-          />
-          {errors.title && (
-            <p className="text-sm text-red-500">{errors.title.message}</p>
-          )}
-        </div>
-        <div className="grid w-full max-w-sm items-center gap-1.5">
-          <Label htmlFor="description">Description</Label>
-          <Textarea
-            {...register("description")}
-            id="description"
-            placeholder="Description"
-          />
-          {errors.description && (
-            <p className="text-sm text-red-500">{errors.description.message}</p>
-          )}
-        </div>
-        <div className="grid w-full max-w-sm items-center gap-1.5">
-          <Label htmlFor="price">Price</Label>
-          <Input
-            {...register("price", { valueAsNumber: true })}
-            type="number"
-            id="price"
-            placeholder="Price"
-          />
-          {errors.price && (
-            <p className="text-sm text-red-500">{errors.price.message}</p>
-          )}
-        </div>
-        <div className="grid w-full max-w-sm items-center gap-1.5">
-          <Label htmlFor="roommates">Roommates</Label>
-          <Input
-            type="number"
-            {...register("roommates", { valueAsNumber: true })}
-            id="roommates"
-            placeholder="Roommates"
-          />
-          {errors.roommates && (
-            <p className="text-sm text-red-500">{errors.roommates.message}</p>
-          )}
-          <Controller
-            name="tags"
-            control={control}
-            render={({ field }) => (
-              <input
-                type="hidden"
-                {...field}
-                value={JSON.stringify(selectedTags)} // this is okay *only* if you omit `field.value`
-                onChange={() => {}} // prevent React warning: input is read-only
-              />
-            )}
-          />
-        </div>
-        <div className="flex flex-col w-full items-center justify-center gap-y-4">
-          <Controller
-            name="beginDate"
-            control={control}
-            render={({ field }) => (
-              <div>
-                <Label>Begin Date</Label>
-                <CalendarComponent
-                  value={field.value ?? new Date()}
-                  onChange={field.onChange}
-                />
-              </div>
-            )}
-          />
-          {errors.beginDate && (
-            <p className="text-sm text-red-500">{errors.beginDate.message}</p>
-          )}
-          <Controller
-            name="endDate"
-            control={control}
-            render={({ field }) => (
-              <div>
-                <Label>End Date</Label>
-                <CalendarComponent
-                  value={field.value ?? new Date()}
-                  onChange={field.onChange}
-                />
-              </div>
-            )}
-          />
-          {errors.endDate && (
-            <p className="text-sm text-red-500">{errors.endDate.message}</p>
-          )}
         </div>
 
-        <div className="p-5">
-          <Label className="text-lg ml-3 font-semibold">Tags</Label>
-          <div className="border border-black rounded-2xl p-3 gap-x-1 gap-y-3 flex flex-wrap">
-            {tags_error && <p className="text-red-500">Error loading tags</p>}
-            {tags_isLoading && <p className="text-gray-500">Loading tags...</p>}
-            {tags && (
-              <TagComponent
-                tags={tags.data}
-                selectedTags={selectedTags}
-                onTagClick={handleTagClick}
-              />
-            )}
+        {!canGoNext && (
+          <div className="mt-3 rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-700">
+            Fill out the required fields to continue.
           </div>
-        </div>
-        <div className="w-full">
-          <div className="flex  w-full items-center justify-around gap-1.5 mb-3 px-5">
-            <div className="grid w-full  items-center justify-center gap-1.5 mb-3">
-              <Label htmlFor="images">Images</Label>
-              <Input
-                type="file"
-                id="images"
-                onChange={(e) => handleFileUpload(e)}
-                disabled={uploading || postDraftLoading || !postDraft?.id}
-              />
-            </div>
-            {uploading && (
-              <div className="flex items-center justify-center mr-auto">
-                <Spinner />
-              </div>
-            )}
-          </div>
-          <div className="p-2 grid grid-cols-2 w-full justify-center items-center  gap-1.5">
-            {postDraft?.media &&
-              Array.from(postDraft.media).map((image) => (
-                <div className="relative">
-                  <img
-                    key={image.id}
-                    src={
-                      import.meta.env.VITE_MINIO_DRAFTMEDIA_ENDPOINT +
-                      "/users/" +
-                      user?.data.id +
-                      "/" +
-                      postDraft.id +
-                      "/" +
-                      image?.mediaId
-                    }
-                    alt="uploaded image"
-                    className=" w-full aspect-square object-cover border border-black rounded-xl shadow-xl "
-                  />
-                  <div
-                    className="absolute top-1 right-1 cursor-pointer bg-neutral-800 text-white rounded-full px-3 py-1"
-                    onClick={() => {
-                      if (!postDraft?.id) return;
-                      deleteMedia({
-                        postDraftId: postDraft?.id,
-                        mediaId: image.id,
-                      })
-                        .then(() => {
-                          refetchPostDraft();
-                        })
-                        .catch(async (err) => {
-                          console.error("Error deleting media:", err);
-                          await notify({
-                            title: "Delete Failed",
-                            message:
-                              "Failed to delete image. Please try again.",
-                            buttonText: "Close",
-                          });
-                        });
-                    }}
-                  >
-                    <X size={32} />
-                  </div>
-                </div>
-              ))}
-          </div>
-        </div>
-        <div className="flex w-full justify-center items-center ">
-          <div className="flex w-2/3 justify-end">
-            <Button className="cursor-pointer" type="submit">
-              Submit
-            </Button>
-          </div>
-        </div>
-      </form>
+        )}
+      </div>
+
+      <DebugPanel state={state} />
     </div>
   );
-};
+}
 
-const TagComponent = ({
-  tags,
-  selectedTags,
-  onTagClick,
+/* ------------------------- Stepper ------------------------- */
+
+function Stepper({
+  steps,
+  activeStep,
+  activeStepIndex,
+  onStepClick,
 }: {
-  tags: postTag[];
-  selectedTags: postTag[];
-  onTagClick: (tag: postTag) => void;
-}) => {
+  steps: { id: StepId; label: string; helper: string }[];
+  activeStep: StepId;
+  activeStepIndex: number;
+  onStepClick: (id: StepId) => void;
+}) {
   return (
-    <div className="flex flex-wrap p-4">
-      <div className="w-1/2 my-2">
-        <div className="text-lg font-semibold">Property Types</div>
-        {(tags ?? [])
-          .filter((tag): tag is { name: string; tagCategoryId: string } =>
-            Boolean(tag?.name && tag.tagCategoryId === "property")
-          )
-          .map((tag) => (
-            <Badge
-              key={tag.name}
-              className="cursor-pointer rounded-full"
-              variant={selectedTags.includes(tag) ? "default" : "outline"}
-              onClick={() => onTagClick(tag)}
+    <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm">
+      <div className="flex flex-wrap gap-2">
+        {steps.map((s, idx) => {
+          const isActive = s.id === activeStep;
+          const isDone = idx < activeStepIndex;
+
+          return (
+            <button
+              key={s.id}
+              type="button"
+              onClick={() => onStepClick(s.id)}
+              className={[
+                "group inline-flex items-center gap-2 rounded-full border px-3 py-2 text-sm font-medium transition",
+                isActive
+                  ? "border-zinc-900 bg-zinc-900 text-white"
+                  : isDone
+                    ? "border-zinc-200 bg-white text-zinc-900 hover:bg-zinc-50"
+                    : "border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50",
+              ].join(" ")}
+              aria-current={isActive ? "step" : undefined}
             >
-              {tag.name}
-            </Badge>
-          ))}
+              <span
+                className={[
+                  "flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold",
+                  isActive
+                    ? "bg-white/15 text-white"
+                    : isDone
+                      ? "bg-zinc-900 text-white"
+                      : "bg-zinc-100 text-zinc-700",
+                ].join(" ")}
+              >
+                {idx + 1}
+              </span>
+              <span className="whitespace-nowrap">{s.label}</span>
+            </button>
+          );
+        })}
       </div>
-      <div className="w-1/2 my-2">
-        <div className="text-lg font-semibold">Lease Types</div>
-        {(tags ?? [])
-          .filter((tag): tag is { name: string; tagCategoryId: string } =>
-            Boolean(tag?.name && tag.tagCategoryId === "lease")
-          )
-          .map((tag) => (
-            <Badge
-              key={tag.name}
-              className="cursor-pointer rounded-full"
-              variant={selectedTags.includes(tag) ? "default" : "outline"}
-              onClick={() => onTagClick(tag)}
-            >
-              {tag.name}
-            </Badge>
-          ))}
-      </div>
-      <div className="w-1/2 my-2">
-        <div className="text-lg font-semibold">Room Types</div>
-        {(tags ?? [])
-          .filter((tag): tag is { name: string; tagCategoryId: string } =>
-            Boolean(tag?.name && tag.tagCategoryId === "room")
-          )
-          .map((tag) => (
-            <Badge
-              key={tag.name}
-              className="cursor-pointer rounded-full"
-              variant={selectedTags.includes(tag) ? "default" : "outline"}
-              onClick={() => onTagClick(tag)}
-            >
-              {tag.name}
-            </Badge>
-          ))}
-      </div>
-      <div className="w-1/2 my-2">
-        <div className="text-lg font-semibold">Preferences</div>
-        {(tags ?? [])
-          .filter((tag): tag is { name: string; tagCategoryId: string } =>
-            Boolean(tag?.name && tag.tagCategoryId === "preferences")
-          )
-          .map((tag) => (
-            <Badge
-              key={tag.name}
-              className="cursor-pointer rounded-full"
-              variant={selectedTags.includes(tag) ? "default" : "outline"}
-              onClick={() => onTagClick(tag)}
-            >
-              {tag.name}
-            </Badge>
-          ))}
-      </div>
-      <div className="w-1/2 my-2">
-        <div className="text-lg font-semibold">Amenities</div>
-        {(tags ?? [])
-          .filter((tag): tag is { name: string; tagCategoryId: string } =>
-            Boolean(tag?.name && tag.tagCategoryId === "amenities")
-          )
-          .map((tag) => (
-            <Badge
-              key={tag.name}
-              className="cursor-pointer rounded-full"
-              variant={selectedTags.includes(tag) ? "default" : "outline"}
-              onClick={() => onTagClick(tag)}
-            >
-              {tag.name}
-            </Badge>
-          ))}
+
+      <div className="mt-3 text-sm text-zinc-600">
+        <span className="font-medium text-zinc-900">
+          {steps[activeStepIndex]?.label}
+        </span>
+        <span className="mx-2 text-zinc-300">•</span>
+        <span>{steps[activeStepIndex]?.helper}</span>
       </div>
     </div>
   );
-};
+}
 
-export default Post;
+/* ------------------------- Step 1: Details ------------------------- */
+
+function DetailsStep({
+  value,
+  onChange,
+}: {
+  value: Details;
+  onChange: (next: Details) => void;
+}) {
+  return (
+    <div className="space-y-4">
+      <div>
+        <h2 className="text-lg font-semibold text-zinc-900">Post details</h2>
+        <p className="mt-1 text-sm text-zinc-600">
+          Add the core info first—this makes everything else easier.
+        </p>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Field label="Title">
+          <input
+            value={value.title}
+            onChange={(e) => onChange({ ...value, title: e.target.value })}
+            placeholder="e.g. Sunny 2BR near campus"
+            className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-none ring-0 placeholder:text-zinc-400 focus:border-zinc-400"
+          />
+        </Field>
+
+        <Field label="Price / month">
+          <input
+            type="number"
+            value={value.pricePerMonth}
+            onChange={(e) =>
+              onChange({
+                ...value,
+                pricePerMonth:
+                  e.target.value === "" ? "" : Number(e.target.value),
+              })
+            }
+            placeholder="1200"
+            min={0}
+            className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-zinc-400"
+          />
+        </Field>
+
+        <div className="sm:col-span-2">
+          <Field label="Address (or neighborhood)">
+            <input
+              value={value.address}
+              onChange={(e) => onChange({ ...value, address: e.target.value })}
+              placeholder="e.g. Clifton / 123 Main St"
+              className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-zinc-400"
+            />
+          </Field>
+        </div>
+
+        <div className="sm:col-span-2">
+          <Field label="Description">
+            <textarea
+              value={value.description}
+              onChange={(e) =>
+                onChange({ ...value, description: e.target.value })
+              }
+              placeholder="Tell people what’s great about it…"
+              rows={6}
+              className="w-full resize-none rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-zinc-400"
+            />
+          </Field>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------- Step 2: Tags ------------------------- */
+
+function TagsStep({
+  value,
+  onChange,
+}: {
+  value: string[];
+  onChange: (next: string[]) => void;
+}) {
+  const [draft, setDraft] = useState("");
+
+  function addTag(tag: string) {
+    const t = tag.trim();
+    if (!t) return;
+    if (value.some((x) => x.toLowerCase() === t.toLowerCase())) return;
+    onChange([...value, t]);
+  }
+
+  function removeTag(tag: string) {
+    onChange(value.filter((t) => t !== tag));
+  }
+
+  const suggestions = [
+    "Furnished",
+    "Pets OK",
+    "Parking",
+    "In-unit laundry",
+    "Near campus",
+  ];
+
+  return (
+    <div className="space-y-4">
+      <div>
+        <h2 className="text-lg font-semibold text-zinc-900">Tags</h2>
+        <p className="mt-1 text-sm text-zinc-600">
+          Tags help people filter and find the right place faster.
+        </p>
+      </div>
+
+      <div className="flex flex-wrap gap-2">
+        {value.length === 0 ? (
+          <span className="text-sm text-zinc-500">No tags yet</span>
+        ) : (
+          value.map((t) => (
+            <span
+              key={t}
+              className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-sm text-zinc-900"
+            >
+              {t}
+              <button
+                type="button"
+                onClick={() => removeTag(t)}
+                className="inline-flex h-6 w-6 items-center justify-center rounded-full text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-900"
+                aria-label={`Remove ${t}`}
+                title="Remove"
+              >
+                ×
+              </button>
+            </span>
+          ))
+        )}
+      </div>
+
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+        <input
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          placeholder="e.g. furnished, pets ok, parking"
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              addTag(draft);
+              setDraft("");
+            }
+          }}
+          className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-zinc-400"
+        />
+        <button
+          type="button"
+          onClick={() => {
+            addTag(draft);
+            setDraft("");
+          }}
+          className="inline-flex items-center justify-center rounded-xl bg-zinc-900 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-zinc-800"
+        >
+          Add
+        </button>
+      </div>
+
+      <div>
+        <div className="text-sm font-medium text-zinc-900">Suggestions</div>
+        <div className="mt-2 flex flex-wrap gap-2">
+          {suggestions.map((t) => (
+            <button
+              key={t}
+              type="button"
+              onClick={() => addTag(t)}
+              className="rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-sm text-zinc-700 transition hover:bg-zinc-50 hover:text-zinc-900"
+            >
+              + {t}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------- Step 3: Images ------------------------- */
+
+function ImagesStep({
+  value,
+  onChange,
+}: {
+  value: File[];
+  onChange: (next: File[]) => void;
+}) {
+  function addFiles(files: FileList | null) {
+    if (!files) return;
+    const next = [...value];
+
+    for (const f of Array.from(files)) {
+      if (!f.type.startsWith("image/")) continue;
+      next.push(f);
+    }
+
+    // cap images (optional)
+    onChange(next.slice(0, 15));
+  }
+
+  function removeAt(idx: number) {
+    onChange(value.filter((_, i) => i !== idx));
+  }
+
+  return (
+    <div className="space-y-4">
+      <div>
+        <h2 className="text-lg font-semibold text-zinc-900">Images</h2>
+        <p className="mt-1 text-sm text-zinc-600">
+          Add at least one. More photos usually = more interest.
+        </p>
+      </div>
+
+      <div className="rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 p-4">
+        <input
+          type="file"
+          accept="image/*"
+          multiple
+          onChange={(e) => addFiles(e.target.files)}
+          className="block w-full text-sm text-zinc-700 file:mr-3 file:rounded-xl file:border-0 file:bg-zinc-900 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-zinc-800"
+        />
+        <div className="mt-2 text-xs text-zinc-500">
+          PNG/JPG/WEBP • up to 15 images
+        </div>
+      </div>
+
+      {value.length === 0 ? (
+        <div className="rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-700">
+          No images yet.
+        </div>
+      ) : (
+        <ul className="space-y-2">
+          {value.map((f, idx) => (
+            <li
+              key={`${f.name}-${idx}`}
+              className="flex items-center justify-between gap-3 rounded-xl border border-zinc-200 bg-white px-3 py-2"
+            >
+              <div className="min-w-0">
+                <div className="truncate text-sm font-medium text-zinc-900">
+                  {f.name}
+                </div>
+                <div className="text-xs text-zinc-500">
+                  {Math.round(f.size / 1024)} KB • {f.type}
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => removeAt(idx)}
+                className="shrink-0 rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50"
+              >
+                Remove
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+/* ------------------------- Small helpers ------------------------- */
+
+function Field({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <label className="space-y-1">
+      <div className="text-sm font-medium text-zinc-900">{label}</div>
+      {children}
+    </label>
+  );
+}
+
+function DebugPanel({ state }: { state: FormState }) {
+  return (
+    <div className="mt-4 rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm">
+      <div className="text-sm font-semibold text-zinc-900">Debug</div>
+      <pre className="mt-2 overflow-auto rounded-xl bg-zinc-50 p-3 text-xs text-zinc-800">
+        {JSON.stringify(
+          {
+            details: state.details,
+            tags: state.tags,
+            images: state.images.map((f) => ({
+              name: f.name,
+              size: f.size,
+              type: f.type,
+            })),
+          },
+          null,
+          2
+        )}
+      </pre>
+    </div>
+  );
+}

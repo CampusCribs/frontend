@@ -1,284 +1,267 @@
-import { Button } from "@/components/ui/button";
-import {
-  GetUsersProfile200,
-  useDeletePosts,
-  useGetUsersMe,
-  useGetUsersProfile,
-} from "@/gen";
-import useAuthenticatedClientConfig from "@/hooks/use-authenticated-client-config";
-import {
-  buildDraftImageURL,
-  buildImageURL,
-  buildThumbnailURL,
-} from "@/lib/image-resolver";
-import { ArrowRight, CirclePlus, CircleUserRound, X } from "lucide-react";
 import { useState } from "react";
+import {
+  ArrowLeft,
+  MoreHorizontal,
+  Settings,
+  CircleUserRound,
+  Heart,
+  MessageCircle,
+  Send,
+  Bookmark,
+  ArrowRight,
+} from "lucide-react";
 import { useNavigate } from "react-router";
-import { LoadingProfilePage } from "./loading/LoadingComponents";
-import Error from "../error/Error";
-import { useNotify } from "@/components/ui/Notify";
 
-const ProfilePage = () => {
+type Post = {
+  id: string;
+  title: string;
+  price: number;
+  roommates: number;
+  description: string;
+  imageUrl: string;
+  isVerified: boolean;
+};
+
+export default function ProfilePageInstagramStyle() {
+  // Placeholder user
+  const user = {
+    name: "Johnny Edwards",
+    username: "johnnyedwards",
+    school: "UC Berkeley",
+    bio: "CS student. Looking for a clean, chill roommate near campus. Gym + coffee + grind.",
+    email: "johnnyedwards@gmail.com",
+    phone: "(513) 555-0123",
+    avatarUrl: "", // set to a URL to see avatar image
+  };
+
   const navigate = useNavigate();
+  // Single active post (Instagram vibe: one post only)
+  const post: Post | null = {
+    id: "post_123",
+    title: "Sunny Private Room on Short Vine",
+    price: 850,
+    roommates: 2,
+    description:
+      "Private room in a 3BR. Walk to campus, in-unit laundry, furnished common area. Looking for someone clean + respectful.",
+    imageUrl:
+      "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1800&q=80",
+    isVerified: true,
+  };
 
-  const config = useAuthenticatedClientConfig();
+  const [openActions, setOpenActions] = useState(false);
 
-  const { data, isLoading, isError, error } = useGetUsersMe({ ...config });
-
-  const {
-    data: profile_draft,
-    isLoading: profile_draftLoading,
-    isError: profile_draftError,
-  } = useGetUsersProfile({ ...config });
-
-  const Thumbnail = buildThumbnailURL(
-    data?.data.id || "",
-    data?.data.thumbnailMediaId || ""
-  );
-
-  function formatPhoneNumber(phoneNumber: string | undefined): string {
-    if (!phoneNumber) return "";
-
-    // strip all non-digits
-    const cleaned = phoneNumber.replace(/\D/g, "");
-
-    // handle 10-digit US numbers
-    if (cleaned.length === 10) {
-      const area = cleaned.slice(0, 3);
-      const middle = cleaned.slice(3, 6);
-      const last = cleaned.slice(6);
-      return `(${area}) ${middle}-${last}`;
-    }
-
-    // handle 11-digit with leading "1"
-    if (cleaned.length === 11 && cleaned.startsWith("1")) {
-      const area = cleaned.slice(1, 4);
-      const middle = cleaned.slice(4, 7);
-      const last = cleaned.slice(7);
-      return `+1 (${area}) ${middle}-${last}`;
-    }
-
-    // fallback: just return original string
-    return phoneNumber;
-  }
-  if (isLoading || profile_draftLoading) {
-    return <LoadingProfilePage />;
-  }
-  if (isError) {
-    return <Error />;
-  }
   return (
-    <div className="flex flex-col w-full">
-      {data && (
-        <>
-          <div className="flex px-3 pt-3 w-full">
-            <div className="flex rounded-full w-24 h-24 overflow-hidden">
-              {data && !data.data.thumbnailMediaId && (
-                <div className="flex justify-center items-center w-full">
-                  <CircleUserRound size={80} />
-                </div>
-              )}
-              {data && data.data.thumbnailMediaId && (
+    <div className="min-h-dvh w-full bg-white">
+      {/* Top bar (IG-like) */}
+      <div className="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-slate-100">
+        <div className="mx-auto w-full max-w-[520px] px-4 py-3 flex items-center">
+          <button
+            type="button"
+            className="p-2 -ml-2 rounded-full hover:bg-slate-100"
+            onClick={() => console.log("back")}
+            aria-label="Back"
+          >
+            <ArrowLeft size={20} />
+          </button>
+
+          <div className="flex-1 text-center">
+            <div className="text-base font-semibold text-slate-900 leading-none">
+              {user.username}
+            </div>
+            <div className="text-[11px] text-slate-500 mt-0.5">
+              {user.school}
+            </div>
+          </div>
+
+          <button
+            type="button"
+            className="p-2 -mr-2 rounded-full hover:bg-slate-100"
+            onClick={() => navigate("/settings")}
+            aria-label="More"
+          >
+            <Settings size={20} />
+          </button>
+        </div>
+      </div>
+
+      <div className="mx-auto w-full max-w-[520px]">
+        {/* Profile header (IG-like) */}
+        <div className="px-4 pt-4 pb-3">
+          <div className="flex items-center gap-4">
+            {/* Avatar */}
+            <div className="h-20 w-20 rounded-full overflow-hidden bg-slate-100 ring-2 ring-slate-100 grid place-items-center shrink-0">
+              {user.avatarUrl ? (
                 <img
-                  src={Thumbnail}
+                  src={user.avatarUrl}
                   alt="Profile"
-                  className="object-cover w-full h-full "
+                  className="h-full w-full object-cover"
                 />
+              ) : (
+                <CircleUserRound size={42} className="text-slate-500" />
               )}
             </div>
-            <div className="flex flex-col w-3/4">
-              <div className="text-lg font-medium px-4">
-                {data?.data.firstName} {data?.data.lastName}
+
+            {/* Simple stats row (keep minimal) */}
+            <div className="flex-1 grid grid-cols-3 gap-2 text-center">
+              <div>
+                <div className="text-base font-semibold text-slate-900">2</div>
+                <div className="text-[12px] text-slate-500">messages</div>
               </div>
-              <div className="px-5 font-light text-md">
-                @{data?.data.username}
+              <div>
+                <div className="text-base font-semibold text-slate-900">
+                  153
+                </div>
+                <div className="text-[12px] text-slate-500">views</div>
               </div>
-              <div className="text-wrap flex text-sm w-full mt-1 px-4">
-                {profile_draft?.data?.userProfile?.institutionName && (
-                  <div className="text-sm font-medium">
-                    {profile_draft.data.userProfile.institutionName}
-                  </div>
+              <div>
+                <div className="text-base font-semibold text-slate-900">—</div>
+                <div className="text-[12px] text-slate-500">saved</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Name + bio */}
+          <div className="mt-3">
+            <div className="text-sm font-semibold text-slate-900">
+              {user.name}
+            </div>
+            <div className="text-sm text-slate-700 leading-snug mt-1">
+              {user.bio}
+            </div>
+
+            {/* Contact (tiny, not loud) */}
+            <div className="mt-2 text-[12px] text-slate-500 space-y-1">
+              <div className="truncate">{user.email}</div>
+              <div className="truncate">{user.phone}</div>
+            </div>
+          </div>
+
+          {/* Primary CTA row (IG style buttons) */}
+          <div className="mt-4 flex gap-2">
+            <button
+              type="button"
+              className="flex-1 rounded-xl bg-slate-100 text-slate-900 px-4 py-2.5 text-sm font-semibold hover:bg-slate-200 transition"
+              onClick={() => console.log("edit profile")}
+            >
+              Edit profile
+            </button>
+            <button
+              type="button"
+              className="flex-1 rounded-xl bg-slate-900 text-white px-4 py-2.5 text-sm font-semibold hover:bg-slate-800 transition"
+              onClick={() => console.log("create/edit post")}
+            >
+              {post ? "Edit post" : "Create post"}
+            </button>
+          </div>
+        </div>
+
+        {/* Divider like IG */}
+        <div className="border-t border-slate-100" />
+
+        {/* Single post feed */}
+        {!post ? (
+          <div className="px-4 py-10 text-center">
+            <div className="text-sm font-semibold text-slate-900">
+              No post yet
+            </div>
+            <div className="text-sm text-slate-600 mt-1">
+              Create one listing to show on the map and in search.
+            </div>
+            <button
+              type="button"
+              className="mt-4 rounded-xl bg-slate-900 text-white px-5 py-2.5 text-sm font-semibold hover:bg-slate-800 transition"
+              onClick={() => console.log("create post")}
+            >
+              Create post
+            </button>
+          </div>
+        ) : (
+          <div className="pb-10">
+            {/* Post header */}
+            <div className="px-4 py-3 flex items-center gap-3">
+              <div className="h-9 w-9 rounded-full overflow-hidden bg-slate-100 grid place-items-center">
+                {user.avatarUrl ? (
+                  <img
+                    src={user.avatarUrl}
+                    alt="Profile"
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <CircleUserRound size={20} className="text-slate-500" />
+                )}
+              </div>
+              <div className="min-w-0">
+                <div className="text-sm font-semibold text-slate-900 leading-none truncate">
+                  {user.username}
+                </div>
+                <div className="text-[12px] text-slate-500 mt-0.5 truncate">
+                  {post.title} • ${post.price}/mo • {post.roommates} roommates
+                </div>
+              </div>
+
+              <div className="ml-auto flex items-center gap-2">
+                {post.isVerified && (
+                  <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-1 rounded-full">
+                    Verified
+                  </span>
                 )}
               </div>
             </div>
-          </div>
-          <div className="text-wrap flex text-sm w-full  px-5">
-            <button
-              className="mt-2 cursor-pointer w-full border p-2 bg-neutral-700 text-white shadow-lg rounded-xl"
-              onClick={() => navigate("/settings/account")}
-            >
-              edit profile
-            </button>
-          </div>
-          <div>
-            {isError && <div>{error?.message}</div>}
-            <div className="p-5 ">
-              {data?.data.bio ??
-                "Please enter a bio to finish setting up your profile!"}
+
+            {/* Image */}
+            <div className="w-full bg-black">
+              <img
+                src={post.imageUrl}
+                alt="post"
+                className="w-full aspect-square object-cover"
+              />
             </div>
-            <div className="px-5 pb-5 underline">
-              <div> {data?.data.email ?? "N/A"}</div>
-              <div>
-                {data?.data.phone
-                  ? formatPhoneNumber(data.data.phone)
-                  : "please set your phone number"}
+
+            {/* Post actions */}
+            <div className="px-4 pt-3">
+              <div className="flex items-center gap-4">
+                <button
+                  type="button"
+                  className="p-2 rounded-full hover:bg-slate-100"
+                  onClick={() => console.log("share")}
+                  aria-label="Share"
+                >
+                  <Send size={22} />
+                </button>
+
+                <button
+                  type="button"
+                  className=" p-2 -mr-2 rounded-full hover:bg-slate-100"
+                  onClick={() => console.log("save")}
+                  aria-label="Save"
+                >
+                  <Bookmark size={22} />
+                </button>
               </div>
+
+              {/* Caption / details */}
+              <div className="mt-2 text-sm text-slate-900">
+                <span className="font-semibold">{user.username}</span>{" "}
+                <span className="text-slate-700">{post.description}</span>
+              </div>
+
+              {/* Tiny meta row */}
+              <div className="mt-2 text-[12px] text-slate-500">
+                ${post.price}/month • {post.roommates} roommates • Near campus
+              </div>
+
+              {/* CTA (single post) */}
+              <button
+                type="button"
+                className="mt-4 w-full rounded-xl bg-slate-900 text-white px-4 py-3 text-sm font-semibold hover:bg-slate-800 transition flex items-center justify-center gap-2"
+                onClick={() => navigate(`/cribs/${post.id}`)}
+              >
+                View listing <ArrowRight size={18} />
+              </button>
             </div>
-          </div>
-        </>
-      )}
-      <div className="w-full">
-        {profile_draft?.data?.postProfile && (
-          <Post
-            profile={profile_draft.data}
-            isPost={profile_draft.data.postProfile.post}
-          />
-        )}
-        {!profile_draft?.data?.postProfile?.title && (
-          <div className="w-full  h-full flex justify-center items-center mt-10">
-            <Button onClick={() => navigate("post")} className="cursor-pointer">
-              <CirclePlus /> Create a new post!
-            </Button>
           </div>
         )}
       </div>
     </div>
   );
-};
-
-const Post = ({
-  profile,
-  isPost,
-}: {
-  profile?: GetUsersProfile200;
-  isPost: boolean;
-}) => {
-  const navigate = useNavigate();
-  const [isDeleting, setIsDeleting] = useState(false);
-  const config = useAuthenticatedClientConfig();
-  const { mutateAsync: deletePost } = useDeletePosts({
-    ...config,
-  });
-
-  const notify = useNotify();
-
-  const imageUrl = isPost
-    ? buildImageURL(
-        profile?.userProfile?.id || "",
-        profile?.postProfile?.postId || "",
-        profile?.postProfile?.mediaId || ""
-      )
-    : buildDraftImageURL(
-        profile?.userProfile?.id || "",
-        profile?.postProfile?.postId || "",
-        profile?.postProfile?.mediaId || ""
-      );
-
-  const handleConfirmDelete = async () => {
-    try {
-      await deletePost().then(async () => {
-        setIsDeleting(false);
-        await notify({
-          title: "Post Deleted",
-          message: "Your post has been deleted successfully.",
-          buttonText: "Close",
-        });
-
-        window.location.reload();
-      });
-    } catch (error) {
-      console.error("Error deleting post:", error);
-      setIsDeleting(false);
-      await notify({
-        title: "Error",
-        message: "Failed to delete post. Please try again later.",
-        buttonText: "Close",
-      });
-    }
-  };
-  return (
-    <div className=" mx-5 mb-10 rounded-xl border-1 border-black ">
-      <div className="relative h-[500px] rounded-xl overflow-hidden bg-neutral-800">
-        <img
-          src={imageUrl}
-          alt="post"
-          className=" w-full h-full object-contain"
-        />
-        <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-white to-transparent" />
-        {isPost && (
-          <div
-            className="absolute top-0 right-0 p-4 text-white"
-            onClick={() => setIsDeleting(true)}
-          >
-            <X size={50} />
-          </div>
-        )}
-      </div>
-      {!isPost && (
-        <div className="flex  p-3 items-center ">
-          <div>Please wait for post to be verified </div>
-          <Button
-            className=" ml-auto cursor-pointer"
-            onClick={() => navigate("post")}
-          >
-            Edit Post
-          </Button>
-        </div>
-      )}
-      {isDeleting && (
-        <>
-          <div className="fixed inset-0 bg-black opacity-50 z-50 flex items-center justify-center" />
-          <div className="fixed inset-0 flex items-center justify-center z-50">
-            <div className="bg-white p-6 rounded-lg shadow-xl w-80 text-center space-y-4">
-              <h2 className="text-lg font-semibold">Delete Post</h2>
-              <p>Are you sure you want to delete this post?</p>
-              <div className="flex justify-between mt-4">
-                <button
-                  onClick={() => setIsDeleting(false)} // cancel
-                  className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleConfirmDelete} // your delete logic
-                  className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          </div>
-        </>
-      )}
-
-      {isPost && (
-        <div className=" gap-y-2 flex justify-between ">
-          <div className=" px-8 gap-y-2 my-3 flex flex-col w-3/4 ">
-            <div className="line-clamp-2">
-              title: {profile && profile.postProfile?.title}
-            </div>
-            <div>roomates: {profile && profile.postProfile?.roommates}</div>
-            <div>price: {profile && profile.postProfile?.price}</div>
-            <div className=" flex flex-row justify-between ">
-              <div className="line-clamp-2">
-                description: {profile && profile.postProfile?.description}
-              </div>
-            </div>
-          </div>
-          <div
-            className="flex w-1/6 bg-black justify-center items-center cursor-pointer"
-            onClick={() => {
-              if (isPost) {
-                navigate(`/cribs/${profile?.postProfile?.postId}`);
-              }
-            }}
-          >
-            <ArrowRight color="white" size={40} />
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
-
-export default ProfilePage;
+}

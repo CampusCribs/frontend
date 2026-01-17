@@ -18,7 +18,7 @@ import EditProfile from "./pages/profile/edit/EditProfile";
 import { AnalyticsProvider } from "./components/analytics/AnalyticsProvider";
 
 import About from "./pages/about/About";
-import { EmailChangeFlow } from "./pages/settings/account/EmailChangeFlow";
+// import { EmailChangeFlow } from "./pages/settings/account/EmailChangeFlow";
 import EmailInitiate from "./pages/settings/account/email/EmailInitiate";
 import EmailVerification from "./pages/settings/account/email/EmailVerification";
 import Favorited from "./pages/favorites/Favorited";
@@ -27,6 +27,8 @@ import Community from "./pages/community/Community";
 import Home from "./pages/home/Home";
 import Map from "./pages/map/Map";
 import IndividualChat from "./pages/chat/IndividualChat";
+import UltraMinimalOnboarding from "./pages/login/NewUserFlow";
+import PostBlog from "./pages/profile/post/PostBlog";
 // import Partners from "./pages/partners/Partners";
 
 function App() {
@@ -39,6 +41,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/about" element={<About />} />
+            <Route path="/onboard" element={<UltraMinimalOnboarding />} />
             <Route element={<Layout />}>
               <Route path="/cribs" element={<CribsPage />} />
               <Route path="/cribs/:cribId" element={<IndividualPage />} />
@@ -71,7 +74,8 @@ function App() {
               <Route path="/profile" element={<ProfilePage />}>
                 <Route path=":username" element={<ProfileUsernamePage />} />
               </Route>
-              <Route path="/profile/post" element={<Post />} />
+              <Route path="/profile/post/crib" element={<Post />} />
+              <Route path="/profile/post" element={<PostBlog />} />
               <Route path="/profile/edit" element={<EditProfile />} />
               {/* </Route> */}
 

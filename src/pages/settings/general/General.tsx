@@ -1,7 +1,19 @@
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { ArrowLeftIcon } from "lucide-react";
-import React from "react";
+import React, { useState } from "react";
 
 const General = () => {
+  const [settings, setSettings] = useState({
+    hidePostFromUnverified: false,
+    hideExactLocation: true,
+    hideLastName: false,
+    hideContactInfo: false,
+    allowContactRequests: true,
+    allowMessagesFromVerifiedOnly: false,
+    showOnlyCampus: true,
+    blurPhotosUntilVerified: false,
+  });
   return (
     <div>
       <div className="px-3 pt-3">
@@ -16,10 +28,49 @@ const General = () => {
       <div className="flex items-center justify-center text-xl font-semibold mt-5">
         General Settings
       </div>
-      <div className="flex justify-center items-center">
-        <div className="flex flex-col mt-3 w-full p-5 rounded-lg">
-          <div className="text-center text-gray-500">
-            No general settings at this time.
+      <div className="flex justify-center">
+        <div className="w-full max-w-md px-5 py-6">
+          <div className="rounded-2xl border border-slate-200 bg-white shadow-sm p-5">
+            <div className="text-sm font-semibold text-slate-900">Privacy</div>
+            <p className="text-xs text-slate-500 mt-1">
+              Control who can see your post and what details are shown.
+            </p>
+
+            <div className="mt-5 space-y-5">
+              {/* Hide post from non-verified */}
+              <div className="flex items-center justify-between gap-4">
+                <div className="min-w-0">
+                  <Label className="cursor-pointer">
+                    Hide post from non-verified users
+                  </Label>
+                  <p className="text-xs text-slate-500 mt-1">
+                    Only verified users can view your listing.
+                  </p>
+                </div>
+                <Switch
+                  checked={settings.hidePostFromUnverified}
+                  onCheckedChange={(v) =>
+                    setSettings((s) => ({ ...s, hidePostFromUnverified: v }))
+                  }
+                />
+              </div>
+
+              {/* Hide exact location */}
+              <div className="flex items-center justify-between gap-4">
+                <div className="min-w-0">
+                  <Label className="cursor-pointer">Hide exact location</Label>
+                  <p className="text-xs text-slate-500 mt-1">
+                    Show an approximate area instead of the exact pin.
+                  </p>
+                </div>
+                <Switch
+                  checked={settings.hideExactLocation}
+                  onCheckedChange={(v) =>
+                    setSettings((s) => ({ ...s, hideExactLocation: v }))
+                  }
+                />
+              </div>
+            </div>
           </div>
         </div>
       </div>

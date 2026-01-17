@@ -189,8 +189,8 @@ const Account = () => {
 
   //return
 
-  if (isLoading) return <LoadingPage />;
-  if (isError) return <Error />;
+  // if (isLoading) return <LoadingPage />;
+  // if (isError) return <Error />;
 
   return (
     <div className="w-full px-2">

@@ -53,29 +53,27 @@ export default function ProfilePageInstagramStyle() {
   return (
     <div className="min-h-dvh w-full bg-white">
       {/* Top bar (IG-like) */}
-      <div className="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-slate-100">
+      <div className="sticky top-0 z-40 bg-white/95 backdrop-blur border-b ">
         <div className="mx-auto w-full max-w-[520px] px-4 py-3 flex items-center">
           <button
             type="button"
-            className="p-2 -ml-2 rounded-full hover:bg-slate-100"
-            onClick={() => console.log("back")}
+            className="p-2 -ml-2 rounded-full "
+            onClick={() => window.history.back()}
             aria-label="Back"
           >
             <ArrowLeft size={20} />
           </button>
 
           <div className="flex-1 text-center">
-            <div className="text-base font-semibold text-slate-900 leading-none">
+            <div className="text-base font-semibold  leading-none">
               {user.username}
             </div>
-            <div className="text-[11px] text-slate-500 mt-0.5">
-              {user.school}
-            </div>
+            <div className="text-[11px]  mt-0.5">{user.school}</div>
           </div>
 
           <button
             type="button"
-            className="p-2 -mr-2 rounded-full hover:bg-slate-100"
+            className="p-2 -mr-2 rounded-full "
             onClick={() => navigate("/settings")}
             aria-label="More"
           >
@@ -89,7 +87,7 @@ export default function ProfilePageInstagramStyle() {
         <div className="px-4 pt-4 pb-3">
           <div className="flex items-center gap-4">
             {/* Avatar */}
-            <div className="h-20 w-20 rounded-full overflow-hidden bg-slate-100 ring-2 ring-slate-100 grid place-items-center shrink-0">
+            <div className="h-20 w-20 rounded-full overflow- ring-2  grid place-items-center shrink-0">
               {user.avatarUrl ? (
                 <img
                   src={user.avatarUrl}
@@ -97,40 +95,34 @@ export default function ProfilePageInstagramStyle() {
                   className="h-full w-full object-cover"
                 />
               ) : (
-                <CircleUserRound size={42} className="text-slate-500" />
+                <CircleUserRound size={42} className="" />
               )}
             </div>
 
             {/* Simple stats row (keep minimal) */}
             <div className="flex-1 grid grid-cols-3 gap-2 text-center">
               <div>
-                <div className="text-base font-semibold text-slate-900">2</div>
-                <div className="text-[12px] text-slate-500">messages</div>
+                <div className="text-base font-semibold ">2</div>
+                <div className="text-[12px] ">messages</div>
               </div>
               <div>
-                <div className="text-base font-semibold text-slate-900">
-                  153
-                </div>
-                <div className="text-[12px] text-slate-500">views</div>
+                <div className="text-base font-semibold ">153</div>
+                <div className="text-[12px] ">views</div>
               </div>
               <div>
-                <div className="text-base font-semibold text-slate-900">—</div>
-                <div className="text-[12px] text-slate-500">saved</div>
+                <div className="text-base font-semibold ">—</div>
+                <div className="text-[12px] ">saved</div>
               </div>
             </div>
           </div>
 
           {/* Name + bio */}
           <div className="mt-3">
-            <div className="text-sm font-semibold text-slate-900">
-              {user.name}
-            </div>
-            <div className="text-sm text-slate-700 leading-snug mt-1">
-              {user.bio}
-            </div>
+            <div className="text-sm font-semibold ">{user.name}</div>
+            <div className="text-sm  leading-snug mt-1">{user.bio}</div>
 
             {/* Contact (tiny, not loud) */}
-            <div className="mt-2 text-[12px] text-slate-500 space-y-1">
+            <div className="mt-2 text-[12px]  space-y-1">
               <div className="truncate">{user.email}</div>
               <div className="truncate">{user.phone}</div>
             </div>
@@ -140,14 +132,14 @@ export default function ProfilePageInstagramStyle() {
           <div className="mt-4 flex gap-2">
             <button
               type="button"
-              className="flex-1 rounded-xl bg-slate-100 text-slate-900 px-4 py-2.5 text-sm font-semibold hover:bg-slate-200 transition"
+              className="flex-1 rounded-xl px-4 py-2.5 text-sm border-2 font-semibold  transition"
               onClick={() => console.log("edit profile")}
             >
               Edit profile
             </button>
             <button
               type="button"
-              className="flex-1 rounded-xl bg-slate-900 text-white px-4 py-2.5 text-sm font-semibold hover:bg-slate-800 transition"
+              className="flex-1 rounded-xl  text-white px-4 bg-black py-2.5 text-sm font-semibold  transition"
               onClick={() => console.log("create/edit post")}
             >
               {post ? "Edit post" : "Create post"}
@@ -156,20 +148,18 @@ export default function ProfilePageInstagramStyle() {
         </div>
 
         {/* Divider like IG */}
-        <div className="border-t border-slate-100" />
+        <div className="border-t " />
 
         {/* Single post feed */}
         {!post ? (
           <div className="px-4 py-10 text-center">
-            <div className="text-sm font-semibold text-slate-900">
-              No post yet
-            </div>
-            <div className="text-sm text-slate-600 mt-1">
+            <div className="text-sm font-semibold ">No post yet</div>
+            <div className="text-sm  mt-1">
               Create one listing to show on the map and in search.
             </div>
             <button
               type="button"
-              className="mt-4 rounded-xl bg-slate-900 text-white px-5 py-2.5 text-sm font-semibold hover:bg-slate-800 transition"
+              className="mt-4 rounded-xl  text-white px-5 py-2.5 text-sm font-semibold  transition"
               onClick={() => console.log("create post")}
             >
               Create post
@@ -179,7 +169,7 @@ export default function ProfilePageInstagramStyle() {
           <div className="pb-10">
             {/* Post header */}
             <div className="px-4 py-3 flex items-center gap-3">
-              <div className="h-9 w-9 rounded-full overflow-hidden bg-slate-100 grid place-items-center">
+              <div className="h-9 w-9 rounded-full overflow-hidden  grid place-items-center">
                 {user.avatarUrl ? (
                   <img
                     src={user.avatarUrl}
@@ -187,14 +177,14 @@ export default function ProfilePageInstagramStyle() {
                     className="h-full w-full object-cover"
                   />
                 ) : (
-                  <CircleUserRound size={20} className="text-slate-500" />
+                  <CircleUserRound size={20} className="" />
                 )}
               </div>
               <div className="min-w-0">
-                <div className="text-sm font-semibold text-slate-900 leading-none truncate">
+                <div className="text-sm font-semibold  leading-none truncate">
                   {user.username}
                 </div>
-                <div className="text-[12px] text-slate-500 mt-0.5 truncate">
+                <div className="text-[12px]  mt-0.5 truncate">
                   {post.title} • ${post.price}/mo • {post.roommates} roommates
                 </div>
               </div>
@@ -222,7 +212,7 @@ export default function ProfilePageInstagramStyle() {
               <div className="flex items-center gap-4">
                 <button
                   type="button"
-                  className="p-2 rounded-full hover:bg-slate-100"
+                  className="p-2 rounded-full "
                   onClick={() => console.log("share")}
                   aria-label="Share"
                 >
@@ -231,7 +221,7 @@ export default function ProfilePageInstagramStyle() {
 
                 <button
                   type="button"
-                  className=" p-2 -mr-2 rounded-full hover:bg-slate-100"
+                  className=" p-2 -mr-2 rounded-full "
                   onClick={() => console.log("save")}
                   aria-label="Save"
                 >
@@ -240,20 +230,20 @@ export default function ProfilePageInstagramStyle() {
               </div>
 
               {/* Caption / details */}
-              <div className="mt-2 text-sm text-slate-900">
+              <div className="mt-2 text-sm ">
                 <span className="font-semibold">{user.username}</span>{" "}
-                <span className="text-slate-700">{post.description}</span>
+                <span className="">{post.description}</span>
               </div>
 
               {/* Tiny meta row */}
-              <div className="mt-2 text-[12px] text-slate-500">
+              <div className="mt-2 text-[12px] ">
                 ${post.price}/month • {post.roommates} roommates • Near campus
               </div>
 
               {/* CTA (single post) */}
               <button
                 type="button"
-                className="mt-4 w-full rounded-xl bg-slate-900 text-white px-4 py-3 text-sm font-semibold hover:bg-slate-800 transition flex items-center justify-center gap-2"
+                className="mt-4 w-full rounded-xl  text-white px-4 py-3 text-sm font-semibold transition flex items-center justify-center gap-2"
                 onClick={() => navigate(`/cribs/${post.id}`)}
               >
                 View listing <ArrowRight size={18} />

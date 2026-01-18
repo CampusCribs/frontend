@@ -17,7 +17,7 @@ export type FilterCategory = {
   items: FilterItem[];
 };
 
-export const FILTER_CATEGORIES: FilterCategory[] = [
+const FILTER_CATEGORIES: FilterCategory[] = [
   {
     id: "costs",
     label: "Costs & bills",
@@ -174,40 +174,6 @@ const Pill = ({
   </button>
 );
 
-const ToggleRow = ({
-  label,
-  value,
-  onChange,
-}: {
-  label: string;
-  value: boolean;
-  onChange: (next: boolean) => void;
-}) => (
-  <button
-    type="button"
-    onClick={(e) => {
-      e.stopPropagation();
-      onChange(!value);
-    }}
-    className="flex items-center justify-between rounded-2xl border border-slate-200 px-4 py-3 hover:bg-slate-50"
-  >
-    <span className="text-sm font-medium text-slate-900">{label}</span>
-    <span
-      className={[
-        "h-6 w-11 rounded-full transition relative",
-        value ? "bg-slate-900" : "bg-slate-200",
-      ].join(" ")}
-    >
-      <span
-        className={[
-          "absolute top-0.5 h-5 w-5 rounded-full bg-white transition",
-          value ? "left-5" : "left-0.5",
-        ].join(" ")}
-      />
-    </span>
-  </button>
-);
-
 const GuidedSearch = ({
   setOpenSearch,
 }: {
@@ -266,7 +232,7 @@ const GuidedSearch = ({
 
   const handleChange = (
     active: "where" | "when" | "filter",
-    focus: boolean
+    focus: boolean,
   ) => {
     setActive(active);
     setWhereFocus(focus);
@@ -331,7 +297,7 @@ const GuidedSearch = ({
                   campus={campus}
                   onPick={() => handleChange("when", false)}
                 />
-              )
+              ),
             )}
           </div>
         </div>
@@ -389,7 +355,7 @@ const GuidedSearch = ({
       </div>
 
       {/* Filter Section */}
-      <div className="flex bg-white mx-3 mt-3 rounded-2xl p-4 shadow-lg flex-col mb-20">
+      <div className="flex bg-white mx-3 mt-3 rounded-2xl p-4 shadow-lg flex-col  mb-3">
         {/* header only is clickable */}
         <div
           className="cursor-pointer select-none"
@@ -439,7 +405,7 @@ const GuidedSearch = ({
                           ...f,
                           minPrice: Math.min(
                             Number(e.target.value),
-                            f.maxPrice
+                            f.maxPrice,
                           ),
                         }))
                       }
@@ -461,7 +427,7 @@ const GuidedSearch = ({
                           ...f,
                           maxPrice: Math.max(
                             Number(e.target.value),
-                            f.minPrice
+                            f.minPrice,
                           ),
                         }))
                       }
@@ -524,37 +490,36 @@ const GuidedSearch = ({
                   </div>
                 ))}
               </div>
-
-              {/* Actions */}
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    resetFilters();
-                  }}
-                  className="flex-1 rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold hover:bg-slate-50"
-                >
-                  Reset
-                </button>
-
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    // Hook this into your search query / API call
-                    // e.g. onApply(filters)
-                    console.log("apply filters:", filters);
-                    setOpenSearch(false);
-                  }}
-                  className="flex-1 rounded-2xl bg-slate-900 text-white px-4 py-3 text-sm font-semibold hover:bg-slate-800"
-                >
-                  Apply
-                </button>
-              </div>
             </div>
           </div>
         </div>
+      </div>
+      {/* Actions */}
+      <div className="flex gap-2 bg-white px-5 py-2 mx-3 rounded-2xl mb-20">
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            resetFilters();
+          }}
+          className="flex-1 rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold hover:bg-slate-50"
+        >
+          Reset
+        </button>
+
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            // Hook this into your search query / API call
+            // e.g. onApply(filters)
+            console.log("apply filters:", filters);
+            setOpenSearch(false);
+          }}
+          className="flex-1 rounded-2xl bg-slate-900 text-white px-4 py-3 text-sm font-semibold hover:bg-slate-800"
+        >
+          Apply
+        </button>
       </div>
     </div>
   );

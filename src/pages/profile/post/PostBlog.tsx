@@ -2,13 +2,6 @@ import React, { useMemo, useState } from "react";
 import { Home, User2, Image as ImageIcon, Tags, FileText } from "lucide-react";
 import { useNavigate } from "react-router";
 
-/**
- * Orchestrator:
- * Step 0: "What are you here to do?" -> List your crib / Community post
- *  - If "List your crib": navigate to /post/crib
- *  - If "Community post": flow -> Details -> Images -> Tags -> Submit
- */
-
 type Mode = "LIST_CRIB" | "COMMUNITY_POST" | null;
 type CommunityStep = "CHOOSE" | "DETAILS" | "IMAGES" | "TAGS" | "REVIEW";
 
@@ -23,7 +16,15 @@ type CommunityState = {
   tags: string[];
 };
 
-export default function PostOrchestrator() {
+const ORDER: CommunityStep[] = [
+  "CHOOSE",
+  "DETAILS",
+  "IMAGES",
+  "TAGS",
+  "REVIEW",
+];
+
+export default function UltraMinimalPostOrchestrator() {
   const navigate = useNavigate();
 
   const [mode, setMode] = useState<Mode>(null);
@@ -35,27 +36,23 @@ export default function PostOrchestrator() {
     tags: [],
   });
 
-  const stepIndex = useMemo(() => {
-    const order: CommunityStep[] = [
-      "CHOOSE",
-      "DETAILS",
-      "IMAGES",
-      "TAGS",
-      "REVIEW",
-    ];
-    return order.indexOf(step);
-  }, [step]);
+  const stepIndex = ORDER.indexOf(step);
+  const isCommunityFlow = mode === "COMMUNITY_POST" && step !== "CHOOSE";
 
   const canContinue = useMemo(() => {
     if (step === "CHOOSE") return mode !== null;
-    if (step === "DETAILS")
+
+    if (step === "DETAILS") {
       return (
         community.details.title.trim().length >= 3 &&
         community.details.body.trim().length >= 10
       );
-    if (step === "IMAGES") return community.images.length >= 1; // adjust if optional
-    if (step === "TAGS") return community.tags.length >= 1; // adjust if optional
+    }
+
+    if (step === "IMAGES") return community.images.length >= 1;
+    if (step === "TAGS") return community.tags.length >= 1;
     if (step === "REVIEW") return true;
+
     return false;
   }, [
     step,
@@ -65,7 +62,7 @@ export default function PostOrchestrator() {
     community.tags.length,
   ]);
 
-  function chooseMode(next: Mode) {
+  function chooseMode(next: Exclude<Mode, null>) {
     setMode(next);
 
     if (next === "LIST_CRIB") {
@@ -73,63 +70,63 @@ export default function PostOrchestrator() {
       return;
     }
 
-    // community post flow
     setStep("DETAILS");
   }
 
-  function goBack() {
+  function back() {
+    if (step === "CHOOSE") return;
+
     if (step === "DETAILS") {
       setStep("CHOOSE");
       setMode(null);
       return;
     }
+
     if (step === "IMAGES") return setStep("DETAILS");
     if (step === "TAGS") return setStep("IMAGES");
     if (step === "REVIEW") return setStep("TAGS");
   }
 
-  function goNext() {
+  function next() {
+    if (!canContinue) return;
+
     if (step === "CHOOSE") {
-      if (mode === "LIST_CRIB") return; // would have navigated
-      if (mode === "COMMUNITY_POST") return setStep("DETAILS");
+      if (mode === "COMMUNITY_POST") setStep("DETAILS");
+      return;
     }
+
     if (step === "DETAILS") return setStep("IMAGES");
     if (step === "IMAGES") return setStep("TAGS");
     if (step === "TAGS") return setStep("REVIEW");
   }
 
   async function submitCommunityPost() {
-    // TODO: wire your API call
-    // e.g. await createPost({ ...details, tags }); then upload images
     console.log("SUBMIT COMMUNITY POST", community);
     alert("Submitted (check console)");
+    navigate("/cribs");
   }
 
   return (
-    <div className="w-full max-w-3xl mx-auto px-4 py-6">
-      {/* Header */}
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <div className="text-lg font-semibold text-black/85">
-            Create a post
-          </div>
-          <div className="text-sm text-black/60">
-            {step === "CHOOSE"
-              ? "Choose what you want to do"
-              : "Community post setup"}
-          </div>
+    <div className="min-h-[100dvh] w-full max-w-md mx-auto px-4 pt-8 pb-6 flex flex-col">
+      <div className="flex-1">
+        {/* Title */}
+        <div className="mb-6">
+          {/* Dots: only show full 5 dots once you're in community flow,
+              otherwise show nothing or just 1 dot. */}
+          {mode === "COMMUNITY_POST" ? (
+            <div className="mt-4 flex gap-2">
+              {ORDER.map((s) => (
+                <Dot
+                  key={s}
+                  active={s === step}
+                  done={ORDER.indexOf(s) < stepIndex}
+                />
+              ))}
+            </div>
+          ) : null}
         </div>
 
-        {step !== "CHOOSE" ? (
-          <div className="hidden sm:flex items-center gap-2 text-sm text-black/60">
-            <div className="rounded-full border border-black/10 px-3 py-1">
-              Step {Math.max(stepIndex, 1)}/4
-            </div>
-          </div>
-        ) : null}
-      </div>
-
-      <div className="mt-4 rounded-2xl border border-black/10 bg-white p-5">
+        {/* Content */}
         {step === "CHOOSE" ? (
           <ChooseStep mode={mode} onChoose={chooseMode} />
         ) : null}
@@ -157,62 +154,76 @@ export default function PostOrchestrator() {
 
         {step === "REVIEW" ? <ReviewStep community={community} /> : null}
 
-        {/* Footer controls */}
-        <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <button
-            type="button"
-            onClick={goBack}
-            disabled={step === "CHOOSE"}
-            className={[
-              "inline-flex items-center justify-center rounded-2xl px-4 py-2 text-sm font-semibold",
-              "border transition",
-              step === "CHOOSE"
-                ? "border-black/10 text-black/30 cursor-not-allowed"
-                : "border-black/10 text-black/80 hover:bg-black/[0.03]",
-            ].join(" ")}
-          >
-            Back
-          </button>
-
-          <div className="flex items-center gap-3">
-            {step !== "REVIEW" ? (
-              <button
-                type="button"
-                onClick={goNext}
-                disabled={!canContinue}
-                className={[
-                  "inline-flex items-center justify-center rounded-2xl px-4 py-2 text-sm font-semibold",
-                  "transition",
-                  canContinue
-                    ? "bg-neutral-900 text-white hover:bg-neutral-800"
-                    : "bg-neutral-900/40 text-white cursor-not-allowed",
-                ].join(" ")}
-              >
-                Continue
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={submitCommunityPost}
-                className="inline-flex items-center justify-center rounded-2xl bg-neutral-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-neutral-800"
-              >
-                Submit
-              </button>
-            )}
-          </div>
-        </div>
-
-        {!canContinue && step !== "CHOOSE" ? (
-          <div className="mt-3 rounded-2xl border border-black/10 bg-black/[0.02] px-4 py-3 text-sm text-black/60">
+        {step !== "CHOOSE" && !canContinue ? (
+          <div className="mt-5 text-sm text-black/45">
             Fill out the required info to continue.
           </div>
         ) : null}
+      </div>
+
+      {/* Footer buttons (same vibe as onboarding) */}
+      <div className="pt-6 flex items-center gap-3">
+        <button
+          type="button"
+          onClick={back}
+          disabled={step === "CHOOSE"}
+          className="w-24 rounded-2xl px-4 py-3 text-sm font-semibold text-black/60 disabled:opacity-30"
+        >
+          Back
+        </button>
+
+        {step === "REVIEW" ? (
+          <button
+            type="button"
+            onClick={submitCommunityPost}
+            className="flex-1 rounded-2xl px-4 py-3 text-sm font-semibold text-white bg-neutral-900"
+          >
+            Submit
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={next}
+            disabled={!canContinue}
+            className="flex-1 rounded-2xl px-4 py-3 text-sm font-semibold text-white bg-neutral-900 disabled:opacity-40"
+          >
+            Continue
+          </button>
+        )}
       </div>
     </div>
   );
 }
 
-/* ----------------------------- Choose Step ----------------------------- */
+/* ---------------- tiny primitives ---------------- */
+
+function Dot({ active, done }: { active: boolean; done: boolean }) {
+  return (
+    <div
+      className={[
+        "h-2 w-2 rounded-full",
+        active ? "bg-neutral-900" : done ? "bg-black/35" : "bg-black/15",
+      ].join(" ")}
+    />
+  );
+}
+
+function Field({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <label className="flex flex-col gap-2">
+      <div className="text-sm font-semibold text-black/70">{label}</div>
+      {children}
+    </label>
+  );
+}
+
+/* ---------------- CHOOSE ---------------- */
 
 function ChooseStep({
   mode,
@@ -224,7 +235,7 @@ function ChooseStep({
   return (
     <div className="flex flex-col gap-4">
       <div className="text-lg font-semibold text-black/85">
-        What are you here to do?
+        Choose your post type.
       </div>
 
       <div className="flex flex-col gap-3 items-center">
@@ -274,7 +285,7 @@ function Box({
   );
 }
 
-/* ----------------------------- Details Step ----------------------------- */
+/* ---------------- DETAILS ---------------- */
 
 function DetailsStep({
   value,
@@ -291,37 +302,35 @@ function DetailsStep({
         </div>
         <div>
           <div className="text-lg font-semibold text-black/85">Details</div>
-          <div className="text-sm text-black/60">Title + a bit of context.</div>
+          <div className="text-sm text-black/50">Title + a bit of context.</div>
         </div>
       </div>
 
-      <div className="grid gap-3">
-        <label className="grid gap-1">
-          <div className="text-sm font-semibold text-black/75">Title</div>
+      <div className="flex flex-col gap-4">
+        <Field label="Title">
           <input
             value={value.title}
             onChange={(e) => onChange({ ...value, title: e.target.value })}
-            placeholder="e.g. Looking for a roommate near campus"
-            className="w-full rounded-2xl border border-black/10 bg-white px-3 py-2 text-sm outline-none focus:border-black/20"
+            placeholder="Looking for a roommate near campus"
+            className="w-full rounded-2xl border border-black/10 bg-white px-4 py-4 text-sm text-black/80 outline-none focus:border-black/25"
           />
-        </label>
+        </Field>
 
-        <label className="grid gap-1">
-          <div className="text-sm font-semibold text-black/75">Post</div>
+        <Field label="Post">
           <textarea
             value={value.body}
             onChange={(e) => onChange({ ...value, body: e.target.value })}
             placeholder="Write your post..."
             rows={7}
-            className="w-full resize-none rounded-2xl border border-black/10 bg-white px-3 py-2 text-sm outline-none focus:border-black/20"
+            className="w-full resize-none rounded-2xl border border-black/10 bg-white px-4 py-4 text-sm text-black/80 outline-none focus:border-black/25"
           />
-        </label>
+        </Field>
       </div>
     </div>
   );
 }
 
-/* ----------------------------- Images Step ----------------------------- */
+/* ---------------- IMAGES ---------------- */
 
 function ImagesStep({
   value,
@@ -352,39 +361,39 @@ function ImagesStep({
         </div>
         <div>
           <div className="text-lg font-semibold text-black/85">Images</div>
-          <div className="text-sm text-black/60">Add at least one image.</div>
+          <div className="text-sm text-black/50">Add at least one.</div>
         </div>
       </div>
 
-      <div className="rounded-2xl border border-dashed border-black/20 bg-black/[0.02] p-4">
+      <label className="rounded-2xl border border-black/10 bg-white px-4 py-4">
+        <div className="text-sm font-semibold text-black/70">Upload</div>
+        <div className="text-xs text-black/40 mt-1">
+          PNG/JPG/WEBP • up to 12
+        </div>
+
         <input
           type="file"
           accept="image/*"
           multiple
           onChange={(e) => addFiles(e.target.files)}
-          className="block w-full text-sm text-black/70 file:mr-3 file:rounded-2xl file:border-0 file:bg-neutral-900 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-neutral-800"
+          className="mt-3 block w-full text-sm text-black/70 file:mr-3 file:rounded-2xl file:border-0 file:bg-neutral-900 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white"
         />
-        <div className="mt-2 text-xs text-black/50">
-          PNG/JPG/WEBP • up to 12
-        </div>
-      </div>
+      </label>
 
       {value.length === 0 ? (
-        <div className="rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm text-black/60">
-          No images yet.
-        </div>
+        <div className="text-sm text-black/45">No images yet.</div>
       ) : (
         <div className="flex flex-col gap-2">
           {value.map((f, idx) => (
             <div
               key={`${f.name}-${idx}`}
-              className="flex items-center justify-between gap-3 rounded-2xl border border-black/10 bg-white px-3 py-2"
+              className="flex items-center justify-between gap-3 rounded-2xl border border-black/10 bg-white px-4 py-3"
             >
               <div className="min-w-0">
-                <div className="truncate text-sm font-semibold text-black/80">
+                <div className="truncate text-sm font-semibold text-black/75">
                   {f.name}
                 </div>
-                <div className="text-xs text-black/50">
+                <div className="text-xs text-black/40">
                   {Math.round(f.size / 1024)} KB
                 </div>
               </div>
@@ -392,7 +401,7 @@ function ImagesStep({
               <button
                 type="button"
                 onClick={() => removeAt(idx)}
-                className="shrink-0 rounded-2xl border border-black/10 px-3 py-2 text-sm font-semibold text-black/70 transition hover:bg-black/[0.03]"
+                className="rounded-2xl border border-black/10 bg-white px-3 py-2 text-sm font-semibold text-black/60 hover:border-black/20"
               >
                 Remove
               </button>
@@ -404,7 +413,7 @@ function ImagesStep({
   );
 }
 
-/* ----------------------------- Tags Step ----------------------------- */
+/* ---------------- TAGS ---------------- */
 
 function TagsStep({
   value,
@@ -442,38 +451,33 @@ function TagsStep({
         </div>
         <div>
           <div className="text-lg font-semibold text-black/85">Tags</div>
-          <div className="text-sm text-black/60">Add at least one tag.</div>
+          <div className="text-sm text-black/50">Add at least one.</div>
         </div>
       </div>
 
       <div className="flex flex-wrap gap-2">
         {value.length === 0 ? (
-          <div className="text-sm text-black/60">No tags yet</div>
+          <div className="text-sm text-black/45">No tags yet.</div>
         ) : (
           value.map((t) => (
-            <div
+            <button
               key={t}
-              className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white px-3 py-1.5 text-sm font-semibold text-black/75"
+              type="button"
+              onClick={() => removeTag(t)}
+              className="rounded-full border border-black/10 bg-white px-3 py-2 text-sm font-semibold text-black/70 hover:border-black/20"
+              title="Click to remove"
             >
-              {t}
-              <button
-                type="button"
-                onClick={() => removeTag(t)}
-                className="inline-flex h-6 w-6 items-center justify-center rounded-full text-black/60 transition hover:bg-black/[0.04]"
-                aria-label={`Remove ${t}`}
-              >
-                ×
-              </button>
-            </div>
+              {t} <span className="text-black/35">×</span>
+            </button>
           ))
         )}
       </div>
 
-      <div className="flex flex-col gap-2 sm:flex-row">
+      <div className="flex gap-3">
         <input
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
-          placeholder="e.g. roommates, sublease, housing"
+          placeholder="Type a tag and press Enter"
           onKeyDown={(e) => {
             if (e.key === "Enter") {
               e.preventDefault();
@@ -481,7 +485,7 @@ function TagsStep({
               setDraft("");
             }
           }}
-          className="w-full rounded-2xl border border-black/10 bg-white px-3 py-2 text-sm outline-none focus:border-black/20"
+          className="flex-1 rounded-2xl border border-black/10 bg-white px-4 py-4 text-sm text-black/80 outline-none focus:border-black/25"
         />
         <button
           type="button"
@@ -489,7 +493,7 @@ function TagsStep({
             addTag(draft);
             setDraft("");
           }}
-          className="rounded-2xl bg-neutral-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-neutral-800"
+          className="rounded-2xl px-4 py-3 text-sm font-semibold text-white bg-neutral-900"
         >
           Add
         </button>
@@ -501,7 +505,7 @@ function TagsStep({
             key={t}
             type="button"
             onClick={() => addTag(t)}
-            className="rounded-full border border-black/10 bg-white px-3 py-1.5 text-sm font-semibold text-black/70 transition hover:bg-black/[0.03]"
+            className="rounded-full border border-black/10 bg-white px-3 py-2 text-sm font-semibold text-black/60 hover:border-black/20"
           >
             + {t}
           </button>
@@ -511,38 +515,48 @@ function TagsStep({
   );
 }
 
-/* ----------------------------- Review Step ----------------------------- */
+/* ---------------- REVIEW ---------------- */
 
 function ReviewStep({ community }: { community: CommunityState }) {
   return (
     <div className="flex flex-col gap-4">
-      <div className="text-lg font-semibold text-black/85">Review</div>
+      <div className="flex items-start gap-3">
+        <div className="mt-0.5 text-black/70">
+          <FileText size={22} />
+        </div>
+        <div>
+          <div className="text-lg font-semibold text-black/85">Review</div>
+          <div className="text-sm text-black/50">
+            Quick check before posting.
+          </div>
+        </div>
+      </div>
 
       <div className="rounded-2xl border border-black/10 bg-white p-4">
-        <div className="text-sm font-semibold text-black/70">Title</div>
+        <div className="text-sm font-semibold text-black/60">Title</div>
         <div className="mt-1 text-base font-semibold text-black/85">
           {community.details.title || "—"}
         </div>
 
-        <div className="mt-4 text-sm font-semibold text-black/70">Body</div>
+        <div className="mt-4 text-sm font-semibold text-black/60">Body</div>
         <div className="mt-1 whitespace-pre-wrap text-sm text-black/75">
           {community.details.body || "—"}
         </div>
 
-        <div className="mt-4 text-sm font-semibold text-black/70">Images</div>
+        <div className="mt-4 text-sm font-semibold text-black/60">Images</div>
         <div className="mt-1 text-sm text-black/75">
           {community.images.length} file(s)
         </div>
 
-        <div className="mt-4 text-sm font-semibold text-black/70">Tags</div>
+        <div className="mt-4 text-sm font-semibold text-black/60">Tags</div>
         <div className="mt-2 flex flex-wrap gap-2">
           {community.tags.length === 0 ? (
-            <div className="text-sm text-black/60">—</div>
+            <div className="text-sm text-black/45">—</div>
           ) : (
             community.tags.map((t) => (
               <div
                 key={t}
-                className="rounded-full border border-black/10 bg-white px-3 py-1.5 text-sm font-semibold text-black/75"
+                className="rounded-full border border-black/10 bg-white px-3 py-2 text-sm font-semibold text-black/70"
               >
                 {t}
               </div>

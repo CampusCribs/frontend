@@ -41,7 +41,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/about" element={<About />} />
-            <Route path="/onboard" element={<UltraMinimalOnboarding />} />
+            <Route path="/onboarding" element={<UltraMinimalOnboarding />} />
             <Route element={<Layout />}>
               <Route path="/cribs" element={<CribsPage />} />
               <Route path="/cribs/:cribId" element={<IndividualPage />} />

@@ -36,7 +36,7 @@ const CribsPage = () => {
         if (typeof v === "string" && v.trim() === "") return false;
         if (Array.isArray(v) && v.length === 0) return false;
         return true; // keep 0 and false
-      })
+      }),
     ) as Partial<T>;
   }
 
@@ -79,7 +79,7 @@ const CribsPage = () => {
         </div>
         <div className="flex flex-col">
           <div className="w-full ">
-            {curated_isLoading && (
+            {/* {curated_isLoading && (
               <div className="flex w-full h-[400px] justify-center items-center ">
                 <div className="flex flex-col items-center justify-center">
                   <Lottie
@@ -91,8 +91,8 @@ const CribsPage = () => {
                   <div>loading...</div>
                 </div>
               </div>
-            )}
-            {curated_error?.response?.status && curated_error && (
+            )} */}
+            {/* {curated_error?.response?.status && curated_error && (
               <div className="flex w-full h-[400px] justify-center items-center ">
                 <div className="flex flex-col">
                   <div className="flex justify-center mb-4">
@@ -101,8 +101,8 @@ const CribsPage = () => {
                   <div>An Error Occured</div>
                 </div>
               </div>
-            )}
-            {curated?.pages[0].status === 202 && (
+            )} */}
+            {/* {curated?.pages[0].status === 202 && (
               <div className="flex w-full h-[400px] justify-center items-center ">
                 <div className="flex flex-col">
                   <div className="flex justify-center mb-4">
@@ -111,7 +111,7 @@ const CribsPage = () => {
                   <div>No residences found</div>
                 </div>
               </div>
-            )}
+            )} */}
             <div className="grid grid-cols-2 gap-1 w-full p-2">
               {/* {curated &&
                 curated.pages.map((item) =>

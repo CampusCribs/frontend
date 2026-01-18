@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from "react";
+import { useNavigate } from "react-router";
 
 type Details = {
   title: string;
@@ -13,36 +14,24 @@ type FormState = {
   images: File[];
 };
 
-type StepId = "details" | "tags" | "images";
+type Step = 0 | 1 | 2;
 
-const STEPS: { id: StepId; label: string; helper: string }[] = [
-  {
-    id: "details",
-    label: "Details",
-    helper: "Title, description, price, location",
-  },
-  { id: "tags", label: "Tags", helper: "Add a few keywords to help search" },
-  { id: "images", label: "Images", helper: "Upload photos for the listing" },
-];
+export default function UltraMinimalCreatePost({
+  onSubmit,
+}: {
+  onSubmit?: (state: FormState) => Promise<void> | void;
+}) {
+  const navigate = useNavigate();
 
-export default function CreatePostOrchestrator() {
-  const [activeStepIndex, setActiveStepIndex] = useState(0);
-
+  const [step, setStep] = useState<Step>(0);
   const [state, setState] = useState<FormState>({
-    details: {
-      title: "",
-      description: "",
-      pricePerMonth: "",
-      address: "",
-    },
+    details: { title: "", description: "", pricePerMonth: "", address: "" },
     tags: [],
     images: [],
   });
 
-  const activeStep = STEPS[activeStepIndex]?.id ?? "details";
-
-  const canGoNext = useMemo(() => {
-    if (activeStep === "details") {
+  const canContinue = useMemo(() => {
+    if (step === 0) {
       const d = state.details;
       return (
         d.title.trim().length >= 3 &&
@@ -52,175 +41,136 @@ export default function CreatePostOrchestrator() {
         d.address.trim().length >= 5
       );
     }
-    if (activeStep === "tags") return state.tags.length >= 1; // tweak if tags optional
-    if (activeStep === "images") return state.images.length >= 1; // tweak if images optional
-    return false;
-  }, [activeStep, state.details, state.tags.length, state.images.length]);
+    if (step === 1) return state.tags.length >= 1;
+    return state.images.length >= 1;
+  }, [step, state.details, state.tags.length, state.images.length]);
 
-  function goNext() {
-    setActiveStepIndex((i) => Math.min(i + 1, STEPS.length - 1));
-  }
+  const hint = useMemo(() => {
+    if (step === 0) return "Title, description, price, location";
+    if (step === 1) return "Add a few keywords to help search";
+    return "Upload photos for the listing";
+  }, [step]);
 
-  function goBack() {
-    setActiveStepIndex((i) => Math.max(i - 1, 0));
-  }
+  const next = async () => {
+    if (!canContinue) return;
 
-  function goTo(step: StepId) {
-    const idx = STEPS.findIndex((s) => s.id === step);
-    if (idx !== -1) setActiveStepIndex(idx);
-  }
+    if (step < 2) {
+      setStep((s) => (s + 1) as Step);
+      return;
+    }
 
-  async function handleSubmit() {
-    // TODO: wire to your API
-    console.log("SUBMIT", state);
-    alert("Submitted! (check console)");
-  }
+    // Submit
+    try {
+      await onSubmit?.(state);
+      console.log("SUBMIT", state);
+
+      // choose where you want to go after submit
+      navigate("/cribs");
+    } catch (e) {
+      console.error(e);
+      alert("Submit failed. Check console.");
+    }
+  };
+
+  const back = () => setStep((s) => Math.max(0, s - 1) as Step);
 
   return (
-    <div className="mx-auto w-full max-w-3xl px-4 py-6">
-      <Stepper
-        steps={STEPS}
-        activeStep={activeStep}
-        activeStepIndex={activeStepIndex}
-        onStepClick={(step) => {
-          // allow clicking back only (common UX)
-          const idx = STEPS.findIndex((s) => s.id === step);
-          if (idx <= activeStepIndex) goTo(step);
-        }}
-      />
+    <div className="min-h-[100dvh] w-full max-w-md mx-auto px-4 pt-8 pb-6 flex flex-col">
+      <div className="flex-1">
+        <div className="mb-6">
+          <div className="text-lg font-semibold text-black/85">
+            {step === 0 ? "Post details" : step === 1 ? "Tags" : "Images"}
+          </div>
+          <div className="text-sm text-black/50 mt-1">{hint}</div>
 
-      <div className="mt-4 rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
-        {activeStep === "details" && (
-          <DetailsStep
-            value={state.details}
-            onChange={(next) => setState((s) => ({ ...s, details: next }))}
-          />
-        )}
-
-        {activeStep === "tags" && (
-          <TagsStep
-            value={state.tags}
-            onChange={(next) => setState((s) => ({ ...s, tags: next }))}
-          />
-        )}
-
-        {activeStep === "images" && (
-          <ImagesStep
-            value={state.images}
-            onChange={(next) => setState((s) => ({ ...s, images: next }))}
-          />
-        )}
-
-        <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <button
-            type="button"
-            onClick={goBack}
-            disabled={activeStepIndex === 0}
-            className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 shadow-sm transition hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            Back
-          </button>
-
-          <div className="flex items-center gap-3">
-            {activeStep !== "images" ? (
-              <button
-                type="button"
-                onClick={goNext}
-                disabled={!canGoNext}
-                className="inline-flex items-center justify-center rounded-xl bg-zinc-900 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                Next
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={handleSubmit}
-                disabled={!canGoNext}
-                className="inline-flex items-center justify-center rounded-xl bg-zinc-900 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                Submit
-              </button>
-            )}
+          {/* Tiny progress (minimal) */}
+          <div className="mt-4 flex gap-2">
+            <Dot active={step === 0} />
+            <Dot active={step === 1} />
+            <Dot active={step === 2} />
           </div>
         </div>
 
-        {!canGoNext && (
-          <div className="mt-3 rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-700">
+        {step === 0 && (
+          <DetailsStep
+            value={state.details}
+            onChange={(details) => setState((s) => ({ ...s, details }))}
+          />
+        )}
+
+        {step === 1 && (
+          <TagsStep
+            value={state.tags}
+            onChange={(tags) => setState((s) => ({ ...s, tags }))}
+          />
+        )}
+
+        {step === 2 && (
+          <ImagesStep
+            value={state.images}
+            onChange={(images) => setState((s) => ({ ...s, images }))}
+          />
+        )}
+
+        {!canContinue && (
+          <div className="mt-5 text-sm text-black/45">
             Fill out the required fields to continue.
           </div>
         )}
       </div>
 
-      <DebugPanel state={state} />
+      <div className="pt-6 flex items-center gap-3">
+        <button
+          type="button"
+          onClick={back}
+          disabled={step === 0}
+          className="w-24 rounded-2xl px-4 py-3 text-sm font-semibold text-black/60 disabled:opacity-30"
+        >
+          Back
+        </button>
+
+        <button
+          type="button"
+          onClick={next}
+          disabled={!canContinue}
+          className="flex-1 rounded-2xl px-4 py-3 text-sm font-semibold text-white bg-neutral-900 disabled:opacity-40"
+        >
+          {step < 2 ? "Continue" : "Finish"}
+        </button>
+      </div>
     </div>
   );
 }
 
-/* ------------------------- Stepper ------------------------- */
+/* ---------------- tiny primitives ---------------- */
 
-function Stepper({
-  steps,
-  activeStep,
-  activeStepIndex,
-  onStepClick,
+function Dot({ active }: { active: boolean }) {
+  return (
+    <div
+      className={[
+        "h-2 w-2 rounded-full",
+        active ? "bg-neutral-900" : "bg-black/15",
+      ].join(" ")}
+    />
+  );
+}
+
+function Field({
+  label,
+  children,
 }: {
-  steps: { id: StepId; label: string; helper: string }[];
-  activeStep: StepId;
-  activeStepIndex: number;
-  onStepClick: (id: StepId) => void;
+  label: string;
+  children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm">
-      <div className="flex flex-wrap gap-2">
-        {steps.map((s, idx) => {
-          const isActive = s.id === activeStep;
-          const isDone = idx < activeStepIndex;
-
-          return (
-            <button
-              key={s.id}
-              type="button"
-              onClick={() => onStepClick(s.id)}
-              className={[
-                "group inline-flex items-center gap-2 rounded-full border px-3 py-2 text-sm font-medium transition",
-                isActive
-                  ? "border-zinc-900 bg-zinc-900 text-white"
-                  : isDone
-                    ? "border-zinc-200 bg-white text-zinc-900 hover:bg-zinc-50"
-                    : "border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50",
-              ].join(" ")}
-              aria-current={isActive ? "step" : undefined}
-            >
-              <span
-                className={[
-                  "flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold",
-                  isActive
-                    ? "bg-white/15 text-white"
-                    : isDone
-                      ? "bg-zinc-900 text-white"
-                      : "bg-zinc-100 text-zinc-700",
-                ].join(" ")}
-              >
-                {idx + 1}
-              </span>
-              <span className="whitespace-nowrap">{s.label}</span>
-            </button>
-          );
-        })}
-      </div>
-
-      <div className="mt-3 text-sm text-zinc-600">
-        <span className="font-medium text-zinc-900">
-          {steps[activeStepIndex]?.label}
-        </span>
-        <span className="mx-2 text-zinc-300">•</span>
-        <span>{steps[activeStepIndex]?.helper}</span>
-      </div>
-    </div>
+    <label className="flex flex-col gap-2">
+      <div className="text-sm font-semibold text-black/70">{label}</div>
+      {children}
+    </label>
   );
 }
 
-/* ------------------------- Step 1: Details ------------------------- */
+/* ---------------- Step 1: Details ---------------- */
 
 function DetailsStep({
   value,
@@ -230,71 +180,56 @@ function DetailsStep({
   onChange: (next: Details) => void;
 }) {
   return (
-    <div className="space-y-4">
-      <div>
-        <h2 className="text-lg font-semibold text-zinc-900">Post details</h2>
-        <p className="mt-1 text-sm text-zinc-600">
-          Add the core info first—this makes everything else easier.
-        </p>
-      </div>
+    <div className="flex flex-col gap-4">
+      <Field label="Title">
+        <input
+          value={value.title}
+          onChange={(e) => onChange({ ...value, title: e.target.value })}
+          placeholder="Sunny 2BR near campus"
+          className="w-full rounded-2xl border border-black/10 bg-white px-4 py-4 text-sm text-black/80 outline-none focus:border-black/25"
+        />
+      </Field>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Title">
-          <input
-            value={value.title}
-            onChange={(e) => onChange({ ...value, title: e.target.value })}
-            placeholder="e.g. Sunny 2BR near campus"
-            className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-none ring-0 placeholder:text-zinc-400 focus:border-zinc-400"
-          />
-        </Field>
+      <Field label="Price / month">
+        <input
+          type="number"
+          min={0}
+          value={value.pricePerMonth}
+          onChange={(e) =>
+            onChange({
+              ...value,
+              pricePerMonth:
+                e.target.value === "" ? "" : Number(e.target.value),
+            })
+          }
+          placeholder="1200"
+          className="w-full rounded-2xl border border-black/10 bg-white px-4 py-4 text-sm text-black/80 outline-none focus:border-black/25"
+        />
+      </Field>
 
-        <Field label="Price / month">
-          <input
-            type="number"
-            value={value.pricePerMonth}
-            onChange={(e) =>
-              onChange({
-                ...value,
-                pricePerMonth:
-                  e.target.value === "" ? "" : Number(e.target.value),
-              })
-            }
-            placeholder="1200"
-            min={0}
-            className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-zinc-400"
-          />
-        </Field>
+      <Field label="Address (or neighborhood)">
+        <input
+          value={value.address}
+          onChange={(e) => onChange({ ...value, address: e.target.value })}
+          placeholder="Clifton / 123 Main St"
+          className="w-full rounded-2xl border border-black/10 bg-white px-4 py-4 text-sm text-black/80 outline-none focus:border-black/25"
+        />
+      </Field>
 
-        <div className="sm:col-span-2">
-          <Field label="Address (or neighborhood)">
-            <input
-              value={value.address}
-              onChange={(e) => onChange({ ...value, address: e.target.value })}
-              placeholder="e.g. Clifton / 123 Main St"
-              className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-zinc-400"
-            />
-          </Field>
-        </div>
-
-        <div className="sm:col-span-2">
-          <Field label="Description">
-            <textarea
-              value={value.description}
-              onChange={(e) =>
-                onChange({ ...value, description: e.target.value })
-              }
-              placeholder="Tell people what’s great about it…"
-              rows={6}
-              className="w-full resize-none rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-zinc-400"
-            />
-          </Field>
-        </div>
-      </div>
+      <Field label="Description">
+        <textarea
+          rows={6}
+          value={value.description}
+          onChange={(e) => onChange({ ...value, description: e.target.value })}
+          placeholder="Tell people what’s great about it…"
+          className="w-full resize-none rounded-2xl border border-black/10 bg-white px-4 py-4 text-sm text-black/80 outline-none focus:border-black/25"
+        />
+      </Field>
     </div>
   );
 }
 
-/* ------------------------- Step 2: Tags ------------------------- */
+/* ---------------- Step 2: Tags ---------------- */
 
 function TagsStep({
   value,
@@ -304,6 +239,14 @@ function TagsStep({
   onChange: (next: string[]) => void;
 }) {
   const [draft, setDraft] = useState("");
+
+  const suggestions = [
+    "Furnished",
+    "Pets OK",
+    "Parking",
+    "In-unit laundry",
+    "Near campus",
+  ];
 
   function addTag(tag: string) {
     const t = tag.trim();
@@ -316,52 +259,33 @@ function TagsStep({
     onChange(value.filter((t) => t !== tag));
   }
 
-  const suggestions = [
-    "Furnished",
-    "Pets OK",
-    "Parking",
-    "In-unit laundry",
-    "Near campus",
-  ];
-
   return (
-    <div className="space-y-4">
-      <div>
-        <h2 className="text-lg font-semibold text-zinc-900">Tags</h2>
-        <p className="mt-1 text-sm text-zinc-600">
-          Tags help people filter and find the right place faster.
-        </p>
-      </div>
-
+    <div className="flex flex-col gap-4">
+      {/* Current tags */}
       <div className="flex flex-wrap gap-2">
         {value.length === 0 ? (
-          <span className="text-sm text-zinc-500">No tags yet</span>
+          <div className="text-sm text-black/45">No tags yet.</div>
         ) : (
           value.map((t) => (
-            <span
+            <button
               key={t}
-              className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-sm text-zinc-900"
+              type="button"
+              onClick={() => removeTag(t)}
+              className="rounded-full border border-black/10 bg-white px-3 py-2 text-sm text-black/70 hover:border-black/20"
+              title="Click to remove"
             >
-              {t}
-              <button
-                type="button"
-                onClick={() => removeTag(t)}
-                className="inline-flex h-6 w-6 items-center justify-center rounded-full text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-900"
-                aria-label={`Remove ${t}`}
-                title="Remove"
-              >
-                ×
-              </button>
-            </span>
+              {t} <span className="text-black/35">×</span>
+            </button>
           ))
         )}
       </div>
 
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+      {/* Add tag */}
+      <div className="flex gap-3">
         <input
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
-          placeholder="e.g. furnished, pets ok, parking"
+          placeholder="Type a tag and press Enter"
           onKeyDown={(e) => {
             if (e.key === "Enter") {
               e.preventDefault();
@@ -369,7 +293,7 @@ function TagsStep({
               setDraft("");
             }
           }}
-          className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-zinc-400"
+          className="flex-1 rounded-2xl border border-black/10 bg-white px-4 py-4 text-sm text-black/80 outline-none focus:border-black/25"
         />
         <button
           type="button"
@@ -377,32 +301,30 @@ function TagsStep({
             addTag(draft);
             setDraft("");
           }}
-          className="inline-flex items-center justify-center rounded-xl bg-zinc-900 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-zinc-800"
+          className="rounded-2xl px-4 py-3 text-sm font-semibold text-white bg-neutral-900"
         >
           Add
         </button>
       </div>
 
-      <div>
-        <div className="text-sm font-medium text-zinc-900">Suggestions</div>
-        <div className="mt-2 flex flex-wrap gap-2">
-          {suggestions.map((t) => (
-            <button
-              key={t}
-              type="button"
-              onClick={() => addTag(t)}
-              className="rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-sm text-zinc-700 transition hover:bg-zinc-50 hover:text-zinc-900"
-            >
-              + {t}
-            </button>
-          ))}
-        </div>
+      {/* Suggestions */}
+      <div className="flex flex-wrap gap-2">
+        {suggestions.map((t) => (
+          <button
+            key={t}
+            type="button"
+            onClick={() => addTag(t)}
+            className="rounded-full border border-black/10 bg-white px-3 py-2 text-sm text-black/60 hover:border-black/20"
+          >
+            + {t}
+          </button>
+        ))}
       </div>
     </div>
   );
 }
 
-/* ------------------------- Step 3: Images ------------------------- */
+/* ---------------- Step 3: Images ---------------- */
 
 function ImagesStep({
   value,
@@ -420,7 +342,6 @@ function ImagesStep({
       next.push(f);
     }
 
-    // cap images (optional)
     onChange(next.slice(0, 15));
   }
 
@@ -429,98 +350,51 @@ function ImagesStep({
   }
 
   return (
-    <div className="space-y-4">
-      <div>
-        <h2 className="text-lg font-semibold text-zinc-900">Images</h2>
-        <p className="mt-1 text-sm text-zinc-600">
-          Add at least one. More photos usually = more interest.
-        </p>
-      </div>
+    <div className="flex flex-col gap-4">
+      <label className="rounded-2xl border border-black/10 bg-white px-4 py-4">
+        <div className="text-sm font-semibold text-black/70">Upload images</div>
+        <div className="text-xs text-black/40 mt-1">
+          PNG/JPG/WEBP • up to 15 images
+        </div>
 
-      <div className="rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 p-4">
         <input
           type="file"
           accept="image/*"
           multiple
           onChange={(e) => addFiles(e.target.files)}
-          className="block w-full text-sm text-zinc-700 file:mr-3 file:rounded-xl file:border-0 file:bg-zinc-900 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-zinc-800"
+          className="mt-3 block w-full text-sm text-black/70 file:mr-3 file:rounded-2xl file:border-0 file:bg-neutral-900 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white"
         />
-        <div className="mt-2 text-xs text-zinc-500">
-          PNG/JPG/WEBP • up to 15 images
-        </div>
-      </div>
+      </label>
 
       {value.length === 0 ? (
-        <div className="rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-700">
-          No images yet.
-        </div>
+        <div className="text-sm text-black/45">No images yet.</div>
       ) : (
-        <ul className="space-y-2">
+        <div className="flex flex-col gap-2">
           {value.map((f, idx) => (
-            <li
+            <div
               key={`${f.name}-${idx}`}
-              className="flex items-center justify-between gap-3 rounded-xl border border-zinc-200 bg-white px-3 py-2"
+              className="flex items-center justify-between gap-3 rounded-2xl border border-black/10 bg-white px-4 py-3"
             >
               <div className="min-w-0">
-                <div className="truncate text-sm font-medium text-zinc-900">
+                <div className="truncate text-sm font-semibold text-black/75">
                   {f.name}
                 </div>
-                <div className="text-xs text-zinc-500">
-                  {Math.round(f.size / 1024)} KB • {f.type}
+                <div className="text-xs text-black/40">
+                  {Math.round(f.size / 1024)} KB
                 </div>
               </div>
 
               <button
                 type="button"
                 onClick={() => removeAt(idx)}
-                className="shrink-0 rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50"
+                className="rounded-2xl border border-black/10 bg-white px-3 py-2 text-sm font-semibold text-black/60 hover:border-black/20"
               >
                 Remove
               </button>
-            </li>
+            </div>
           ))}
-        </ul>
+        </div>
       )}
-    </div>
-  );
-}
-
-/* ------------------------- Small helpers ------------------------- */
-
-function Field({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <label className="space-y-1">
-      <div className="text-sm font-medium text-zinc-900">{label}</div>
-      {children}
-    </label>
-  );
-}
-
-function DebugPanel({ state }: { state: FormState }) {
-  return (
-    <div className="mt-4 rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm">
-      <div className="text-sm font-semibold text-zinc-900">Debug</div>
-      <pre className="mt-2 overflow-auto rounded-xl bg-zinc-50 p-3 text-xs text-zinc-800">
-        {JSON.stringify(
-          {
-            details: state.details,
-            tags: state.tags,
-            images: state.images.map((f) => ({
-              name: f.name,
-              size: f.size,
-              type: f.type,
-            })),
-          },
-          null,
-          2
-        )}
-      </pre>
     </div>
   );
 }

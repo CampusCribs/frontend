@@ -1,0 +1,9 @@
+type: object
+required: [ code, title, message ]
+properties:
+  code:
+    type: integer
+  title:
+    type: string
+  message:
+    type: string

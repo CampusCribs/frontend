@@ -9,7 +9,7 @@ export default defineConfig({
   name: "campus-cribs-openapi",
   root: "./",
   input: {
-    path: "./kubbconfig.yaml",
+    path: "./kubb/kubbconfig.yaml",
   },
   output: {
     path: "./src/gen",

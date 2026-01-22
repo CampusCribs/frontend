@@ -1,14 +1,17 @@
 import {
   ArrowLeftIcon,
+  Bookmark,
   Calendar,
   CircleUserRound,
   DollarSign,
+  Heart,
+  Send,
   Tag,
   Users,
 } from "lucide-react";
 import IndividualSlider from "./IndividualSlider";
 import { useNavigate } from "react-router";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 // MapLibre
 import Map, { Marker } from "react-map-gl/maplibre";
@@ -115,7 +118,7 @@ const LocationMapCard = ({
         </div>
 
         {/* Map */}
-        <div className="relative h-56 w-full">
+        <div className="relative h-100 w-full">
           {/* little corner chip */}
           <div className="absolute top-3 left-3 z-10">
             <span className="rounded-full bg-white/95 backdrop-blur border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-900 shadow-sm">
@@ -126,7 +129,7 @@ const LocationMapCard = ({
           <Map
             mapLib={maplibregl}
             initialViewState={{ latitude: lat, longitude: lng, zoom: 14 }}
-            mapStyle="https://demotiles.maplibre.org/style.json"
+            mapStyle="https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json"
             style={{ width: "100%", height: "100%" }}
             attributionControl={false}
             // keep it “preview-like” so scroll doesn’t hijack the page
@@ -135,6 +138,7 @@ const LocationMapCard = ({
             doubleClickZoom={false}
             dragRotate={false}
             touchZoomRotate={false}
+            minZoom={11}
           >
             <Marker latitude={lat} longitude={lng} anchor="center">
               <div className="relative">
@@ -149,9 +153,7 @@ const LocationMapCard = ({
 
         {/* Footer actions */}
         <div className="px-4 py-3 flex items-center justify-between">
-          <div className="text-xs text-slate-500">
-            Tap “Open in map” later (placeholder)
-          </div>
+          <div className="text-xs text-slate-500">Tap “Open in map” later</div>
           <button
             type="button"
             onClick={() => console.log("open map")}
@@ -168,7 +170,7 @@ const LocationMapCard = ({
 const IndividualPage = () => {
   const navigate = useNavigate();
   const post = useMemo(() => FAKE_POST, []);
-
+  const [liked, setLiked] = useState(false);
   useEffect(() => {
     localStorage.setItem("headerText", "Crib Details");
   }, []);
@@ -193,9 +195,23 @@ const IndividualPage = () => {
           postId={post.id}
         />
       </div>
+      <div className="flex flex-row-reverse gap-4 mx-8">
+        <div>
+          <Send size={25} />
+        </div>
+        <div onClick={() => setLiked(!liked)}>
+          <Heart
+            size={25}
+            className={`${liked ? "fill-red-500 " : "text-black"}`}
+          />
+        </div>
+      </div>
       {/* Profile header (you liked this) */}
       <div className="px-5 pt-4">
-        <div className="flex flex-row items-center gap-4">
+        <div
+          className="flex flex-row items-center gap-4"
+          onClick={() => navigate("/profile/123")}
+        >
           <div className="h-16 w-16 rounded-full overflow-hidden border shadow-sm bg-slate-100 grid place-items-center shrink-0">
             {post.userThumbnailUrl ? (
               <img
@@ -279,10 +295,10 @@ const IndividualPage = () => {
       {/* CTA */}
       <div className="flex flex-row-reverse px-5 pt-5">
         <button
-          className="bg-blue-500 rounded-full py-3 px-5 shadow-lg text-white font-semibold cursor-pointer active:scale-[0.99]"
-          onClick={() => navigate(`/chats/${post.username}`)}
+          className="bg-black rounded-full py-3 px-5 my-2 shadow-lg text-white font-semibold cursor-pointer active:scale-[0.99]"
+          onClick={() => navigate(`/profile/${post.username}`)}
         >
-          Contact
+          View Profile
         </button>
       </div>
     </div>

@@ -53,7 +53,7 @@ function App() {
               <Route path="/support" element={<SupportPage />} />
               <Route path="/community" element={<Community />} />
               <Route path="/chats" element={<Chats />} />
-              <Route path="/chats/:chatId" element={<IndividualChat />} />
+
               <Route path="/favorites" element={<Favorited />} />
               {/* <Route element={<ProtectedRoute />}> */}
               <Route path="/settings" element={<SettingsPage />} />
@@ -83,7 +83,7 @@ function App() {
                 <Route path="/login" element={<LoginPage />} />
               </Route>
             </Route>
-
+            <Route path="/chats/:chatId" element={<IndividualChat />} />
             {/* <Route path="/about" element={<About />} /> */}
             {/* <Route path="/partners" element={<Partners />} /> */}
             <Route path="*" element={<Navigate to="/" replace />} />

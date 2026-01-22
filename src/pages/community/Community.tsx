@@ -33,8 +33,12 @@ const BlogCard = () => {
   return (
     <div className="bg-white border-b p-4 py-6 ">
       {/* Header */}
-      <div className="flex items-center gap-3 mb-2">
+      <div
+        className="flex items-center gap-3 mb-2"
+        onClick={() => navigate("/profile/johnnyedwards")}
+      >
         <img
+          alt="thumbnail"
           src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS3krGAS5w7YyUrBn7Y55sqCFh13aR2La_dYQ&s"
           className="w-9 h-9 rounded-full object-cover"
         />

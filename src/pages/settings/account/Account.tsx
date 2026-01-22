@@ -24,7 +24,7 @@ import { useState } from "react";
 import { ArrowLeftIcon, X } from "lucide-react";
 
 import useAuthenticatedClientConfig from "@/hooks/use-authenticated-client-config";
-import { useGetUsersMe, usePutUsersUpdate } from "@/gen";
+// import { useGetUsersMe, usePutUsersUpdate } from "@/gen";
 import { useNotify } from "@/components/ui/Notify";
 import { useNavigate } from "react-router";
 import LoadingPage from "@/pages/loading/LoadingPage";
@@ -32,6 +32,7 @@ import Error from "@/pages/error/Error";
 import { useThumbnailUpload } from "@/lib/uploadThumbnail";
 import { buildThumbnailURL } from "@/lib/image-resolver";
 import { EmailChangeFlow } from "./EmailChangeFlow";
+import { useGetUsersMe, usePutUsersUpdate } from "@/gen";
 const accountSettingsSchema = z
   .object({
     // Read-only (shown for clarity)
@@ -77,7 +78,7 @@ const accountSettingsSchema = z
       message:
         "To change your password, fill all password fields and ensure the new passwords match.",
       path: ["confirmPassword"],
-    }
+    },
   );
 
 type AccountSettingsSchema = z.infer<typeof accountSettingsSchema>;
@@ -101,7 +102,7 @@ const Account = () => {
   } = useGetUsersMe({ ...config });
   const thumbnailUrl = buildThumbnailURL(
     userData?.data.id || "",
-    userData?.data.thumbnailMediaId || ""
+    userData?.data.thumbnailMediaId || "",
   );
   const { mutate: updateAccount } = usePutUsersUpdate({
     ...config,
@@ -210,7 +211,7 @@ const Account = () => {
       </div>
 
       <form
-        onSubmit={handleSubmit(onSubmit)}
+        // onSubmit={handleSubmit(onSubmit)}
         className="flex flex-col items-center justify-center w-full h-full gap-y-6 py-6"
       >
         {/* Identity */}
@@ -315,7 +316,7 @@ const Account = () => {
                 try {
                   const media = await upload(file);
                   setThumbnail(file);
-                  setValue("thumbnailMediaId", media); // <- store this in form state
+                  // setValue("thumbnailMediaId", media); // <- store this in form state
                   // <- store this for form submit
                 } catch (err) {
                   console.error("Image upload failed:", err);

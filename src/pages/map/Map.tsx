@@ -51,12 +51,12 @@ export default function SimpleMapPage() {
       longitude: -84.5167,
       zoom: 14,
     }),
-    []
+    [],
   );
 
   return (
-    <div className="w-full h-full inset-0">
-      <div className="fixed top-20 left-3 z-40">
+    <div className="w-full h-full inset-0 relative">
+      <div className="absolute top-5 left-3 z-40">
         <button
           className="bg-white rounded-2xl px-4 py-2"
           onClick={() => setSearch(true)}
@@ -67,7 +67,7 @@ export default function SimpleMapPage() {
       <Map
         mapLib={maplibregl}
         initialViewState={initialViewState}
-        mapStyle="https://demotiles.maplibre.org/style.json"
+        mapStyle="https://basemaps.cartocdn.com/gl/positron-gl-style/style.json"
         style={{ width: "100%", height: "100%" }}
       >
         {POINTS.map((p) => (
@@ -99,7 +99,7 @@ const ItemCard = ({ point }: { point: Point }) => {
   const navigate = useNavigate();
   return (
     <div
-      className="absolute bottom-18 left-1/2 -translate-x-1/2 w-[92%] max-w-md"
+      className="absolute bottom-3 left-1/2 -translate-x-1/2 w-[92%] max-w-md z-40"
       onClick={() => navigate(`/cribs/${point.id}`)}
     >
       <div className="flex items-center gap-4 rounded-2xl bg-white shadow-xl border border-slate-200 overflow-hidden">

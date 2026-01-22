@@ -8,15 +8,18 @@ const Favorited = () => {
   );
 };
 
+import { set } from "date-fns";
 import { Heart } from "lucide-react";
+import { useState } from "react";
+import { useNavigate } from "react-router";
 
 export function SavedPostCard() {
-  const liked = true;
-
+  const [liked, setLiked] = useState(true);
+  const navigate = useNavigate();
   return (
     <div className="bg-white my-3  border shadow-sm overflow-hidden">
       {/* Image */}
-      <div className="relative">
+      <div className="relative" onClick={() => navigate("/cribs/1234")}>
         <img
           src="https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=1400&q=80"
           alt="post"
@@ -28,7 +31,9 @@ export function SavedPostCard() {
           className="absolute right-3 top-3 z-10 rounded-full bg-black/40 p-2 backdrop-blur hover:bg-black/60 transition"
           onClick={(e) => {
             e.preventDefault();
+            e.stopPropagation();
             // toggle like here
+            setLiked(!liked);
           }}
           aria-label="Like post"
         >
@@ -41,7 +46,7 @@ export function SavedPostCard() {
       </div>
 
       {/* Content */}
-      <div className="p-4">
+      <div className="p-4" onClick={() => navigate("/profile/johnnyedwards")}>
         {/* Profile row */}
         <div className="flex items-center gap-3 mb-2">
           <img

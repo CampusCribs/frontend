@@ -5,7 +5,7 @@ const Footer = () => {
   const pathname = useActiveNav();
   const navigate = useNavigate();
   return (
-    <div className="w-full  bg-white shadow-xl border border-gray-600/10 flex pt-2 ">
+    <div className="w-full bg-white shadow-xl border border-gray-600/10 flex pt-2 ">
       <div
         className="mx-auto flex flex-col items-center"
         onClick={() => navigate("/cribs")}

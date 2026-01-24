@@ -10,7 +10,7 @@ const Layout = () => {
       <div className="w-full flex justify-center">
         <div
           className="flex flex-col
-        min-h-screen w-full max-w-[600px] shadow-xl"
+        h-dvh w-full max-w-[600px]"
         >
           <div className="sticky top-0 z-50 bg-white">
             <Header />
@@ -20,7 +20,7 @@ const Layout = () => {
             <Outlet />
           </div>
 
-          <div className="sticky left-0 bottom-0 w-full z-50">
+          <div className="sticky left-0 bottom-0 w-full z-40">
             <Footer />
           </div>
         </div>

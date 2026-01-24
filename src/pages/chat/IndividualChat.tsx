@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router";
 import {
   ArrowLeftIcon,
@@ -6,8 +6,8 @@ import {
   FileTextIcon,
   MoreHorizontal,
 } from "lucide-react";
-
-type LeadAction = "REQUEST_TOUR" | "SUBMIT_APPLICATION";
+import SubmitApplication from "./SubmitApplication";
+import BookTourModal from "./BookTourModal";
 
 type IndividualChatProps = {
   // top bar
@@ -25,9 +25,11 @@ const IndividualChat = ({
 }: IndividualChatProps) => {
   const navigate = useNavigate();
 
-  const [message, setMessage] = React.useState("");
-  const [showLeadNudge, setShowLeadNudge] = React.useState(isLandlordAccount);
-
+  const [message, setMessage] = useState("");
+  const [showLeadNudge, setShowLeadNudge] = useState(isLandlordAccount);
+  const [open, setOpen] = useState(false);
+  const [openTourModal, setOpenTourModal] = useState(false);
+  const [openApplicationModal, setOpenApplicationModal] = useState(false);
   // Optional: auto-hide the lead strip after a moment (keeps it noticeable but not annoying)
   React.useEffect(() => {
     if (!isLandlordAccount) return;
@@ -39,12 +41,6 @@ const IndividualChat = ({
     if (!message.trim()) return;
     // TODO: send message
     setMessage("");
-  };
-
-  const handleLeadAction = (action: LeadAction) => {
-    // TODO: open modal / route to flow
-    // This is where you can track + bill landlords for leads (event + attribution)
-    console.log("Lead action:", action);
   };
 
   return (
@@ -62,7 +58,10 @@ const IndividualChat = ({
               <ArrowLeftIcon size={22} />
             </button>
 
-            <div className="flex items-center gap-2 min-w-0">
+            <div
+              className="flex items-center gap-2 min-w-0 cursor-pointer"
+              onClick={() => navigate("/profile/johnnyedwards")}
+            >
               <div className="w-9 h-9 rounded-full overflow-hidden flex-shrink-0 bg-gray-200">
                 <img
                   src={avatarUrl}
@@ -86,10 +85,20 @@ const IndividualChat = ({
               aria-label="Menu"
               onClick={() => {
                 // TODO: open menu (report, block, etc.)
+                setOpen(!open);
                 console.log("Open menu");
               }}
             >
               <MoreHorizontal size={20} />
+              {open && (
+                <ChatMenu
+                  setOpen={setOpen}
+                  onReport={() => console.log("report")}
+                  onBlock={() => console.log("block")}
+                  onMute={() => console.log("mute")}
+                  onDelete={() => console.log("delete")}
+                />
+              )}
             </button>
           </div>
         </div>
@@ -139,12 +148,12 @@ const IndividualChat = ({
                 <LeadPill
                   icon={<CalendarIcon size={14} />}
                   label="Request tour"
-                  onClick={() => handleLeadAction("REQUEST_TOUR")}
+                  onClick={() => setOpenTourModal(true)}
                 />
                 <LeadPill
                   icon={<FileTextIcon size={14} />}
                   label="Submit application"
-                  onClick={() => handleLeadAction("SUBMIT_APPLICATION")}
+                  onClick={() => setOpenApplicationModal(true)}
                 />
               </div>
             ))}
@@ -171,6 +180,24 @@ const IndividualChat = ({
           </div>
         </div>
       </div>
+      {openApplicationModal && (
+        <SubmitApplication
+          open={openApplicationModal}
+          onClose={() => setOpenApplicationModal(false)}
+          onSubmit={(data) => {
+            console.log("Application submitted:", data);
+          }}
+        />
+      )}
+      {openTourModal && (
+        <BookTourModal
+          open={openTourModal}
+          onClose={() => setOpenTourModal(false)}
+          onSubmit={(data) => {
+            console.log("Tour booked:", data);
+          }}
+        />
+      )}
     </div>
   );
 };
@@ -240,3 +267,87 @@ const LeadPill = ({
 };
 
 export default IndividualChat;
+
+type ChatMenuProps = {
+  setOpen: (open: boolean) => void;
+  onReport?: () => void;
+  onBlock?: () => void;
+  onMute?: () => void;
+  onDelete?: () => void;
+};
+
+const ChatMenu = ({
+  setOpen,
+  onReport,
+  onBlock,
+  onMute,
+  onDelete,
+}: ChatMenuProps) => {
+  return (
+    <div
+      className="absolute right-0 top-full mt-2 w-48 rounded-xl bg-white shadow-lg border border-slate-200 z-50"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <MenuItem
+        label="Mute conversation"
+        onClick={() => {
+          onMute?.();
+          setOpen(false);
+        }}
+      />
+
+      <MenuItem
+        label="Delete conversation"
+        danger
+        onClick={() => {
+          onDelete?.();
+          setOpen(false);
+        }}
+      />
+
+      <div className="h-px bg-slate-100 my-1" />
+
+      <MenuItem
+        label="Report"
+        danger
+        onClick={() => {
+          onReport?.();
+          setOpen(false);
+        }}
+      />
+
+      <MenuItem
+        label="Block user"
+        danger
+        onClick={() => {
+          onBlock?.();
+          setOpen(false);
+        }}
+      />
+    </div>
+  );
+};
+
+function MenuItem({
+  label,
+  danger,
+  onClick,
+}: {
+  label: string;
+  danger?: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={[
+        "w-full text-left px-4 py-2.5 text-sm font-medium transition",
+        "hover:bg-slate-50",
+        danger ? "text-rose-600" : "text-slate-800",
+      ].join(" ")}
+    >
+      {label}
+    </button>
+  );
+}

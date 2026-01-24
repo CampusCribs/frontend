@@ -55,7 +55,7 @@ export default function SimpleMapPage() {
   );
 
   return (
-    <div className="w-full h-full inset-0 relative">
+    <div className="w-full h-full  inset-0 relative">
       <div className="absolute top-5 left-3 z-40">
         <button
           className="bg-white rounded-2xl px-4 py-2"
@@ -64,31 +64,33 @@ export default function SimpleMapPage() {
           Search
         </button>
       </div>
-      <Map
-        mapLib={maplibregl}
-        initialViewState={initialViewState}
-        mapStyle="https://basemaps.cartocdn.com/gl/positron-gl-style/style.json"
-        style={{ width: "100%", height: "100%" }}
-      >
-        {POINTS.map((p) => (
-          <Marker
-            key={p.id}
-            latitude={p.lat}
-            longitude={p.lng}
-            anchor="center"
-            onClick={(e) => {
-              // prevent map click events
-              e.originalEvent.stopPropagation();
-              setSelected(p);
-            }}
-          >
-            <div
-              className="h-4 w-4 rounded-full bg-slate-900 cursor-pointer"
-              title={p.name}
-            />
-          </Marker>
-        ))}
-      </Map>
+      <div className="flex-1 h-full">
+        <Map
+          mapLib={maplibregl}
+          initialViewState={initialViewState}
+          mapStyle="https://basemaps.cartocdn.com/gl/positron-gl-style/style.json"
+          style={{ width: "100%", height: "100%" }}
+        >
+          {POINTS.map((p) => (
+            <Marker
+              key={p.id}
+              latitude={p.lat}
+              longitude={p.lng}
+              anchor="center"
+              onClick={(e) => {
+                // prevent map click events
+                e.originalEvent.stopPropagation();
+                setSelected(p);
+              }}
+            >
+              <div
+                className="h-4 w-4 rounded-full bg-slate-900 cursor-pointer"
+                title={p.name}
+              />
+            </Marker>
+          ))}
+        </Map>
+      </div>
       {search && <GuidedSearch setOpenSearch={setSearch} />}
       {selected && <ItemCard point={selected} />}
     </div>

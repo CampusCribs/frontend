@@ -11,7 +11,7 @@ const Community = () => {
       <div className="flex flex-col w-full  ">
         <div className="flex w-full p-2 justify-center items-center">
           <div
-            className="shadow-sm px-20 py-3 rounded-2xl flex justify-center bg-neutral-100 border border-black/10 font-semibold text-black/70 cursor-pointer w-full max-w-md"
+            className="shadow-sm px-20 py-3 rounded-2xl flex justify-center bg-white-100 border border-black/10 font-semibold text-black/70 cursor-pointer w-full max-w-md"
             onClick={() => setOpenSearch(!openSearch)}
           >
             <Search className="mr-2 text-black/70" /> Start your search
@@ -71,9 +71,9 @@ const BlogCard = () => {
         <span className="text-xs text-gray-400">Posted 2h ago</span>
         <button
           className="text-sm mt-2 font-medium text-blue-600 hover:underline"
-          onClick={() => navigate(`/chats/${"chatId"}`)}
+          onClick={() => navigate(`/profile/${"username"}`)}
         >
-          Send Message
+          View Profile
         </button>
       </div>
     </div>

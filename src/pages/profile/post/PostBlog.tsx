@@ -107,7 +107,7 @@ export default function UltraMinimalPostOrchestrator() {
   }
 
   return (
-    <div className="min-h-[100dvh] w-full max-w-md mx-auto px-4 pt-8 pb-6 flex flex-col">
+    <div className=" w-full max-w-md mx-auto px-4 pt-8 pb-6 flex flex-col">
       <div className="flex-1">
         {/* Title */}
         <div className="mb-6">

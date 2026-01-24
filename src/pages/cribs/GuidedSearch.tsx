@@ -255,7 +255,7 @@ const GuidedSearch = ({
 
       {/* Where Section */}
       <div
-        className={`flex bg-white  rounded-2xl p-4 shadow-lg flex-col transition-transform duration-200  ${whereFocus ? "fixed h-screen w-full transition-transform duration-200 " : " mx-3 mt-3"}`}
+        className={`flex bg-white  rounded-2xl p-4 shadow-lg flex-col transition-transform duration-200  ${whereFocus ? " rounded-none fixed h-screen w-full transition-transform duration-200 " : " mx-3 mt-3"}`}
       >
         <div
           className="flex justify-between"

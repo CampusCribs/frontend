@@ -7,6 +7,7 @@ import {
   Bookmark,
   Tag,
   Heart,
+  MessageCircle,
 } from "lucide-react";
 import { useNavigate } from "react-router";
 
@@ -171,17 +172,21 @@ export default function ProfilePageCampusStyle() {
           <div className="mt-4 flex gap-2">
             <button
               type="button"
-              className="flex-1 rounded-xl bg-slate-900 hover:bg-slate-800 text-white px-4 py-2.5 text-sm font-semibold transition"
+              className="flex-1 flex-row items-center justify-center rounded-xl bg-slate-900 hover:bg-slate-800 text-white px-4 py-2.5 text-sm font-semibold transition"
               onClick={() => navigate(`/chats/${user.username}`)}
             >
-              Message
+              <div className="flex items-center justify-center gap-2">
+                <MessageCircle size={18} /> Message
+              </div>
             </button>
             <button
               type="button"
               className="flex-1 rounded-xl text-white px-4 bg-slate-900 hover:bg-slate-800 py-2.5 text-sm font-semibold transition"
               onClick={() => console.log("create/edit post")}
             >
-              Share
+              <div className="flex items-center justify-center gap-2">
+                <Send size={18} /> Share
+              </div>
             </button>
           </div>
         </div>
@@ -249,30 +254,6 @@ function ProfilePostCard({
           alt={post.title}
           className="w-full aspect-[4/3] object-cover"
         />
-      </div>
-
-      {/* Share + Save row */}
-      <div className="px-4 pt-3 flex items-center flex-row-reverse gap-4">
-        <button
-          title="Share"
-          type="button"
-          className="inline-flex items-center gap-2 text-sm font-semibold text-slate-700 hover:text-slate-900 transition"
-          onClick={onShare}
-        >
-          <Send size={20} />
-        </button>
-
-        <button
-          title="save"
-          type="button"
-          className="inline-flex items-center gap-2 text-sm font-semibold transition"
-          onClick={() => {
-            setSaved((s) => !s);
-            onSave();
-          }}
-        >
-          <Heart size={20} className={`${saved ? "fill-red-500 " : ""}`} />
-        </button>
       </div>
 
       {/* Title + description + meta */}

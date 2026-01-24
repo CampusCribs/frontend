@@ -71,7 +71,7 @@ const CribsPage = () => {
       <div className="flex flex-col w-full  ">
         <div className="flex w-full p-2 justify-center items-center">
           <div
-            className="shadow-sm px-20 py-3 rounded-2xl flex justify-center bg-neutral-100 border border-black/10 font-semibold text-black/70 cursor-pointer w-full max-w-md"
+            className="shadow-sm px-20 py-3 rounded-2xl flex justify-center bg-white-100 border border-black/10 font-semibold text-black/70 cursor-pointer w-full max-w-md"
             onClick={() => setOpenSearch(!openSearch)}
           >
             <Search className="mr-2 text-black/70" /> Start your search

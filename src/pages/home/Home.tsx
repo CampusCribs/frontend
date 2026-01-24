@@ -150,7 +150,7 @@ const Home = () => {
                   {/* If you can reuse ResidenceCard here, pass placeholder props */}
                   <ResidenceCard
                     userId="1d919121-a8f1-4990-bd6c-c7d10ad131fd"
-                    thumbnail="fc7d5b8b-fc38-44db-af6b-726307cc8a96"
+                    thumbnail="https://images.unsplash.com/photo-1507089947368-19c1da9775ae"
                     id="485da7d5-54f8-4c82-9f56-6ffbe9240657"
                     price={650}
                     location="CUF"
@@ -160,7 +160,7 @@ const Home = () => {
                   />
                   <ResidenceCard
                     userId="1d919121-a8f1-4990-bd6c-c7d10ad131fd"
-                    thumbnail="fc7d5b8b-fc38-44db-af6b-726307cc8a96"
+                    thumbnail="https://images.unsplash.com/photo-1507089947368-19c1da9775ae"
                     id="485da7d5-54f8-4c82-9f56-6ffbe9240657"
                     price={650}
                     location="CUF"
@@ -170,7 +170,7 @@ const Home = () => {
                   />
                   <ResidenceCard
                     userId="1d919121-a8f1-4990-bd6c-c7d10ad131fd"
-                    thumbnail="fc7d5b8b-fc38-44db-af6b-726307cc8a96"
+                    thumbnail="https://images.unsplash.com/photo-1507089947368-19c1da9775ae"
                     id="485da7d5-54f8-4c82-9f56-6ffbe9240657"
                     price={650}
                     location="CUF"
@@ -180,7 +180,7 @@ const Home = () => {
                   />
                   <ResidenceCard
                     userId="1d919121-a8f1-4990-bd6c-c7d10ad131fd"
-                    thumbnail="fc7d5b8b-fc38-44db-af6b-726307cc8a96"
+                    thumbnail="https://images.unsplash.com/photo-1507089947368-19c1da9775ae"
                     id="485da7d5-54f8-4c82-9f56-6ffbe9240657"
                     price={650}
                     location="CUF"

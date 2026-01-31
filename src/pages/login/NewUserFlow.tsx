@@ -1,21 +1,51 @@
-import { Home, ShieldCheck, User2 } from "lucide-react";
-import { useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
+import {
+  Home,
+  ShieldCheck,
+  User2,
+  Building2,
+  AtSign,
+  CalendarDays,
+} from "lucide-react";
 import { useNavigate } from "react-router";
 
 type Role = "STUDENT" | "LANDLORD";
 type Goal = "FIND_HOUSING" | "FIND_ROOMMATES";
 
+type HeardFrom =
+  | "TIKTOK"
+  | "INSTAGRAM"
+  | "GOOGLE"
+  | "FRIEND"
+  | "FLYER"
+  | "CAMPUS"
+  | "OTHER";
+
 type OnboardingState = {
   role: Role | null;
 
-  // student
+  // basics (shared)
+  fullName: string;
+  username: string;
+
+  // student-only basics
+  birthday: string; // YYYY-MM-DD
+
+  // landlord-only basics
+  companyName: string;
+
+  // student flow
   major: string;
   goal: Goal | null;
 
-  // landlord
+  // landlord flow
   campus: string;
   rooms: number | null;
-  ein: string; // optional, can be ""
+  ein: string; // optional
+
+  // marketing
+  heardFrom: HeardFrom | null;
+  heardFromOther: string; // if OTHER
 };
 
 const majors = [
@@ -36,6 +66,16 @@ const campuses = [
   "Other",
 ];
 
+const heardFromOptions: { key: HeardFrom; label: string }[] = [
+  { key: "TIKTOK", label: "TikTok" },
+  { key: "INSTAGRAM", label: "Instagram" },
+  { key: "GOOGLE", label: "Google" },
+  { key: "FRIEND", label: "Friend" },
+  { key: "FLYER", label: "Flyer" },
+  { key: "CAMPUS", label: "On campus" },
+  { key: "OTHER", label: "Other" },
+];
+
 export default function UltraMinimalOnboarding({
   onFinish,
 }: {
@@ -47,40 +87,85 @@ export default function UltraMinimalOnboarding({
   const [data, setData] = useState<OnboardingState>({
     role: null,
 
+    fullName: "",
+    username: "",
+
+    birthday: "",
+    companyName: "",
+
     major: "",
     goal: null,
 
     campus: "",
     rooms: null,
     ein: "",
+
+    heardFrom: null,
+    heardFromOther: "",
   });
 
   const isLandlord = data.role === "LANDLORD";
   const isStudent = data.role === "STUDENT";
 
-  const studentSteps = 3; // role, major, goal
-  const landlordSteps = 4; // role, campus, rooms, verify(optional)
+  // Step maps:
+  // STUDENT: 0 Role, 1 Basics, 2 Major, 3 Marketing, 4 Goal
+  // LANDLORD: 0 Role, 1 Basics, 2 Campus, 3 Rooms, 4 Marketing, 5 Verify
+  const studentSteps = 5;
+  const landlordSteps = 6;
   const maxStep = isLandlord ? landlordSteps - 1 : studentSteps - 1;
 
   const canContinue = useMemo(() => {
-    // step 0 always role
     if (step === 0) return data.role !== null;
 
+    // Basics step (role-dependent)
+    if (step === 1) {
+      if (!data.fullName.trim()) return false;
+      if (!data.username.trim()) return false;
+
+      if (isStudent) {
+        // require birthday
+        return data.birthday.trim().length > 0;
+      }
+      if (isLandlord) {
+        // require company name
+        return data.companyName.trim().length > 0;
+      }
+      return false;
+    }
+
     if (isStudent) {
-      if (step === 1) return data.major.trim().length > 0;
-      if (step === 2) return data.goal !== null;
+      if (step === 2) return data.major.trim().length > 0;
+
+      // Marketing before last question (Goal)
+      if (step === 3) {
+        if (data.heardFrom === null) return false;
+        if (data.heardFrom === "OTHER")
+          return data.heardFromOther.trim().length > 0;
+        return true;
+      }
+
+      if (step === 4) return data.goal !== null;
       return false;
     }
 
     if (isLandlord) {
-      if (step === 1) return data.campus.trim().length > 0;
-      if (step === 2) return data.rooms !== null && data.rooms > 0;
-      if (step === 3) return true; // EIN optional
+      if (step === 2) return data.campus.trim().length > 0;
+      if (step === 3) return data.rooms !== null && data.rooms > 0;
+
+      // Marketing before last question (Verify)
+      if (step === 4) {
+        if (data.heardFrom === null) return false;
+        if (data.heardFrom === "OTHER")
+          return data.heardFromOther.trim().length > 0;
+        return true;
+      }
+
+      if (step === 5) return true; // EIN optional
       return false;
     }
 
     return false;
-  }, [step, data, isStudent, isLandlord]);
+  }, [step, data, isStudent, isLandlord, isLandlord, isStudent]);
 
   const next = () => {
     if (!canContinue) return;
@@ -93,7 +178,6 @@ export default function UltraMinimalOnboarding({
     onFinish?.(data);
     console.log("onboarding submit:", data);
 
-    // student -> /cribs (like you had), landlord -> profile
     navigate(isLandlord ? "/profile" : "/cribs");
   };
 
@@ -105,23 +189,38 @@ export default function UltraMinimalOnboarding({
         {step === 0 && (
           <RoleStep
             value={data.role}
-            onChange={(role) => {
-              setData((p) => ({ ...p, role }));
-              // if they switch roles mid-flow, keep them safe
-              // (don’t auto-jump steps; just let continue handle it)
-            }}
+            onChange={(role) => setData((p) => ({ ...p, role }))}
+          />
+        )}
+
+        {step === 1 && (
+          <BasicsStep
+            role={data.role}
+            fullName={data.fullName}
+            username={data.username}
+            birthday={data.birthday}
+            companyName={data.companyName}
+            onChange={(patch) => setData((p) => ({ ...p, ...patch }))}
           />
         )}
 
         {/* STUDENT */}
-        {isStudent && step === 1 && (
+        {isStudent && step === 2 && (
           <MajorStep
             major={data.major}
             onChange={(major) => setData((p) => ({ ...p, major }))}
           />
         )}
 
-        {isStudent && step === 2 && (
+        {isStudent && step === 3 && (
+          <MarketingStep
+            heardFrom={data.heardFrom}
+            heardFromOther={data.heardFromOther}
+            onChange={(patch) => setData((p) => ({ ...p, ...patch }))}
+          />
+        )}
+
+        {isStudent && step === 4 && (
           <GoalStep
             value={data.goal}
             onChange={(goal) => setData((p) => ({ ...p, goal }))}
@@ -129,21 +228,29 @@ export default function UltraMinimalOnboarding({
         )}
 
         {/* LANDLORD */}
-        {isLandlord && step === 1 && (
+        {isLandlord && step === 2 && (
           <CampusStep
             campus={data.campus}
             onChange={(campus) => setData((p) => ({ ...p, campus }))}
           />
         )}
 
-        {isLandlord && step === 2 && (
+        {isLandlord && step === 3 && (
           <RoomsStep
             rooms={data.rooms}
             onChange={(rooms) => setData((p) => ({ ...p, rooms }))}
           />
         )}
 
-        {isLandlord && step === 3 && (
+        {isLandlord && step === 4 && (
+          <MarketingStep
+            heardFrom={data.heardFrom}
+            heardFromOther={data.heardFromOther}
+            onChange={(patch) => setData((p) => ({ ...p, ...patch }))}
+          />
+        )}
+
+        {isLandlord && step === 5 && (
           <VerifyStep
             ein={data.ein}
             onChange={(ein) => setData((p) => ({ ...p, ein }))}
@@ -174,7 +281,7 @@ export default function UltraMinimalOnboarding({
   );
 }
 
-/* ---------------- Step 1 ---------------- */
+/* ---------------- Step 0 ---------------- */
 
 function RoleStep({
   value,
@@ -205,7 +312,122 @@ function RoleStep({
   );
 }
 
-/* ---------------- STUDENT Step 2 ---------------- */
+/* ---------------- Step 1 (Basics) ---------------- */
+
+function BasicsStep({
+  role,
+  fullName,
+  username,
+  birthday,
+  companyName,
+  onChange,
+}: {
+  role: Role | null;
+  fullName: string;
+  username: string;
+  birthday: string;
+  companyName: string;
+  onChange: (
+    patch: Partial<
+      Pick<
+        OnboardingState,
+        "fullName" | "username" | "birthday" | "companyName"
+      >
+    >,
+  ) => void;
+}) {
+  const isStudent = role === "STUDENT";
+  const isLandlord = role === "LANDLORD";
+
+  return (
+    <div className="flex flex-col gap-4 w-full h-full">
+      <div className="text-lg font-semibold text-black/85">Basic info</div>
+
+      <LabeledInput
+        icon={<User2 size={18} />}
+        placeholder="Full name"
+        value={fullName}
+        onChange={(v) => onChange({ fullName: v })}
+      />
+
+      <LabeledInput
+        icon={<AtSign size={18} />}
+        placeholder="Username"
+        value={username}
+        onChange={(v) => onChange({ username: v })}
+      />
+
+      {isStudent && (
+        <LabeledInput
+          icon={<CalendarDays size={18} />}
+          placeholder="Birthday (YYYY-MM-DD)"
+          value={birthday}
+          onChange={(v) => onChange({ birthday: v })}
+          inputMode="numeric"
+        />
+      )}
+
+      {isLandlord && (
+        <LabeledInput
+          icon={<Building2 size={18} />}
+          placeholder="Company name"
+          value={companyName}
+          onChange={(v) => onChange({ companyName: v })}
+        />
+      )}
+
+      {!isStudent && !isLandlord && (
+        <div className="text-sm text-black/60">
+          Select a role first, then we’ll ask the right questions.
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ---------------- Marketing (before last question) ---------------- */
+
+function MarketingStep({
+  heardFrom,
+  heardFromOther,
+  onChange,
+}: {
+  heardFrom: HeardFrom | null;
+  heardFromOther: string;
+  onChange: (
+    patch: Partial<Pick<OnboardingState, "heardFrom" | "heardFromOther">>,
+  ) => void;
+}) {
+  return (
+    <div className="flex flex-col gap-4 w-full h-full">
+      <div className="text-lg font-semibold text-black/85">
+        Where did you hear about us?
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        {heardFromOptions.map((opt) => (
+          <SmallChoice
+            key={opt.key}
+            label={opt.label}
+            selected={heardFrom === opt.key}
+            onClick={() => onChange({ heardFrom: opt.key })}
+          />
+        ))}
+      </div>
+
+      {heardFrom === "OTHER" && (
+        <input
+          placeholder="Tell us where"
+          value={heardFromOther}
+          onChange={(e) => onChange({ heardFromOther: e.target.value })}
+          className="w-full rounded-2xl border border-black/10 bg-white px-4 py-4 text-sm text-left text-black/80 font-[Inter]"
+        />
+      )}
+    </div>
+  );
+}
+
+/* ---------------- STUDENT Step ---------------- */
 
 function MajorStep({
   major,
@@ -251,8 +473,6 @@ function MajorStep({
   );
 }
 
-/* ---------------- STUDENT Step 3 ---------------- */
-
 function GoalStep({
   value,
   onChange,
@@ -284,7 +504,7 @@ function GoalStep({
   );
 }
 
-/* ---------------- LANDLORD Step 2 ---------------- */
+/* ---------------- LANDLORD Steps ---------------- */
 
 function CampusStep({
   campus,
@@ -330,7 +550,6 @@ function CampusStep({
   );
 }
 
-/* ---------------- LANDLORD Step 3 ---------------- */
 function RoomsStep({
   rooms,
   onChange,
@@ -369,8 +588,6 @@ function RoomsStep({
     </div>
   );
 }
-
-/* ---------------- LANDLORD Step 4 ---------------- */
 
 function VerifyStep({
   ein,
@@ -456,5 +673,32 @@ function SmallChoice({
     >
       {label}
     </button>
+  );
+}
+
+function LabeledInput({
+  icon,
+  placeholder,
+  value,
+  onChange,
+  inputMode,
+}: {
+  icon: React.ReactNode;
+  placeholder: string;
+  value: string;
+  onChange: (v: string) => void;
+  inputMode?: React.HTMLAttributes<HTMLInputElement>["inputMode"];
+}) {
+  return (
+    <div className="w-full rounded-2xl border border-black/10 bg-white px-4 py-4 flex items-center gap-3">
+      <div className="text-black/60">{icon}</div>
+      <input
+        inputMode={inputMode}
+        placeholder={placeholder}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full text-sm text-left text-black/80 font-[Inter] outline-none bg-transparent"
+      />
+    </div>
   );
 }

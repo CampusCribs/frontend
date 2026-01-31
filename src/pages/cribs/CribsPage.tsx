@@ -1,5 +1,23 @@
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { CircleX, Dot, Search, SearchX, ShieldOff } from "lucide-react";
+import {
+  BadgeCheck,
+  BadgeCheckIcon,
+  Building2,
+  CheckCircle,
+  CheckCircle2,
+  CircleX,
+  DollarSign,
+  Dot,
+  GraduationCap,
+  HelpCircle,
+  HelpCircleIcon,
+  MapPin,
+  Search,
+  SearchX,
+  ShieldCheckIcon,
+  ShieldOff,
+  Verified,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { useInView } from "react-intersection-observer";
@@ -132,14 +150,17 @@ const CribsPage = () => {
               {Array.from({ length: 10 }).map((_, index) => (
                 <ResidenceCard
                   key={index}
-                  userId={`user-${index}`}
                   thumbnail="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQLbpGDcJYb2oBnoSKM5niQxRGJEEr9U3_CbA&s"
                   id={`res-${index}`}
                   price={900 + index * 50}
                   location="CUF"
-                  name={`Residence ${index + 1}`}
-                  iconKey="https://1000logos.net/wp-content/uploads/2021/12/Cincinnati-Bearcats-Logo.jpg"
-                  ableToUse={index % 2 === 0}
+                  role={
+                    index % 3 === 0
+                      ? "LANDLORD"
+                      : index % 3 === 1
+                        ? "STUDENT"
+                        : "UNVERIFIED"
+                  }
                 />
               ))}
             </div>
@@ -153,121 +174,76 @@ const CribsPage = () => {
   );
 };
 
-export const ResidenceCard = ({
-  userId,
-  thumbnail,
-  id,
-  price,
-  location,
-  name,
-  iconKey,
-  ableToUse,
-}: {
-  userId: string;
-  thumbnail: string;
-  id: string;
-  price: number;
-  location: string;
-  name: string;
-  iconKey: string;
-  ableToUse: boolean;
-}) => {
+export function ResidenceCard() {
   const navigate = useNavigate();
-  // thumbnail = buildImageURL(userId, id, thumbnail);
+
+  // ---- STATIC DATA ----
+  const id = "abc123";
+  const thumbnail =
+    "https://images.unsplash.com/photo-1560185007-c5ca9d2c014d?auto=format&fit=crop&w=1400&q=80";
+
+  const location = "Clifton · Cincinnati, OH";
+  const price = 875;
+
+  const role = "Landlord"; // Student | Landlord
+  const verification = "Unverified";
+
+  const companyName = "Queen City Property Group";
+  const university = "University of Cincinnati";
+  // ---------------------
 
   return (
     <Card
-      className="group overflow-hidden border bg-white shadow-sm hover:shadow-md transition cursor-pointer"
       onClick={() => navigate(`/cribs/${id}`)}
+      className="cursor-pointer overflow-hidden rounded-xl border bg-white shadow-sm hover:shadow-md transition"
     >
-      <CardContent className="p-0 aspect-[4/3] relative">
+      {/* IMAGE (BIG) */}
+      <CardContent className="p-0 relative aspect-[16/10]">
         <img
           src={thumbnail}
           alt="Residence"
           className="h-full w-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/15 to-transparent" />
 
-        <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between gap-3">
-          <div className="min-w-0">
-            <div className="text-white font-semibold text-sm truncate">
-              {location}
+        {/* gradient only at bottom */}
+        <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/75 to-transparent" />
+
+        {/* location + price */}
+        <div className="absolute bottom-3 left-3 right-3">
+          <div className="flex items-end justify-between">
+            <div className="min-w-0">
+              <div className="flex items-center gap-1 text-white text-sm font-semibold truncate">
+                <MapPin size={14} />
+                <span className="truncate">{location}</span>
+              </div>
+              <div className="text-white/90 text-xs font-medium">
+                ${price} / mo
+              </div>
             </div>
-            <div className="text-white/90 text-xs font-medium">
-              ${price} / mo
-            </div>
-          </div>
-          <div className="shrink-0">
-            <VerificationBadge
-              ableToUse={ableToUse}
-              iconKey={iconKey}
-              name={name}
-            />
+
+            <span className="text-white/90 text-xs font-medium">View</span>
           </div>
         </div>
       </CardContent>
 
-      <CardFooter className="p-2 flex items-center justify-between">
-        <div className="text-xs text-gray-500">Jan-Dec | No Animals</div>
-        <span className="text-xs font-medium text-blue-600 group-hover:underline">
-          View
-        </span>
+      {/* FOOTER (THIN + CLEAN) */}
+      <CardFooter className="flex flex-col gap-2 px-4 ">
+        {/* role + verification */}
+        <div className="flex items-center gap-2">
+          <span className="inline-flex items-center gap-1 text-xs px-2  rounded-full bg-blue-50 text-blue-700">
+            <BadgeCheck size={12} />
+            {role}
+          </span>
+        </div>
+
+        {/* identity */}
+        <div className="text-sm text-gray-900 font-medium leading-tight">
+          {companyName}
+        </div>
+
+        <div className="text-xs text-gray-500">{university}</div>
       </CardFooter>
     </Card>
   );
-};
-
-function VerificationBadge({
-  ableToUse,
-  iconKey,
-  name,
-}: {
-  ableToUse: boolean;
-  iconKey: string;
-  name: string;
-}) {
-  if (iconKey && ableToUse) {
-    return (
-      <div className="relative group">
-        <img
-          className="w-8 h-8 object-cover rounded-full"
-          src={iconKey}
-          alt="School logo"
-        />
-        <div className="absolute left-1/2 bottom-full -translate-x-1/2 mb-2 hidden group-hover:block">
-          <div className="z-20 px-2 py-1 bg-white rounded shadow text-xs whitespace-nowrap">
-            Student at {name}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (iconKey && !ableToUse) {
-    return (
-      <div className="relative group">
-        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100">
-          <p className="font-semibold text-xs italic">UC</p>
-        </div>
-        <div className="absolute left-1/2 bottom-full -translate-x-1/2 mb-2 hidden group-hover:block">
-          <div className="z-20 px-2 py-1 bg-white rounded shadow text-xs whitespace-nowrap">
-            Student at {name}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="relative group">
-      <ShieldOff className="w-5 h-5 text-gray-400" />
-      <div className="absolute left-1/2 bottom-full -translate-x-1/2 mb-2 hidden group-hover:block">
-        <div className="z-20 px-2 py-1 bg-white rounded shadow text-xs whitespace-nowrap">
-          Not verified
-        </div>
-      </div>
-    </div>
-  );
 }
-
 export default CribsPage;

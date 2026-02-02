@@ -4,7 +4,6 @@ import {
   CircleUserRound,
   Settings,
   Send,
-  Bookmark,
   Tag,
   Heart,
 } from "lucide-react";
@@ -38,6 +37,7 @@ export type HousingPost = BaseProfilePost & {
  * COMMUNITY (feed/blog-style)
  * --------------------------------------------*/
 export type CommunityPost = {
+  title: string;
   type: "COMMUNITY";
   id: string;
 
@@ -60,7 +60,7 @@ export type Post = HousingPost | CommunityPost;
 /** ---------------------------------------------
  * Page
  * --------------------------------------------*/
-export default function ProfilePageCampusStyle() {
+export default function ProfilePage() {
   const navigate = useNavigate();
 
   // Placeholder user
@@ -94,6 +94,7 @@ export default function ProfilePageCampusStyle() {
   //   ],
   // };
   const post: CommunityPost = {
+    title: "Hey I am looking fo a Roomate!",
     type: "COMMUNITY",
     id: "community_456",
     intent: "Looking for Roommate",
@@ -365,7 +366,7 @@ export function CommunityPostCardProfileMinimal({
   return (
     <div className="px-4 py-6 border-b border-slate-100 bg-white">
       <div className="flex font-medium text-lg text-slate-800 ">
-        Hey I am looking for a Roomate!
+        {post.title}
       </div>
       {/* Intent tag */}
       <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide">

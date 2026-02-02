@@ -51,7 +51,7 @@ const IndividualChat = ({
           <div className="flex items-center justify-between px-3 py-2">
             <button
               type="button"
-              onClick={() => navigate("/chats")}
+              onClick={() => navigate(-1)}
               className="inline-flex items-center gap-1 rounded-xl px-2 py-2 hover:bg-gray-100 transition"
               aria-label="Back"
             >

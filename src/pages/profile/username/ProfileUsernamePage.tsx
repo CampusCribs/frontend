@@ -61,7 +61,7 @@ export type Post = HousingPost | CommunityPost;
 /** ---------------------------------------------
  * Page
  * --------------------------------------------*/
-export default function ProfilePageCampusStyle() {
+export default function ProfileUsernamePage() {
   const navigate = useNavigate();
 
   // Placeholder user

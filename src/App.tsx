@@ -2,7 +2,7 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router";
 import Layout from "@/components/layout/Layout";
 
 import CribsPage from "@/pages/cribs/CribsPage";
-import ProfileUsernamePage from "@/pages/profile/username/ProfileUsernamePage";
+
 import ProtectedRoute from "@/components/route/ProtectedRoute";
 import ReverseProtectedRoute from "@/components/route/ReverseProtectedRoute";
 import LoginPage from "@/pages/login/LoginPage";
@@ -29,10 +29,10 @@ import Map from "./pages/map/Map";
 import IndividualChat from "./pages/chat/IndividualChat";
 import UltraMinimalOnboarding from "./pages/login/NewUserFlow";
 import PostBlog from "./pages/profile/post/PostBlog";
+import { ProfileNavUsername, ProfileNavHome } from "./pages/profile/ProfileNav";
 // import Partners from "./pages/partners/Partners";
 
 function App() {
-  localStorage.setItem("headerText", "CampusCribs");
   return (
     // Default font is Inter
     <div className="font-['Inter']">
@@ -45,15 +45,14 @@ function App() {
             <Route element={<Layout />}>
               <Route path="/cribs" element={<CribsPage />} />
               <Route path="/cribs/:cribId" element={<IndividualPage />} />
-              <Route
-                path="/profile/:username"
-                element={<ProfileUsernamePage />}
-              />
               <Route path="/map" element={<Map />} />
               <Route path="/support" element={<SupportPage />} />
               <Route path="/community" element={<Community />} />
               <Route path="/chats" element={<Chats />} />
-
+              <Route
+                path="/profile/:username"
+                element={<ProfileNavUsername />}
+              />
               <Route path="/favorites" element={<Favorited />} />
               {/* <Route element={<ProtectedRoute />}> */}
               <Route path="/settings" element={<SettingsPage />} />
@@ -71,9 +70,8 @@ function App() {
                 path="/settings/notifications"
                 element={<Notifications />}
               />
-              <Route path="/profile" element={<ProfilePage />}>
-                <Route path=":username" element={<ProfileUsernamePage />} />
-              </Route>
+              <Route path="/profile" element={<ProfileNavHome />} />
+
               <Route path="/profile/post/crib" element={<Post />} />
               <Route path="/profile/post" element={<PostBlog />} />
               <Route path="/profile/edit" element={<EditProfile />} />

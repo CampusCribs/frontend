@@ -295,9 +295,9 @@ const IndividualPage = () => {
       <div className="flex flex-row-reverse px-5 pt-5">
         <button
           className="bg-black rounded-full py-3 px-5 my-2 shadow-lg text-white font-semibold cursor-pointer active:scale-[0.99]"
-          onClick={() => navigate(`/profile/${post.username}`)}
+          onClick={() => navigate(`/chats/${post.username}`)}
         >
-          View Profile
+          Chat
         </button>
       </div>
       {openReport && (

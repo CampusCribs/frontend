@@ -1,11 +1,14 @@
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import {
+  AlertCircle,
   BadgeCheck,
   BadgeCheckIcon,
   Building2,
   CheckCircle,
   CheckCircle2,
+  ChevronRight,
   CircleX,
+  Clock,
   DollarSign,
   Dot,
   GraduationCap,
@@ -14,6 +17,7 @@ import {
   MapPin,
   Search,
   SearchX,
+  ShieldCheck,
   ShieldCheckIcon,
   ShieldOff,
   Verified,
@@ -173,7 +177,6 @@ const CribsPage = () => {
     </div>
   );
 };
-
 export function ResidenceCard() {
   const navigate = useNavigate();
 
@@ -185,20 +188,32 @@ export function ResidenceCard() {
   const location = "Clifton · Cincinnati, OH";
   const price = 875;
 
-  const role = "Landlord"; // Student | Landlord
-  const verification = "Unverified";
+  const availability = "Aug 1"; // or "Immediate"
+  const role: "Student" | "Landlord" = "Landlord";
+  const verification: "Verified" | "Unverified" = "Unverified";
 
   const companyName = "Queen City Property Group";
   const university = "University of Cincinnati";
   // ---------------------
+
+  const isVerified = verification === "Verified";
+  const isStudent = role === "Student";
+
+  const roleClasses = isStudent
+    ? "bg-emerald-50 text-emerald-700 ring-emerald-200"
+    : "bg-blue-50 text-blue-700 ring-blue-200";
+
+  const verificationClasses = isVerified
+    ? "bg-emerald-50 text-emerald-700 ring-emerald-200"
+    : "bg-gray-100 text-gray-600 ring-gray-200";
 
   return (
     <Card
       onClick={() => navigate(`/cribs/${id}`)}
       className="cursor-pointer overflow-hidden rounded-xl border bg-white shadow-sm hover:shadow-md transition"
     >
-      {/* IMAGE (BIG) */}
-      <CardContent className="p-0 relative aspect-[16/10]">
+      {/* IMAGE (BIGGER) */}
+      <CardContent className="p-0 relative aspect-[16/9]">
         <img
           src={thumbnail}
           alt="Residence"
@@ -206,44 +221,95 @@ export function ResidenceCard() {
         />
 
         {/* gradient only at bottom */}
-        <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/75 to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
 
-        {/* location + price */}
+        {/* location overlay */}
         <div className="absolute bottom-3 left-3 right-3">
-          <div className="flex items-end justify-between">
+          <div className="flex items-end justify-between gap-3">
             <div className="min-w-0">
               <div className="flex items-center gap-1 text-white text-sm font-semibold truncate">
                 <MapPin size={14} />
                 <span className="truncate">{location}</span>
               </div>
               <div className="text-white/90 text-xs font-medium">
-                ${price} / mo
+                Tap to view details
               </div>
             </div>
-
-            <span className="text-white/90 text-xs font-medium">View</span>
           </div>
         </div>
       </CardContent>
 
-      {/* FOOTER (THIN + CLEAN) */}
-      <CardFooter className="flex flex-col gap-2 px-4 ">
-        {/* role + verification */}
-        <div className="flex items-center gap-2">
-          <span className="inline-flex items-center gap-1 text-xs px-2  rounded-full bg-blue-50 text-blue-700">
-            <BadgeCheck size={12} />
-            {role}
-          </span>
-        </div>
+      {/* FOOTER (REDESIGNED) */}
+      <CardFooter className="px-4 py-3">
+        <div className="w-full space-y-2">
+          {/* Row 1: Price + Availability */}
+          <div className="flex items-start justify-between gap-3">
+            <div className="text-base font-semibold text-gray-900 leading-tight">
+              ${price}{" "}
+              <span className="text-sm font-medium text-gray-500">/ mo</span>
+            </div>
 
-        {/* identity */}
-        <div className="text-sm text-gray-900 font-medium leading-tight">
-          {companyName}
-        </div>
+            <div className="shrink-0 text-xs font-medium text-gray-600">
+              <span className="inline-flex items-center gap-1 rounded-full bg-gray-50 px-2 py-1 ring-1 ring-inset ring-gray-200">
+                <Clock size={12} />
+                Available {availability}
+              </span>
+            </div>
+          </div>
 
-        <div className="text-xs text-gray-500">{university}</div>
+          {/* Row 2: Identity */}
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <Building2 size={14} className="text-gray-400" />
+                <div className="truncate text-sm font-medium text-gray-900">
+                  {companyName}
+                </div>
+              </div>
+              <div className="mt-0.5 truncate text-xs text-gray-500">
+                {university}
+              </div>
+            </div>
+
+            {/* optional action indicator */}
+            <ChevronRight className="text-gray-300" size={18} />
+          </div>
+
+          {/* Row 3: Role + Verification (Trust line) */}
+          <div className="flex items-center gap-2 pt-1">
+            <span
+              className={[
+                "inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium ring-1 ring-inset",
+                roleClasses,
+              ].join(" ")}
+            >
+              {isStudent ? <ShieldCheck size={12} /> : <BadgeCheck size={12} />}
+              {role}
+            </span>
+
+            <span
+              className={[
+                "inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium ring-1 ring-inset",
+                verificationClasses,
+              ].join(" ")}
+              title={
+                isVerified
+                  ? "This poster completed verification."
+                  : "This poster has not completed verification yet."
+              }
+            >
+              {isVerified ? (
+                <CheckCircle2 size={12} />
+              ) : (
+                <AlertCircle size={12} />
+              )}
+              {verification}
+            </span>
+          </div>
+        </div>
       </CardFooter>
     </Card>
   );
 }
+
 export default CribsPage;

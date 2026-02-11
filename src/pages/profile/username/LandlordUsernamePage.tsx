@@ -153,14 +153,13 @@ export default function LandlordUsernamePage() {
 
         {/* Controls row */}
         <div className="px-4 py-3 flex items-center justify-between gap-2">
-          <div className="text-xs font-semibold flex justify-around rounded-xl text-slate-900 border w-full ">
+          <div className="text-xs font-semibold flex justify-around  h-10 rounded-xl text-slate-900 border w-full ">
             <div
-              className={`w-full flex justify-center  h-full py-3 border-r ${feedListings === false ? "" : "bg-black/10"}`}
+              className={`w-full flex justify-center h-full border-r ${feedListings === false ? "" : "bg-black/10"}`}
             >
-              {" "}
               <button
                 onClick={() => setFeedListings(true)}
-                className="h-full w-full"
+                className="h-full w-full border"
               >
                 Listings
               </button>

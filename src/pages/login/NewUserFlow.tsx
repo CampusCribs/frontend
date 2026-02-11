@@ -362,8 +362,8 @@ function BasicsStep({
           icon={<CalendarDays size={18} />}
           placeholder="Birthday (YYYY-MM-DD)"
           value={birthday}
+          type="date"
           onChange={(v) => onChange({ birthday: v })}
-          inputMode="numeric"
         />
       )}
 
@@ -682,17 +682,20 @@ function LabeledInput({
   value,
   onChange,
   inputMode,
+  type,
 }: {
   icon: React.ReactNode;
   placeholder: string;
   value: string;
   onChange: (v: string) => void;
   inputMode?: React.HTMLAttributes<HTMLInputElement>["inputMode"];
+  type?: string;
 }) {
   return (
     <div className="w-full rounded-2xl border border-black/10 bg-white px-4 py-4 flex items-center gap-3">
       <div className="text-black/60">{icon}</div>
       <input
+        type={type}
         inputMode={inputMode}
         placeholder={placeholder}
         value={value}

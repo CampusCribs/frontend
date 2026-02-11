@@ -1,9 +1,53 @@
-type: object
-required: [ code, title, message ]
-properties:
-  code:
-    type: integer
-  title:
-    type: string
-  message:
-    type: string
+components:
+  schemas:
+    ProblemDetails:
+      type: object
+      description: RFC 7807 Problem Details with common extensions.
+      required: [ title, status ]
+      properties:
+        type:
+          type: string
+          description: A URI reference that identifies the problem type.
+          example: "https://api.campuscribs.com/problems/crib-not-found"
+        title:
+          type: string
+          example: "Crib not found"
+        status:
+          type: integer
+          format: int32
+          example: 404
+        detail:
+          type: string
+          example: "No crib exists with id 'abc123'."
+        instance:
+          type: string
+          description: URI reference identifying the specific occurrence (often the request path).
+          example: "/cribs/abc123"
+
+        code:
+          type: string
+          description: Stable, machine-readable error code.
+          example: "CRIB_NOT_FOUND"
+        traceId:
+          type: string
+          description: Correlates client error with server logs/traces.
+          example: "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01"
+
+        errors:
+          type: array
+          description: Optional field validation errors.
+          items:
+            $ref: "#/components/schemas/FieldError"
+
+    FieldError:
+      type: object
+      required: [ field, message ]
+      properties:
+        field:
+          type: string
+          example: "priceMonthly"
+        message:
+          type: string
+          example: "must be greater than or equal to 0"
+        rejectedValue:
+          description: Optional rejected value.

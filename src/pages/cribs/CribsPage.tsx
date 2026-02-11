@@ -2,37 +2,25 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import {
   AlertCircle,
   BadgeCheck,
-  BadgeCheckIcon,
   Building2,
-  CheckCircle,
   CheckCircle2,
   ChevronRight,
-  CircleX,
   Clock,
-  DollarSign,
-  Dot,
-  GraduationCap,
-  HelpCircle,
-  HelpCircleIcon,
   MapPin,
   Search,
-  SearchX,
   ShieldCheck,
-  ShieldCheckIcon,
-  ShieldOff,
-  Verified,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { useInView } from "react-intersection-observer";
 
 import { useNavigate } from "react-router";
-import { useGetPublicCuratedInfinite } from "@/gen";
 import { buildImageURL } from "@/lib/image-resolver";
 
 import Lottie from "lottie-react";
 import house from "@/components/ui/houseanimation.json";
 import GuidedSearch from "./GuidedSearch";
+import { ResidenceCardDTO, useGetCuratedCribsInfinite } from "@/gen";
 
 const CribsPage = () => {
   //variables to store the selected tags and the state of the tag selector and find the intersection of the tags
@@ -48,6 +36,7 @@ const CribsPage = () => {
   // local controlled inputs for price (to avoid half-updates)
   const [minPrice, setMinPrice] = useState<number | null>(0);
   const [maxPrice, setMaxPrice] = useState<number | null>(null);
+
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { ref, inView } = useInView();
 
@@ -80,7 +69,7 @@ const CribsPage = () => {
     data: curated,
     error: curated_error,
     isLoading: curated_isLoading,
-  } = useGetPublicCuratedInfinite(params);
+  } = useGetCuratedCribsInfinite(params);
 
   useEffect(() => {
     if (inView) {
@@ -151,22 +140,19 @@ const CribsPage = () => {
                     />
                   ))
                 )} */}
-              {Array.from({ length: 10 }).map((_, index) => (
-                <ResidenceCard
-                  key={index}
-                  thumbnail="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQLbpGDcJYb2oBnoSKM5niQxRGJEEr9U3_CbA&s"
-                  id={`res-${index}`}
-                  price={900 + index * 50}
-                  location="CUF"
-                  role={
-                    index % 3 === 0
-                      ? "LANDLORD"
-                      : index % 3 === 1
-                        ? "STUDENT"
-                        : "UNVERIFIED"
-                  }
-                />
-              ))}
+              {curated?.pages.map((page) =>
+                page.data?.items.map((crib) => (
+                  <>
+                    <ResidenceCard key={crib.id} data={crib} />
+                    <ResidenceCard key={crib.id} data={crib} />
+                    <ResidenceCard key={crib.id} data={crib} />
+                    <ResidenceCard key={crib.id} data={crib} />
+                    <ResidenceCard key={crib.id} data={crib} />
+                    <ResidenceCard key={crib.id} data={crib} />
+                    <ResidenceCard key={crib.id} data={crib} />
+                  </>
+                )),
+              )}
             </div>
           </div>
           <div />
@@ -177,27 +163,12 @@ const CribsPage = () => {
     </div>
   );
 };
-export function ResidenceCard() {
+
+export function ResidenceCard({ data }: { data: ResidenceCardDTO }) {
   const navigate = useNavigate();
 
-  // ---- STATIC DATA ----
-  const id = "abc123";
-  const thumbnail =
-    "https://images.unsplash.com/photo-1560185007-c5ca9d2c014d?auto=format&fit=crop&w=1400&q=80";
-
-  const location = "Clifton · Cincinnati, OH";
-  const price = 875;
-
-  const availability = "Aug 1"; // or "Immediate"
-  const role: "Student" | "Landlord" = "Landlord";
-  const verification: "Verified" | "Unverified" = "Unverified";
-
-  const companyName = "Queen City Property Group";
-  const university = "University of Cincinnati";
-  // ---------------------
-
-  const isVerified = verification === "Verified";
-  const isStudent = role === "Student";
+  const isVerified = data.verification === "Verified";
+  const isStudent = data.role === "Student";
 
   const roleClasses = isStudent
     ? "bg-emerald-50 text-emerald-700 ring-emerald-200"
@@ -209,13 +180,13 @@ export function ResidenceCard() {
 
   return (
     <Card
-      onClick={() => navigate(`/cribs/${id}`)}
+      onClick={() => navigate(`/cribs/${data.id}`)}
       className="cursor-pointer overflow-hidden rounded-xl border bg-white shadow-sm hover:shadow-md transition"
     >
       {/* IMAGE (BIGGER) */}
-      <CardContent className="p-0 relative aspect-[16/9]">
+      <CardContent className="p-0 relative ">
         <img
-          src={thumbnail}
+          src={data.thumbnailUrl}
           alt="Residence"
           className="h-full w-full object-cover"
         />
@@ -229,7 +200,7 @@ export function ResidenceCard() {
             <div className="min-w-0">
               <div className="flex items-center gap-1 text-white text-sm font-semibold truncate">
                 <MapPin size={14} />
-                <span className="truncate">{location}</span>
+                <span className="truncate">{data.locationLabel}</span>
               </div>
               <div className="text-white/90 text-xs font-medium">
                 Tap to view details
@@ -240,19 +211,19 @@ export function ResidenceCard() {
       </CardContent>
 
       {/* FOOTER (REDESIGNED) */}
-      <CardFooter className="px-4 py-3">
+      <CardFooter className="px-2 ">
         <div className="w-full space-y-2">
           {/* Row 1: Price + Availability */}
-          <div className="flex items-start justify-between gap-3">
-            <div className="text-base font-semibold text-gray-900 leading-tight">
-              ${price}{" "}
-              <span className="text-sm font-medium text-gray-500">/ mo</span>
+          <div className="flex flex-wrap items-start justify-between  ">
+            <div className="text-base font-semibold text-gray-900 leading-tight ">
+              ${data.priceMonthly}{" "}
+              <span className="text-xs font-medium text-gray-500">/ mo</span>
             </div>
 
-            <div className="shrink-0 text-xs font-medium text-gray-600">
-              <span className="inline-flex items-center gap-1 rounded-full bg-gray-50 px-2 py-1 ring-1 ring-inset ring-gray-200">
+            <div className="shrink-0 text-xs font-medium text-gray-600 ">
+              <span className="inline-flex items-center rounded-full bg-gray-50 px-2 py-1 ring-1 ring-inset ring-gray-200">
                 <Clock size={12} />
-                Available {availability}
+                Available {formatAvailability(data.availability)}
               </span>
             </div>
           </div>
@@ -263,11 +234,11 @@ export function ResidenceCard() {
               <div className="flex items-center gap-2">
                 <Building2 size={14} className="text-gray-400" />
                 <div className="truncate text-sm font-medium text-gray-900">
-                  {companyName}
+                  {data.identity.companyName}
                 </div>
               </div>
               <div className="mt-0.5 truncate text-xs text-gray-500">
-                {university}
+                {data.identity.universityName}
               </div>
             </div>
 
@@ -276,15 +247,15 @@ export function ResidenceCard() {
           </div>
 
           {/* Row 3: Role + Verification (Trust line) */}
-          <div className="flex items-center gap-2 pt-1">
+          <div className="flex-wrap items-center gap-2 space-x-1 pt-1">
             <span
               className={[
-                "inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium ring-1 ring-inset",
+                "inline-flex items-center gap-1 rounded-full px-2 py-1 mb-1 text-xs font-medium ring-1 ring-inset",
                 roleClasses,
               ].join(" ")}
             >
               {isStudent ? <ShieldCheck size={12} /> : <BadgeCheck size={12} />}
-              {role}
+              {data.role}
             </span>
 
             <span
@@ -303,7 +274,7 @@ export function ResidenceCard() {
               ) : (
                 <AlertCircle size={12} />
               )}
-              {verification}
+              {data.verification}
             </span>
           </div>
         </div>
@@ -312,4 +283,17 @@ export function ResidenceCard() {
   );
 }
 
+function formatAvailability(a) {
+  if (a.type === "Immediate") return "Immediate";
+
+  // Keep it simple and predictable: show "Aug 1, 2026" in user locale
+  const d = new Date(a.date);
+  if (Number.isNaN(d.getTime())) return a.date; // fallback if date parsing fails
+
+  return d.toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
 export default CribsPage;

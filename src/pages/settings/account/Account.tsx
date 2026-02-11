@@ -32,7 +32,7 @@ import Error from "@/pages/error/Error";
 import { useThumbnailUpload } from "@/lib/uploadThumbnail";
 import { buildThumbnailURL } from "@/lib/image-resolver";
 import { EmailChangeFlow } from "./EmailChangeFlow";
-import { useGetUsersMe, usePutUsersUpdate } from "@/gen";
+// import { useGetUsersMe, usePutUsersUpdate } from "@/gen";
 const accountSettingsSchema = z
   .object({
     // Read-only (shown for clarity)
@@ -94,37 +94,37 @@ const Account = () => {
   // const [passwordForDelete, setPasswordForDelete] = useState("");
   const { upload, mediaId } = useThumbnailUpload();
 
-  const {
-    data: userData,
-    isLoading,
-    isError,
-    error,
-  } = useGetUsersMe({ ...config });
+  // const {
+  //   data: userData,
+  //   isLoading,
+  //   isError,
+  //   error,
+  // } = useGetUsersMe({ ...config });
   const thumbnailUrl = buildThumbnailURL(
     userData?.data.id || "",
     userData?.data.thumbnailMediaId || "",
   );
-  const { mutate: updateAccount } = usePutUsersUpdate({
-    ...config,
-    mutation: {
-      onSuccess: async () => {
-        await notify({
-          title: "Account Updated 🎉",
-          message: "Your account settings have been saved.",
-          buttonText: "Close",
-        });
-        navigate("/account");
-      },
-      onError: async (err) => {
-        console.error("Update Error:", err);
-        await notify({
-          title: "Update Failed",
-          message: "We couldn't save your changes. Please try again.",
-          buttonText: "Close",
-        });
-      },
-    },
-  });
+  // const { mutate: updateAccount } = usePutUsersUpdate({
+  //   ...config,
+  //   mutation: {
+  //     onSuccess: async () => {
+  //       await notify({
+  //         title: "Account Updated 🎉",
+  //         message: "Your account settings have been saved.",
+  //         buttonText: "Close",
+  //       });
+  //       navigate("/account");
+  //     },
+  //     onError: async (err) => {
+  //       console.error("Update Error:", err);
+  //       await notify({
+  //         title: "Update Failed",
+  //         message: "We couldn't save your changes. Please try again.",
+  //         buttonText: "Close",
+  //       });
+  //     },
+  //   },
+  // });
 
   const {
     register,
@@ -150,24 +150,24 @@ const Account = () => {
   });
   const newsletterConsent = watch("newsletterConsent");
   const thumbnailvalue = watch("thumbnailMediaId");
-  useEffect(() => {
-    if (userData?.data && !hasInitialized) {
-      reset({
-        email: userData.data.email ?? "",
-        username: userData.data.username ?? "",
-        firstName: userData.data.firstName ?? "",
-        lastName: userData.data.lastName ?? "",
-        bio: userData.data.bio ?? "",
-        newsletterConsent: userData.data.newsletterConsent ?? false,
-        thumbnailMediaId:
-          thumbnailvalue ?? userData.data.thumbnailMediaId ?? "",
-        phone: userData.data.phone ?? "",
-        newPassword: "",
-        confirmPassword: "",
-      });
-      setHasInitialized(true);
-    }
-  }, [userData, reset, thumbnailvalue, hasInitialized]);
+  // useEffect(() => {
+  //   if (userData?.data && !hasInitialized) {
+  //     reset({
+  //       email: userData.data.email ?? "",
+  //       username: userData.data.username ?? "",
+  //       firstName: userData.data.firstName ?? "",
+  //       lastName: userData.data.lastName ?? "",
+  //       bio: userData.data.bio ?? "",
+  //       newsletterConsent: userData.data.newsletterConsent ?? false,
+  //       thumbnailMediaId:
+  //         thumbnailvalue ?? userData.data.thumbnailMediaId ?? "",
+  //       phone: userData.data.phone ?? "",
+  //       newPassword: "",
+  //       confirmPassword: "",
+  //     });
+  //     setHasInitialized(true);
+  //   }
+  // }, [userData, reset, thumbnailvalue, hasInitialized]);
 
   const onSubmit = (data: AccountSettingsSchema) => {
     const payload: Record<string, unknown> = {
@@ -185,7 +185,7 @@ const Account = () => {
       payload.newPassword = data.newPassword;
     }
 
-    updateAccount({ data: payload });
+    // updateAccount({ data: payload });
   };
 
   //return
@@ -314,7 +314,7 @@ const Account = () => {
                 }
 
                 try {
-                  const media = await upload(file);
+                  //const media = await upload(file);
                   setThumbnail(file);
                   // setValue("thumbnailMediaId", media); // <- store this in form state
                   // <- store this for form submit

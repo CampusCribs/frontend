@@ -4,18 +4,5 @@ info:
   version: 1.0.0
 
 paths:
-  /api/notifications:
-    $ref: ./paths/notifications.yaml
-
-components:
-  schemas:
-    NotificationDTO:
-      $ref: ./components/schemas/NotificationDTO.yaml
-    PageNotificationDTO:
-      $ref: ./components/schemas/PageNotificationDTO.yaml
-    Error:
-      $ref: ./components/schemas/Error.yaml
-
-  responses:
-    ErrorResponse:
-      $ref: ./components/responses/ErrorResponse.yaml
+  /curated/cribs:
+    $ref: ./paths/curated.yaml

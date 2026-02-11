@@ -1,0 +1,74 @@
+components:
+  schemas:
+
+    ResidenceCardDTO:
+      type: object
+      description: Fields required to render the ResidenceCard component.
+      required:
+      - id
+      - thumbnailUrl
+      - locationLabel
+      - priceMonthly
+      - availability
+      - role
+      - verification
+      - identity
+      properties:
+        id:
+          type: string
+          example: abc123
+
+        thumbnailUrl:
+          type: string
+          format: uri
+          example: https://images.unsplash.com/photo-1560185007-c5ca9d2c014d?auto=format&fit=crop&w=1400&q=80
+
+        locationLabel:
+          type: string
+          example: "Clifton · Cincinnati, OH"
+
+        priceMonthly:
+          type: integer
+          format: int32
+          minimum: 0
+          example: 875
+
+        availability:
+          $ref: ../CuratedTypes.yaml#/components/schemas/Availability
+
+        role:
+          $ref: ../CuratedTypes.yaml#/components/schemas/PosterRole
+
+        verification:
+          $ref: ../CuratedTypes.yaml#/components/schemas/VerificationStatus
+
+        identity:
+          $ref: ../CuratedTypes.yaml#/components/schemas/ListingIdentity
+    PageResidenceCardDTO:
+      type: object
+      required: [ items, page, size, totalElements, totalPages ]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ResidenceCardDTO"
+        page:
+          type: integer
+          format: int32
+          minimum: 0
+          maximum: 1000
+        size:
+          type: integer
+          format: int32
+          minimum: 1
+          maximum: 100
+        totalElements:
+          type: integer
+          format: int64
+          minimum: 0
+          maximum: 20
+        totalPages:
+          type: integer
+          format: int32
+          minimum: 0
+          maximum: 1000

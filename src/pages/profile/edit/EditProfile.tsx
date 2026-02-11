@@ -9,7 +9,7 @@ import { userProfileSchema, UserProfileSchema } from "@/lib/schema/schema";
 import { Button } from "@/components/ui/button";
 import { FieldErrors } from "react-hook-form";
 import useAuthenticatedClientConfig from "@/hooks/use-authenticated-client-config";
-import { useGetUsersMe, usePutUsersUpdate } from "@/gen";
+// import { useGetUsersMe, usePutUsersUpdate } from "@/gen";
 import { useThumbnailUpload } from "@/lib/uploadThumbnail";
 import { useNavigate } from "react-router";
 import { buildThumbnailURL } from "@/lib/image-resolver";
@@ -18,36 +18,36 @@ const EditProfile = () => {
   const config = useAuthenticatedClientConfig();
   const notify = useNotify();
   const navigate = useNavigate();
-  const {
-    data: userData,
-    isLoading: isLoading_user,
-    isError: isError_user,
-    error: error_user,
-  } = useGetUsersMe({ ...config });
+  // const {
+  //   data: userData,
+  //   isLoading: isLoading_user,
+  //   isError: isError_user,
+  //   error: error_user,
+  // } = useGetUsersMe({ ...config });
 
   const { upload, mediaId } = useThumbnailUpload();
-  const { mutate: updateProfile } = usePutUsersUpdate({
-    ...config,
-    mutation: {
-      onSuccess: async (response) => {
-        await notify({
-          title: "Profile Updated 🎉",
-          message: "Your profile has been successfully updated.",
+  // const { mutate: updateProfile } = usePutUsersUpdate({
+  //   ...config,
+  //   mutation: {
+  //     onSuccess: async (response) => {
+  //       await notify({
+  //         title: "Profile Updated 🎉",
+  //         message: "Your profile has been successfully updated.",
 
-          buttonText: "Close",
-        });
-        navigate("/profile");
-      },
-      onError: async (error) => {
-        console.error(" Error:", error);
-        await notify({
-          title: "Error",
-          message: "Failed to update profile. Please try again later.",
-          buttonText: "Close",
-        });
-      },
-    },
-  });
+  //         buttonText: "Close",
+  //       });
+  //       navigate("/profile");
+  //     },
+  //     onError: async (error) => {
+  //       console.error(" Error:", error);
+  //       await notify({
+  //         title: "Error",
+  //         message: "Failed to update profile. Please try again later.",
+  //         buttonText: "Close",
+  //       });
+  //     },
+  //   },
+  // });
 
   const {
     register,
@@ -70,41 +70,41 @@ const EditProfile = () => {
 
   const [thumbnail, setThumbnail] = useState<File | null>(null);
   const onSubmit = (data: UserProfileSchema) => {
-    updateProfile({
-      data: {
-        ...data,
-      },
-    });
+    // updateProfile({
+    //   data: {
+    //     ...data,
+    //   },
+    // });
     navigate("/profile");
   };
   const onError = (errors: FieldErrors<UserProfileSchema>) => {
     console.error("Validation Errors:", errors);
   };
   //change these to update the profile
-  useEffect(() => {
-    if (userData?.data) {
-      reset({
-        bio: userData.data.bio || "",
-        phone: userData.data.phone || "",
-        firstName: userData.data.firstName || "",
-        lastName: userData.data.lastName || "",
-        username: userData.data.username || "",
-        email: userData.data.email || "",
-        thumbnailMediaId: userData.data.thumbnailMediaId || "",
-      });
-    }
-  }, [userData, reset]);
+  // useEffect(() => {
+  //   if (userData?.data) {
+  //     reset({
+  //       bio: userData.data.bio || "",
+  //       phone: userData.data.phone || "",
+  //       firstName: userData.data.firstName || "",
+  //       lastName: userData.data.lastName || "",
+  //       username: userData.data.username || "",
+  //       email: userData.data.email || "",
+  //       thumbnailMediaId: userData.data.thumbnailMediaId || "",
+  //     });
+  //   }
+  // }, [userData, reset]);
 
-  if (isLoading_user) {
-    return <div>Loading...</div>;
-  }
-  if (isError_user) {
-    return <div>Error: {error_user?.message}</div>;
-  }
+  // if (isLoading_user) {
+  //   return <div>Loading...</div>;
+  // }
+  // if (isError_user) {
+  //   return <div>Error: {error_user?.message}</div>;
+  // }
 
   const thumbnailUrl = buildThumbnailURL(
     userData?.data.id || "",
-    userData?.data.thumbnailMediaId || ""
+    userData?.data.thumbnailMediaId || "",
   );
   return (
     <div>

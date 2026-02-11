@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useNotify } from "@/components/ui/Notify";
-import { useGetUsersEmail, usePostUsersEmail } from "@/gen";
+// import { useGetUsersEmail, usePostUsersEmail } from "@/gen";
 import useAuthenticatedClientConfig from "@/hooks/use-authenticated-client-config";
 import { Label } from "@radix-ui/react-label";
 import { AlertTriangle, ArrowLeftIcon } from "lucide-react";
@@ -22,30 +22,30 @@ const EmailInitiate = () => {
   });
 
   const config = useAuthenticatedClientConfig();
-  const { data: emailStatusResponse } = useGetUsersEmail({ ...config });
+  // const { data: emailStatusResponse } = useGetUsersEmail({ ...config });
 
-  const { mutateAsync: postUsersEmail } = usePostUsersEmail({
-    ...config,
-    mutation: {
-      onSuccess: async () => {
-        await notify({
-          title: "🎉Success",
-          message: "We have sent you a verification email. Please enter it in",
-          buttonText: "Close",
-        });
-        navigate("/settings/account/email-verification");
-      },
-      onError: async (error) => {
-        await notify({
-          title: error.response?.data.title || "error",
-          message: error.response?.data.message || "an error occured",
-          buttonText: "Close",
-        });
-      },
-    },
-  });
+  // const { mutateAsync: postUsersEmail } = usePostUsersEmail({
+  //   ...config,
+  //   mutation: {
+  //     onSuccess: async () => {
+  //       await notify({
+  //         title: "🎉Success",
+  //         message: "We have sent you a verification email. Please enter it in",
+  //         buttonText: "Close",
+  //       });
+  //       navigate("/settings/account/email-verification");
+  //     },
+  //     onError: async (error) => {
+  //       await notify({
+  //         title: error.response?.data.title || "error",
+  //         message: error.response?.data.message || "an error occured",
+  //         buttonText: "Close",
+  //       });
+  //     },
+  //   },
+  // });
   const onSubmit = handleSubmit(async ({ newEmail }) => {
-    postUsersEmail({ data: { email: newEmail } });
+    // postUsersEmail({ data: { email: newEmail } });
   });
   const allowAt = emailStatusResponse?.data?.emailChangeAllowedAt
     ? new Date(emailStatusResponse.data.emailChangeAllowedAt)

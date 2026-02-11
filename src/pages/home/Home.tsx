@@ -2,10 +2,11 @@ import HatHouseBlack from "@/components/ui/HatHouseBlack";
 import { useNavigate } from "react-router";
 import { ResidenceCard } from "../cribs/CribsPage";
 import { Check, Lock, ShieldUser } from "lucide-react";
+import { useGetCuratedCribsInfinite } from "@/gen";
 
 const Home = () => {
   const navigate = useNavigate();
-
+  const { data: curatedData } = useGetCuratedCribsInfinite();
   return (
     <div className="w-full overflow-hidden ">
       {" "}
@@ -148,46 +149,14 @@ const Home = () => {
                 {/* Cards grid (use your ResidenceCard or a lightweight preview) */}
                 <div className="mt-3 grid gap-4 grid-cols-2">
                   {/* If you can reuse ResidenceCard here, pass placeholder props */}
-                  <ResidenceCard
-                    userId="1d919121-a8f1-4990-bd6c-c7d10ad131fd"
-                    thumbnail="https://images.unsplash.com/photo-1507089947368-19c1da9775ae"
-                    id="485da7d5-54f8-4c82-9f56-6ffbe9240657"
-                    price={650}
-                    location="CUF"
-                    name="University of Cincinnati"
-                    iconKey="asdf"
-                    ableToUse={false}
-                  />
-                  <ResidenceCard
-                    userId="1d919121-a8f1-4990-bd6c-c7d10ad131fd"
-                    thumbnail="https://images.unsplash.com/photo-1507089947368-19c1da9775ae"
-                    id="485da7d5-54f8-4c82-9f56-6ffbe9240657"
-                    price={650}
-                    location="CUF"
-                    name="University of Cincinnati"
-                    iconKey="asdf"
-                    ableToUse={false}
-                  />
-                  <ResidenceCard
-                    userId="1d919121-a8f1-4990-bd6c-c7d10ad131fd"
-                    thumbnail="https://images.unsplash.com/photo-1507089947368-19c1da9775ae"
-                    id="485da7d5-54f8-4c82-9f56-6ffbe9240657"
-                    price={650}
-                    location="CUF"
-                    name="University of Cincinnati"
-                    iconKey="asdf"
-                    ableToUse={false}
-                  />
-                  <ResidenceCard
-                    userId="1d919121-a8f1-4990-bd6c-c7d10ad131fd"
-                    thumbnail="https://images.unsplash.com/photo-1507089947368-19c1da9775ae"
-                    id="485da7d5-54f8-4c82-9f56-6ffbe9240657"
-                    price={650}
-                    location="CUF"
-                    name="University of Cincinnati"
-                    iconKey="asdf"
-                    ableToUse={false}
-                  />
+                  {curatedData?.pages[0]?.data.items.map((crib) => (
+                    <>
+                      <ResidenceCard key={crib.id} data={crib} />
+                      <ResidenceCard key={crib.id} data={crib} />
+                      <ResidenceCard key={crib.id} data={crib} />
+                      <ResidenceCard key={crib.id} data={crib} />
+                    </>
+                  ))}
                 </div>
 
                 <div className="mt-4 flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3 text-xs text-slate-600">

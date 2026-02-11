@@ -10,7 +10,9 @@
     "build": "bun run generate ; bunx --bun vite build",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
-    "preview": "bunx --bun vite preview"
+    "preview": "bunx --bun vite preview",
+    "generate-bundle": "npx @redocly/cli bundle ./kubb/kubbconfig.yaml -o openapi.bundle.yaml",
+    "test-server": "bun run generate-bundle ; npx @stoplight/prism-cli mock openapi.bundle.yaml --port 4010"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",
@@ -60,6 +62,7 @@
     "@kubb/plugin-react-query": "^3.10.8",
     "@kubb/plugin-ts": "^3.10.8",
     "@kubb/react": "^3.10.8",
+    "@stoplight/prism-cli": "^5.6.0",
     "@types/node": "^22.15.3",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.3",

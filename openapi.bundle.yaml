@@ -1,0 +1,237 @@
+openapi: 3.0.3
+info:
+  title: CampusCribs API
+  version: 1.0.0
+paths:
+  /curated/cribs:
+    get:
+      summary: List curated cribs
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/SizeParam'
+        - $ref: '#/components/parameters/SortParam'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PageResidenceCardDTO'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+components:
+  parameters:
+    PageParam:
+      name: page
+      in: query
+      schema:
+        type: integer
+        format: int32
+        minimum: 0
+        default: 0
+    SizeParam:
+      name: size
+      in: query
+      schema:
+        type: integer
+        format: int32
+        minimum: 1
+        maximum: 100
+        default: 20
+    SortParam:
+      name: sort
+      in: query
+      description: Sort by one or more fields, e.g. sort=priceMonthly,asc&sort=createdAt,desc
+      schema:
+        type: array
+        items:
+          type: string
+      style: form
+      explode: true
+  schemas:
+    AvailabilityImmediate:
+      type: object
+      required:
+        - type
+      properties:
+        type:
+          type: string
+          enum:
+            - Immediate
+    AvailabilityDate:
+      type: object
+      required:
+        - type
+        - date
+      properties:
+        type:
+          type: string
+          enum:
+            - Date
+        date:
+          type: string
+          format: date
+          description: ISO-8601 date (e.g., 2026-08-01)
+    Availability:
+      description: Availability for the listing (either immediate or a specific date).
+      oneOf:
+        - $ref: '#/components/schemas/AvailabilityImmediate'
+        - $ref: '#/components/schemas/AvailabilityDate'
+      discriminator:
+        propertyName: type
+        mapping:
+          Immediate: '#/components/schemas/AvailabilityImmediate'
+          Date: '#/components/schemas/AvailabilityDate'
+    PosterRole:
+      type: string
+      description: Who posted the listing.
+      enum:
+        - Student
+        - Landlord
+    VerificationStatus:
+      type: string
+      description: Verification status of the poster.
+      enum:
+        - Verified
+        - Unverified
+    ListingIdentity:
+      type: object
+      description: Identity line shown on the card (company + university).
+      required:
+        - companyName
+        - universityName
+      properties:
+        companyName:
+          type: string
+          example: Queen City Property Group
+        universityName:
+          type: string
+          example: University of Cincinnati
+    ResidenceCardDTO:
+      type: object
+      description: Fields required to render the ResidenceCard component.
+      required:
+        - id
+        - thumbnailUrl
+        - locationLabel
+        - priceMonthly
+        - availability
+        - role
+        - verification
+        - identity
+      properties:
+        id:
+          type: string
+          example: abc123
+        thumbnailUrl:
+          type: string
+          format: uri
+          example: https://images.unsplash.com/photo-1560185007-c5ca9d2c014d?auto=format&fit=crop&w=1400&q=80
+        locationLabel:
+          type: string
+          example: Clifton · Cincinnati, OH
+        priceMonthly:
+          type: integer
+          format: int32
+          minimum: 0
+          example: 875
+        availability:
+          $ref: '#/components/schemas/Availability'
+        role:
+          $ref: '#/components/schemas/PosterRole'
+        verification:
+          $ref: '#/components/schemas/VerificationStatus'
+        identity:
+          $ref: '#/components/schemas/ListingIdentity'
+    PageResidenceCardDTO:
+      type: object
+      required:
+        - items
+        - page
+        - size
+        - totalElements
+        - totalPages
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ResidenceCardDTO'
+        page:
+          type: integer
+          format: int32
+          minimum: 0
+          maximum: 1000
+        size:
+          type: integer
+          format: int32
+          minimum: 1
+          maximum: 100
+        totalElements:
+          type: integer
+          format: int64
+          minimum: 0
+          maximum: 20
+        totalPages:
+          type: integer
+          format: int32
+          minimum: 0
+          maximum: 1000
+    FieldError:
+      type: object
+      required:
+        - field
+        - message
+      properties:
+        field:
+          type: string
+          example: priceMonthly
+        message:
+          type: string
+          example: must be greater than or equal to 0
+        rejectedValue:
+          description: Optional rejected value.
+    ProblemDetails:
+      type: object
+      description: RFC 7807 Problem Details with common extensions.
+      required:
+        - title
+        - status
+      properties:
+        type:
+          type: string
+          description: A URI reference that identifies the problem type.
+          example: https://api.campuscribs.com/problems/crib-not-found
+        title:
+          type: string
+          example: Crib not found
+        status:
+          type: integer
+          format: int32
+          example: 404
+        detail:
+          type: string
+          example: No crib exists with id 'abc123'.
+        instance:
+          type: string
+          description: URI reference identifying the specific occurrence (often the request path).
+          example: /cribs/abc123
+        code:
+          type: string
+          description: Stable, machine-readable error code.
+          example: CRIB_NOT_FOUND
+        traceId:
+          type: string
+          description: Correlates client error with server logs/traces.
+          example: 00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01
+        errors:
+          type: array
+          description: Optional field validation errors.
+          items:
+            $ref: '#/components/schemas/FieldError'
+  responses:
+    BadRequest:
+      description: Bad Request
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'

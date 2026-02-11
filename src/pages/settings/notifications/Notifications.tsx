@@ -1,11 +1,11 @@
-import { useGetNotificationsInfinite, useMarkNotificationAsRead } from "@/gen";
+// import { useGetNotificationsInfinite, useMarkNotificationAsRead } from "@/gen";
 import useAuthenticatedClientConfig from "@/hooks/use-authenticated-client-config";
 import { ArrowLeftIcon } from "lucide-react";
 import { useNavigate } from "react-router";
 
 const Notifications = () => {
   const config = useAuthenticatedClientConfig();
-  const { data } = useGetNotificationsInfinite({}, { ...config });
+  // const { data } = useGetNotificationsInfinite({}, { ...config });
   return (
     <div>
       <div className=" pt-3">
@@ -23,7 +23,7 @@ const Notifications = () => {
         </div>
         <div className="flex justify-center items-center">
           <div className="flex flex-col mt-3 w-full py-5 rounded-lg">
-            {data &&
+            {/* {data &&
             data.pages?.flatMap((page) => page.data?.content).length > 0 ? (
               data.pages.map((item) =>
                 item.data?.content?.map((item) => (
@@ -43,7 +43,7 @@ const Notifications = () => {
             {data &&
               data.pages.flatMap((page) => page.data.content).length > 0 && (
                 <div className="w-full border-t" />
-              )}
+              )} */}
           </div>
         </div>
       </div>
@@ -63,11 +63,11 @@ const Notification = ({
   id: string;
 }) => {
   const config = useAuthenticatedClientConfig();
-  const { mutateAsync } = useMarkNotificationAsRead({ ...config });
+  // const { mutateAsync } = useMarkNotificationAsRead({ ...config });
 
   const navigate = useNavigate();
   const handleClick = async () => {
-    await mutateAsync({ id: id }).then(() => navigate("/profile"));
+    // await mutateAsync({ id: id }).then(() => navigate("/profile"));
   };
   return (
     <div

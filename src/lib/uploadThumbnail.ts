@@ -1,4 +1,4 @@
-import { useGetUsersMeThumbnailUpload } from "@/gen/hooks/UsersHooks/useGetUsersMeThumbnailUpload";
+// import { useGetUsersMeThumbnailUpload } from "@/gen/hooks/UsersHooks/useGetUsersMeThumbnailUpload";
 import useAuthenticatedClientConfig from "@/hooks/use-authenticated-client-config";
 import { useState } from "react";
 
@@ -8,12 +8,12 @@ export function useThumbnailUpload() {
   const [error, setError] = useState<string | null>(null);
   const config = useAuthenticatedClientConfig();
 
-  const { refetch } = useGetUsersMeThumbnailUpload({
-    ...config,
-    query: {
-      enabled: false, // ✅ Must be inside query object
-    },
-  });
+  // const { refetch } = useGetUsersMeThumbnailUpload({
+  //   ...config,
+  //   query: {
+  //     enabled: false, // ✅ Must be inside query object
+  //   },
+  // });
 
   const upload = async (file: File) => {
     try {

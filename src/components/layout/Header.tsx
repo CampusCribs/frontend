@@ -1,16 +1,16 @@
-import { Bell, Dot, SquarePlus } from "lucide-react";
+import { Bell, SquarePlus } from "lucide-react";
 import { useNavigate } from "react-router";
 
 import useEasyAuth from "@/hooks/use-easy-auth";
 import useAuthenticatedClientConfig from "@/hooks/use-authenticated-client-config";
-import { useHasUnreadNotifications } from "@/gen";
+// import { useHasUnreadNotifications } from "@/gen";
 import HatHouseBlack from "../ui/HatHouseBlack";
 
 const Header = () => {
   const navigate = useNavigate();
   const { user } = useEasyAuth();
   const config = useAuthenticatedClientConfig();
-  const { data } = useHasUnreadNotifications({ ...config });
+  // const { data } = useHasUnreadNotifications({ ...config });
 
   return (
     <div className="flex justify-between items-center px-4 py-2 shadow z-40">

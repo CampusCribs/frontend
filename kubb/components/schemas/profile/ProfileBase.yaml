@@ -1,0 +1,71 @@
+components:
+  schemas:
+    BaseProfile:
+      type: object
+      required:
+      - name
+      - username
+      - bio
+      - email
+      - phone
+      - avatarUrl
+      - role
+      - verification
+      properties:
+        name:
+          type: string
+          example: "John Doe"
+        username:
+          type: string
+          example: "johndoe123"
+        bio:
+          type: string
+          example: "College student passionate about finding the perfect off-campus housing!"
+        email:
+          type: string
+          format: email
+          example: "johndoe@example.com"
+        phone:
+          type: string
+          example: "555-123-4567"
+        avatarUrl:
+          type: string
+          format: uri
+          example: "https://images.unsplash.com/photo-1502685104226-ee32379fefbe?auto=format&fit=crop&w=400&q=80"
+        role:
+          $ref: "#/components/schemas/ProfileRole"
+
+        verification:
+          $ref: "#/components/schemas/VerificationStatus"
+
+    ProfileRole:
+      type: string
+      enum: [ LANDLORD, STUDENT ]
+      example: LANDLORD
+
+    VerificationStatus:
+      type: string
+      enum: [ VERIFIED, UNVERIFIED ]
+      example: VERIFIED
+
+    LandlordProfile:
+      allOf:
+      - $ref: "#/components/schemas/BaseProfile"
+      - type: object
+        required:
+        - market
+        properties:
+          market:
+            type: string
+            example: Cincinnati, OH
+
+    StudentProfile:
+      allOf:
+      - $ref: "#/components/schemas/BaseProfile"
+      - type: object
+        required:
+        - school
+        properties:
+          school:
+            type: string
+            example: UC Berkeley

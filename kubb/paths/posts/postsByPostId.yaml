@@ -1,0 +1,18 @@
+get:
+  summary: get individual crib
+  parameters:
+  - in: path
+    name: postId
+    required: true
+    schema:
+      type: string
+  responses:
+    "200":
+      description: OK
+      content:
+        application/json:
+          schema:
+            $ref: ../../components/schemas/posts/IndividualPost.yaml#/components/schemas/IndividualPost
+
+    "400":
+      $ref: ../../components/responses/ErrorResponse.yaml#/components/responses/BadRequest

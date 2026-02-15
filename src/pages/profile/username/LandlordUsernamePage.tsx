@@ -1,58 +1,84 @@
 import { useState } from "react";
 import {
-  ArrowLeft,
-  CircleUserRound,
-  CheckCircle2,
   AlertCircle,
-  SlidersHorizontal,
+  ArrowLeft,
+  CheckCircle2,
+  CircleUserRound,
+  MessageCircleMore,
+  Send,
+  Tag,
 } from "lucide-react";
-import { useNavigate } from "react-router";
+import { useNavigate, useParams } from "react-router";
+import { landlordProfile } from "@/gen";
+import { useGetPostsUsernameListInfinite } from "@/gen";
 import { ResidenceCard } from "@/pages/cribs/CribsPage";
-import { CommunityPostCardProfileMinimal } from "../ProfilePage";
 import ShareModal from "@/components/ui/ShareModal";
 
 /** ---------------------------------------------
  * Types
  * --------------------------------------------*/
-type Verification = "Verified" | "Unverified";
+export type Tag = { name: string };
+
+type BaseProfilePost = {
+  id: string;
+  type: "CRIB" | "COMMUNITY";
+  tags: Tag[];
+};
+
+/** ---------------------------------------------
+ * CRIB (listing-style)
+ * --------------------------------------------*/
+export type CRIBPost = BaseProfilePost & {
+  type: "CRIB";
+  title: string;
+  description: string;
+  imageUrl: string; // single hero image
+  isVerified: boolean;
+  price: number;
+  roommates: number;
+};
 
 /** ---------------------------------------------
  * Page
  * --------------------------------------------*/
-export default function LandlordUsernamePage() {
+export default function LandlordUsernamePage({
+  landlord,
+}: {
+  landlord: landlordProfile;
+}) {
   const navigate = useNavigate();
-  const [feedListings, setFeedListings] = useState(false);
-  const [openShare, setOpenShare] = useState(false);
-  // Placeholder landlord
-  const landlord = {
-    name: "Queen City Property Group",
-    username: "queencityprops",
-    market: "Cincinnati, OH",
-    bio: "Student-friendly rentals near campus. Fast responses, transparent leases.",
-    email: "leasing@queencityprops.com",
-    phone: "(513) 555-0123",
-    avatarUrl: "",
-    role: "Landlord" as const,
-    verification: "Unverified" as Verification, // flip to "Verified" to see styling
-    stats: {
-      listings: 12,
-      responseRate: 96,
-      avgReply: "2h",
-    },
+  const { username } = useParams<{ username: string }>();
+  const [openShare, setOpenShare] = useState<boolean>(false);
+  // Placeholder user
+  // const user = {
+  //   name: "Johnny Edwards",
+  //   username: "johnnyedwards",
+  //   school: "UC Berkeley",
+  //   bio: "CS student. Looking for a clean, chill roommate near campus. Gym + coffee + grind.",
+  //   email: "johnnyedwards@gmail.com",
+  //   phone: "(513) 555-0123",
+  //   avatarUrl: "", // set to URL to see avatar image
+  // };
+
+  const isVerified = false;
+  const params = {
+    page: 0,
+    size: 10,
+    sort: ["createdAt,desc"],
   };
+  const {
+    data: curated,
+    isError: curated_error,
+    isLoading: curated_isLoading,
+  } = useGetPostsUsernameListInfinite(username || "");
 
-  // UI-only controls (static behavior, but wired)
-  const [sort, setSort] = useState<"Recommended" | "Price" | "Availability">(
-    "Recommended",
-  );
-
-  const isVerified = landlord.verification === "Verified";
-
+  console.log(curated_error);
+  const [activeTab, setActiveTab] = useState<"CRIB" | "COMMUNITY">("CRIB");
   return (
     <div className="min-h-dvh w-full bg-white">
-      {/* Top bar */}
+      {/* Top bar (tighter) */}
       <div className="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-slate-100">
-        <div className="mx-auto w-full max-w-[720px] px-3 h-12 flex items-center justify-between">
+        <div className="mx-auto w-full max-w-[520px] px-3 h-12 flex items-center justify-between">
           <button
             type="button"
             className="p-1.5 -ml-1 rounded-full hover:bg-slate-100 transition"
@@ -64,9 +90,9 @@ export default function LandlordUsernamePage() {
         </div>
       </div>
 
-      <div className="mx-auto w-full max-w-[720px]">
-        {/* Header */}
-        <div className="px-4 pt-5 pb-4">
+      <div className="mx-auto w-full max-w-[520px]">
+        {/* Profile header (cleaner rhythm) */}
+        <div className="px-4 pt-5 pb-5">
           <div className="flex items-start gap-4">
             {/* Avatar */}
             <div className="h-[72px] w-[72px] rounded-full bg-slate-50 border border-slate-200 overflow-hidden flex items-center justify-center shrink-0">
@@ -83,6 +109,7 @@ export default function LandlordUsernamePage() {
 
             {/* Info column */}
             <div className="min-w-0 flex-1">
+              {/* Name + handle */}
               <div className="flex items-center gap-2">
                 <div className="text-[15px] font-semibold text-slate-900 leading-tight">
                   {landlord.name}
@@ -110,16 +137,16 @@ export default function LandlordUsernamePage() {
                   {isVerified ? "Verified landlord" : "Unverified landlord"}
                 </span>
               </div>
-
-              <div className="text-xs text-slate-500 truncate mt-0.5">
+              <div className="text-xs text-slate-500 truncate">
                 @{landlord.username} · {landlord.market}
               </div>
 
+              {/* Bio */}
               <div className="mt-2.5 text-sm text-slate-700 leading-snug">
                 {landlord.bio}
               </div>
 
-              {/* Contact (optional for landlords — you can hide until verified if you want) */}
+              {/* Contact */}
               <div className="mt-3 text-xs text-slate-500 space-y-1">
                 <div className="truncate">{landlord.email}</div>
                 <div className="truncate">{landlord.phone}</div>
@@ -131,121 +158,71 @@ export default function LandlordUsernamePage() {
           <div className="mt-4 flex gap-2">
             <button
               type="button"
-              className="flex-1 rounded-xl px-4 py-2.5 text-sm border border-slate-200 font-semibold text-slate-900 hover:bg-slate-50 transition"
-              onClick={() => navigate("/chats/landlord")}
+              className="flex-1 rounded-xl px-4 py-3 text-sm border border-slate-200 items-center justify-center  gap-3 flex font-semibold text-slate-900 hover:bg-slate-50 transition"
+              onClick={() => navigate(`/chats/${landlord.username}`)}
             >
+              <MessageCircleMore />
               Message
             </button>
-
             <button
               type="button"
-              className="flex-1 rounded-xl text-white px-4 bg-slate-900 hover:bg-slate-800 py-2.5 text-sm font-semibold transition"
-              onClick={() => {
-                setOpenShare(true);
-              }}
+              className="flex-1 flex items-center justify-center gap-3  rounded-xl text-white px-4 bg-slate-900 hover:bg-slate-800 py-2.5 text-sm font-semibold transition"
+              onClick={() => setOpenShare(true)}
             >
+              <Send />
               Share
             </button>
           </div>
         </div>
 
         <div className="border-t border-slate-100" />
+        <div className="relative border-b ">
+          <div className="flex font-medium items-center justify-center py-3">
+            <span className={"text-black"}>Cribs</span>
 
-        {/* Controls row */}
-        <div className="px-4 py-3 flex items-center justify-between gap-2">
-          <div className="text-xs font-semibold flex justify-around  h-10 rounded-xl text-slate-900 border w-full ">
-            <div
-              className={`w-full flex justify-center h-full border-r ${feedListings === false ? "" : "bg-black/10"}`}
-            >
-              <button
-                onClick={() => setFeedListings(true)}
-                className="h-full w-full border"
-              >
-                Listings
-              </button>
-            </div>
-            <div
-              className={`w-full flex justify-center ${feedListings === false ? "bg-black/10 " : ""}`}
-            >
-              <button
-                onClick={() => setFeedListings(false)}
-                className="h-full w-full"
-              >
-                Updates
-              </button>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition"
-              onClick={() => console.log("filters")}
-            >
-              <SlidersHorizontal size={14} />
-              Filters
-            </button>
-
-            <select
-              value={sort}
-              onChange={(e) => setSort(e.target.value as any)}
-              className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700"
-            >
-              <option value="Recommended">Recommended</option>
-              <option value="Price">Price</option>
-              <option value="Availability">Availability</option>
-            </select>
+            <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-black rounded-full" />
           </div>
         </div>
-
-        {feedListings === true ? (
-          <div className="px-4 pb-10">
-            {1 === 0 ? (
-              <div className="py-10 text-center">
-                <div className="text-sm font-semibold text-slate-900">
-                  No listings yet
-                </div>
-                <div className="text-sm text-slate-600 mt-1">
-                  Create your first listing to appear in search and on the map.
-                </div>
-                <button
-                  type="button"
-                  className="mt-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 text-sm font-semibold transition"
-                  onClick={() => console.log("create listing")}
-                >
-                  Create listing
-                </button>
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {Array.from({ length: 10 }).map((l) => (
-                  <ResidenceCard />
-                ))}
-              </div>
-            )}
+        <div className="grid grid-cols-2 gap-1 w-full p-2">
+          {curated?.pages.map((page) =>
+            page.data?.items.map((crib) => (
+              <>
+                <ResidenceCard key={crib.id} data={crib} />
+                <ResidenceCard key={crib.id} data={crib} />
+                <ResidenceCard key={crib.id} data={crib} />
+                <ResidenceCard key={crib.id} data={crib} />
+                <ResidenceCard key={crib.id} data={crib} />
+                <ResidenceCard key={crib.id} data={crib} />
+                <ResidenceCard key={crib.id} data={crib} />
+              </>
+            )),
+          )}
+        </div>
+        {/* ... your Post section stays the same ... */}
+        {!curated && !curated_error && !curated_isLoading && (
+          <div className="px-4 py-10 text-center">
+            <div className="text-sm font-semibold text-slate-900">
+              No post yet
+            </div>
+            <div className="text-sm text-slate-600 mt-1">
+              Create a listing to show on the map and in search.
+            </div>
+            <button
+              type="button"
+              className="mt-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 text-sm font-semibold transition"
+              onClick={() => console.log("create post")}
+            >
+              Create post
+            </button>
           </div>
-        ) : (
-          <CommunityPostCardProfileMinimal
-            post={{
-              title: "Properties Available!",
-              type: "COMMUNITY",
-              id: "community_456",
-              intent: "Announcement",
-              createdAtLabel: "Posted 2h ago",
-              body: "We have pleny of splended appartments available please take some time to view our profile and send us a message if interested! ",
-              images: [
-                "https://images.unsplash.com/photo-1505691938895-1758d7feb511",
-                "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85",
-              ],
-            }}
-          />
         )}
+        {curated_isLoading && "Loading..."}
       </div>
       {openShare && (
         <ShareModal
           open={openShare}
           onClose={() => setOpenShare(false)}
-          title={`Check out Queen City Property Group's Profile on CampusCribs`}
+          title={`Check out ${landlord.name}'s Profile on CampusCribs`}
           url={window.location.href}
         />
       )}

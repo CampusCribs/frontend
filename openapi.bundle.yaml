@@ -19,6 +19,63 @@ paths:
                 $ref: '#/components/schemas/PageResidenceCardDTO'
         '400':
           $ref: '#/components/responses/BadRequest'
+  /posts/{postId}:
+    get:
+      summary: get individual crib
+      parameters:
+        - in: path
+          name: postId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IndividualPost'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+  /posts/{username}/list:
+    get:
+      summary: List curated cribs
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/SizeParam'
+        - $ref: '#/components/parameters/SortParam'
+        - name: username
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PageResidenceCardDTO'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+  /profile/{username}:
+    get:
+      parameters:
+        - name: username
+          in: path
+          required: true
+          schema:
+            type: string
+      summary: Get current user profile
+      responses:
+        '200':
+          description: Profile data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfileResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
 components:
   parameters:
     PageParam:
@@ -228,6 +285,197 @@ components:
           description: Optional field validation errors.
           items:
             $ref: '#/components/schemas/FieldError'
+    PostTag:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          example: Private bedroom
+    GeoLocation:
+      type: object
+      required:
+        - lat
+        - lng
+        - label
+      properties:
+        lat:
+          type: number
+          format: double
+          minimum: -90
+          maximum: 90
+          example: 39.1279
+        lng:
+          type: number
+          format: double
+          minimum: -180
+          maximum: 180
+          example: -84.5146
+        label:
+          type: string
+          example: Near Short Vine
+    IndividualPost:
+      type: object
+      required:
+        - postId
+        - userId
+        - userThumbnailUrl
+        - firstName
+        - lastName
+        - username
+        - institutionName
+        - title
+        - description
+        - price
+        - roommates
+        - termStartDate
+        - termEndDate
+        - tags
+        - mediaIds
+        - location
+      properties:
+        postId:
+          type: string
+          example: post_123
+        userId:
+          type: string
+          example: user_abc
+        userThumbnailUrl:
+          type: string
+          description: URL for the user's avatar/thumbnail (empty string allowed).
+          example: ''
+          default: ''
+        firstName:
+          type: string
+          example: Johnny
+        lastName:
+          type: string
+          example: Edwards
+        username:
+          type: string
+          example: johnnyedwards
+        institutionName:
+          type: string
+          example: University of California, Berkeley
+        title:
+          type: string
+          example: Sunny Private Room on Short Vine
+        description:
+          type: string
+          example: Private room in a 3BR. Walk to campus, in-unit laundry, furnished common area. Looking for someone clean + respectful. Close to restaurants and a bus stop.
+        price:
+          type: integer
+          format: int32
+          minimum: 0
+          example: 850
+        roommates:
+          type: integer
+          format: int32
+          minimum: 0
+          example: 2
+        termStartDate:
+          type: string
+          format: date-time
+          example: '2026-05-10T00:00:00.000Z'
+        termEndDate:
+          type: string
+          format: date-time
+          example: '2026-08-15T00:00:00.000Z'
+        tags:
+          type: array
+          items:
+            $ref: '#/components/schemas/PostTag'
+          example:
+            - name: Private bedroom
+            - name: In-unit laundry
+        mediaIds:
+          type: array
+          items:
+            type: string
+          example:
+            - m1
+            - m2
+            - m3
+        location:
+          $ref: '#/components/schemas/GeoLocation'
+    ProfileRole:
+      type: string
+      enum:
+        - LANDLORD
+        - STUDENT
+      example: LANDLORD
+    schemas-VerificationStatus:
+      type: string
+      enum:
+        - VERIFIED
+        - UNVERIFIED
+      example: VERIFIED
+    BaseProfile:
+      type: object
+      required:
+        - name
+        - username
+        - bio
+        - email
+        - phone
+        - avatarUrl
+        - role
+        - verification
+      properties:
+        name:
+          type: string
+          example: John Doe
+        username:
+          type: string
+          example: johndoe123
+        bio:
+          type: string
+          example: College student passionate about finding the perfect off-campus housing!
+        email:
+          type: string
+          format: email
+          example: johndoe@example.com
+        phone:
+          type: string
+          example: 555-123-4567
+        avatarUrl:
+          type: string
+          format: uri
+          example: https://images.unsplash.com/photo-1502685104226-ee32379fefbe?auto=format&fit=crop&w=400&q=80
+        role:
+          $ref: '#/components/schemas/ProfileRole'
+        verification:
+          $ref: '#/components/schemas/schemas-VerificationStatus'
+    LandlordProfile:
+      allOf:
+        - $ref: '#/components/schemas/BaseProfile'
+        - type: object
+          required:
+            - market
+          properties:
+            market:
+              type: string
+              example: Cincinnati, OH
+    StudentProfile:
+      allOf:
+        - $ref: '#/components/schemas/BaseProfile'
+        - type: object
+          required:
+            - school
+          properties:
+            school:
+              type: string
+              example: UC Berkeley
+    ProfileResponse:
+      oneOf:
+        - $ref: '#/components/schemas/LandlordProfile'
+        - $ref: '#/components/schemas/StudentProfile'
+      discriminator:
+        propertyName: role
+        mapping:
+          LANDLORD: '#/components/schemas/LandlordProfile'
+          STUDENT: '#/components/schemas/StudentProfile'
   responses:
     BadRequest:
       description: Bad Request

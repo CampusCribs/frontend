@@ -1,0 +1,11 @@
+components:
+  responses:
+    ProfilePostByUserNameResponse:
+      oneOf:
+      - $ref: "../schemas/profile/ProfilePost.yaml#/components/schemas/LandlordPost"
+      - $ref: "../schemas/profile/ProfilePost.yaml#/components/schemas/StudentPost"
+      discriminator:
+        propertyName: role
+        mapping:
+          LANDLORD: "#/components/schemas/LandlordPost"
+          STUDENT: "#/components/schemas/StudentPost"

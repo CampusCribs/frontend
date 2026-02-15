@@ -4,12 +4,11 @@ import {
   CircleUserRound,
   Settings,
   Send,
-  Bookmark,
   Tag,
   Heart,
-  MessageCircle,
 } from "lucide-react";
 import { useNavigate } from "react-router";
+import { BlogCard, fakePost } from "@/pages/community/Community";
 
 /** ---------------------------------------------
  * Types
@@ -18,15 +17,15 @@ export type Tag = { name: string };
 
 type BaseProfilePost = {
   id: string;
-  type: "HOUSING" | "COMMUNITY";
+  type: "CRIB" | "COMMUNITY";
   tags: Tag[];
 };
 
 /** ---------------------------------------------
- * HOUSING (listing-style)
+ * CRIB (listing-style)
  * --------------------------------------------*/
-export type HousingPost = BaseProfilePost & {
-  type: "HOUSING";
+export type CRIBPost = BaseProfilePost & {
+  type: "CRIB";
   title: string;
   description: string;
   imageUrl: string; // single hero image
@@ -39,6 +38,7 @@ export type HousingPost = BaseProfilePost & {
  * COMMUNITY (feed/blog-style)
  * --------------------------------------------*/
 export type CommunityPost = {
+  title: string;
   type: "COMMUNITY";
   id: string;
 
@@ -56,8 +56,38 @@ export type CommunityPost = {
 /** ---------------------------------------------
  * Union used by the profile page renderer
  * --------------------------------------------*/
-export type Post = HousingPost | CommunityPost;
+export type Post = CRIBPost | CommunityPost;
+const ProfileToggle = ({ active, onChange }: ProfileToggleProps) => {
+  return (
+    <div className="border-b w-full">
+      <div className="flex">
+        {["CRIB", "COMMUNITY"].map((tab) => {
+          const isActive = active === tab;
 
+          return (
+            <button
+              key={tab}
+              onClick={() => onChange(tab as Tab)}
+              className="flex-1 relative py-3 text-sm font-medium"
+            >
+              <span
+                className={
+                  isActive ? "text-black" : "text-gray-500 hover:text-black"
+                }
+              >
+                {tab === "CRIB" ? "Cribs" : "Community"}
+              </span>
+
+              {isActive && (
+                <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-black rounded-full" />
+              )}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
 /** ---------------------------------------------
  * Page
  * --------------------------------------------*/
@@ -77,7 +107,7 @@ export default function ProfileUsernamePage() {
 
   // Example post (swap type to show different layout)
   const post: Post | null = {
-    type: "HOUSING",
+    type: "CRIB",
     id: "post_123",
     title: "Sunny Private Room on Short Vine",
     description:
@@ -94,22 +124,7 @@ export default function ProfileUsernamePage() {
       { name: "Furnished" },
     ],
   };
-  // const post: CommunityPost = {
-  //   type: "COMMUNITY",
-  //   id: "community_456",
-  //   intent: "Looking for Roommate",
-  //   createdAtLabel: "Posted 2h ago",
-  //   body:
-  //     "Looking for a roommate to join me and my friends this semester. " +
-  //     "Chill group, close to campus, and we love hosting BBQs in our backyard.",
-  //   images: [
-  //     "https://images.unsplash.com/photo-1505691938895-1758d7feb511",
-  //     "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85",
-  //     "https://images.unsplash.com/photo-1507089947368-19c1da9775ae",
-  //     "https://images.unsplash.com/photo-1507089947368-19c1da9775ae",
-  //   ],
-  // };
-
+  const [activeTab, setActiveTab] = useState<"CRIB" | "COMMUNITY">("CRIB");
   return (
     <div className="min-h-dvh w-full bg-white">
       {/* Top bar (tighter) */}
@@ -122,6 +137,15 @@ export default function ProfileUsernamePage() {
             aria-label="Back"
           >
             <ArrowLeft size={20} />
+          </button>
+
+          <button
+            type="button"
+            className="p-1.5 -mr-1 rounded-full hover:bg-slate-100 transition"
+            onClick={() => navigate("/settings")}
+            aria-label="Settings"
+          >
+            <Settings size={20} />
           </button>
         </div>
       </div>
@@ -172,27 +196,40 @@ export default function ProfileUsernamePage() {
           <div className="mt-4 flex gap-2">
             <button
               type="button"
-              className="flex-1 flex-row items-center justify-center rounded-xl bg-slate-900 hover:bg-slate-800 text-white px-4 py-2.5 text-sm font-semibold transition"
-              onClick={() => navigate(`/chats/${user.username}`)}
+              className="flex-1 rounded-xl px-4 py-2.5 text-sm border border-slate-200 font-semibold text-slate-900 hover:bg-slate-50 transition"
+              onClick={() => console.log("edit profile")}
             >
-              <div className="flex items-center justify-center gap-2">
-                <MessageCircle size={18} /> Message
-              </div>
+              Edit profile
             </button>
             <button
               type="button"
               className="flex-1 rounded-xl text-white px-4 bg-slate-900 hover:bg-slate-800 py-2.5 text-sm font-semibold transition"
               onClick={() => console.log("create/edit post")}
             >
-              <div className="flex items-center justify-center gap-2">
-                <Send size={18} /> Share
-              </div>
+              {post ? "Edit post" : "Create post"}
             </button>
           </div>
         </div>
 
         <div className="border-t border-slate-100" />
-
+        <ProfileToggle active={activeTab} onChange={setActiveTab} />
+        <div className="mt-2">
+          {activeTab === "CRIB" && post && (
+            <ProfilePostCard
+              post={post}
+              user={{ username: user.username, avatarUrl: user.avatarUrl }}
+              onViewListing={() => navigate(`/cribs/${post.id}`)}
+              onShare={() => console.log("share")}
+              onSave={() => console.log("save")}
+            />
+          )}
+        </div>
+        <div>
+          {activeTab === "COMMUNITY" &&
+            Array.from({ length: 6 }).map((_, i) => (
+              <BlogCard key={i} post={{ ...fakePost, id: String(i) }} />
+            ))}
+        </div>
         {/* ... your Post section stays the same ... */}
         {!post && (
           <div className="px-4 py-10 text-center">
@@ -211,17 +248,6 @@ export default function ProfileUsernamePage() {
             </button>
           </div>
         )}
-        {post && post.type == "COMMUNITY" ? (
-          <CommunityPostCardProfileMinimal post={post} />
-        ) : (
-          <ProfilePostCard
-            post={post}
-            user={{ username: user.username, avatarUrl: user.avatarUrl }}
-            onViewListing={() => navigate(`/cribs/${post.id}`)}
-            onShare={() => console.log("share")}
-            onSave={() => console.log("save")}
-          />
-        )}
       </div>
     </div>
   );
@@ -237,7 +263,7 @@ function ProfilePostCard({
   onShare,
   onSave,
 }: {
-  post: HousingPost;
+  post: CRIBPost;
   user: { username: string; avatarUrl?: string };
   onViewListing: () => void;
   onShare: () => void;
@@ -256,6 +282,32 @@ function ProfilePostCard({
         />
       </div>
 
+      {/* Share + Save row */}
+      <div className="px-4 pt-3 flex items-center flex-row-reverse gap-4">
+        <button
+          title="Share"
+          type="button"
+          className="inline-flex items-center gap-2 text-sm font-semibold text-slate-700 hover:text-slate-900 transition"
+          onClick={onShare}
+        >
+          <Send size={18} />
+        </button>
+
+        <button
+          type="button"
+          className="inline-flex items-center gap-2 text-sm font-semibold transition"
+          onClick={() => {
+            setSaved((s) => !s);
+            onSave();
+          }}
+        >
+          <Heart
+            className={`${saved ? "fill-red-500 text-red-500" : "text-slate-700 hover:text-slate-900"}`}
+            size={18}
+          />
+        </button>
+      </div>
+
       {/* Title + description + meta */}
       <div className="px-4 pt-3">
         <div className="flex items-start justify-between gap-3">
@@ -267,7 +319,7 @@ function ProfilePostCard({
             {/* Small meta line depending on post type */}
             <div className="mt-1 text-[12px] text-slate-500">
               @{user.username}
-              {post.type === "HOUSING" ? (
+              {post.type === "CRIB" ? (
                 <>
                   {" "}
                   • ${post.price}/mo • {post.roommates} roommates
@@ -312,56 +364,6 @@ function ProfilePostCard({
           View listing
         </button>
       </div>
-    </div>
-  );
-}
-
-/** ---------------------------------------------
- * CommunityPostCard
- * - Designed to drop into ProfilePage where ProfilePostCard is used
- * --------------------------------------------*/
-
-export function CommunityPostCardProfileMinimal({
-  post,
-}: {
-  post: CommunityPost;
-}) {
-  const images = useMemo(
-    () => (post.images ?? []).filter(Boolean),
-    [post.images],
-  );
-  const gridImages = images.slice(0, 4); // 2x2 max
-
-  return (
-    <div className="px-4 py-6 border-b border-slate-100 bg-white">
-      {/* Intent tag */}
-      <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
-        {post.intent}
-      </div>
-
-      {/* Grey helper line */}
-      <div className="mt-1 text-[12px] text-slate-400">
-        {post.createdAtLabel ?? "Community post"}
-      </div>
-
-      {/* Big paragraph */}
-      <div className="mt-4 text-[15px] leading-relaxed text-slate-800 whitespace-pre-line">
-        {post.body}
-      </div>
-
-      {/* 2x2 images */}
-      {gridImages.length > 0 && (
-        <div className="mt-5 grid grid-cols-2 gap-2">
-          {gridImages.map((src, i) => (
-            <img
-              key={`${post.id}-img-${i}`}
-              src={src}
-              alt="post"
-              className="w-full aspect-square rounded-xl object-cover border border-slate-100"
-            />
-          ))}
-        </div>
-      )}
     </div>
   );
 }

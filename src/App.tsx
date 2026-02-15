@@ -1,4 +1,10 @@
-import { BrowserRouter, Navigate, Route, Routes } from "react-router";
+import {
+  BrowserRouter,
+  Navigate,
+  Route,
+  Routes,
+  useParams,
+} from "react-router";
 import Layout from "@/components/layout/Layout";
 
 import CribsPage from "@/pages/cribs/CribsPage";
@@ -29,7 +35,7 @@ import Map from "./pages/map/Map";
 import IndividualChat from "./pages/chat/IndividualChat";
 import UltraMinimalOnboarding from "./pages/login/NewUserFlow";
 import PostBlog from "./pages/profile/post/PostBlog";
-import { ProfileNavUsername, ProfileNavHome } from "./pages/profile/ProfileNav";
+import { ProfileNavHome, ProfileNavUsername } from "./pages/profile/ProfileNav";
 // import Partners from "./pages/partners/Partners";
 
 function App() {
@@ -44,7 +50,7 @@ function App() {
             <Route path="/onboarding" element={<UltraMinimalOnboarding />} />
             <Route element={<Layout />}>
               <Route path="/cribs" element={<CribsPage />} />
-              <Route path="/cribs/:cribId" element={<IndividualPage />} />
+              <Route path="/cribs/:postId" element={<IndividualPage />} />
               <Route path="/map" element={<Map />} />
               <Route path="/support" element={<SupportPage />} />
               <Route path="/community" element={<Community />} />

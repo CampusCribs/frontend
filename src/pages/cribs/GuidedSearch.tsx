@@ -243,283 +243,288 @@ const GuidedSearch = ({
   }, [whereFocus, active]);
 
   return (
-    <div className="fixed inset-0 z-50 w-full h-full bg-black/50 flex flex-col overflow-scroll ">
-      <div className="flex justify-end cursor-pointer p-1">
-        <div
-          className="bg-white rounded-full p-1"
-          onClick={() => setOpenSearch(false)}
-        >
-          <X size={24} />
-        </div>
-      </div>
-
-      {/* Where Section */}
-      <div
-        className={`flex bg-white  rounded-2xl p-4 shadow-lg flex-col transition-transform duration-200  ${whereFocus ? " rounded-none fixed h-screen w-full transition-transform duration-200 " : " mx-3 mt-3"}`}
-      >
-        <div
-          className="flex justify-between"
-          onClick={() => setActive("where")}
-        >
-          <h1 className="text-2xl font-bold">Where</h1>{" "}
-          {whereFocus == true && (
-            <button title="close" onClick={() => setWhereFocus(false)}>
-              <ArrowLeft size={32} />
-            </button>
-          )}
-        </div>
-        <p
-          className="text-sm text-slate-600 mt-1"
-          onClick={() => setActive("where")}
-        >
-          Search by campus or location
-        </p>
-        <div
-          className={`overflow-hidden transition-all duration-300 ease-in-out
-      ${active === "where" ? "max-h-96 opacity-100 mt-3" : "max-h-0 opacity-0"}
-    `}
-        >
-          <div className="flex items-center border rounded-2xl p-2 mt-3">
-            <Search />{" "}
-            <input
-              type="text"
-              placeholder="Search for a campus or location"
-              className=" px-2 py-1 w-full"
-              onFocus={() => setWhereFocus(true)}
-            />
-          </div>
-          <div className="mt-2">suggested Campuses</div>
-          <div className="flex flex-col space-y-2">
-            {Array.from(["UCLA", "UCSD", "UC Berkeley", "UCI"]).map(
-              (campus) => (
-                <WhereItem
-                  key={campus}
-                  campus={campus}
-                  onPick={() => handleChange("when", false)}
-                />
-              ),
-            )}
+    <div className="fixed inset-0 z-50 w-full h-full bg-black/50 flex items-center justify-center ">
+      <div className=" z-50 w-full h-full max-w-[600px] flex flex-col overflow-scroll ">
+        <div className="flex justify-end cursor-pointer p-1 ">
+          <div
+            className="bg-white rounded-full p-1"
+            onClick={() => setOpenSearch(false)}
+          >
+            <X size={24} />
           </div>
         </div>
-      </div>
 
-      {/* When Section */}
-      <div className="flex bg-white mx-3 mt-3 rounded-2xl p-4 shadow-lg flex-col transition-transform duration-200">
+        {/* Where Section */}
         <div
-          className="flex flex-col justify-between"
-          onClick={() => setActive("when")}
-        >
-          <h1 className="text-2xl font-bold">When</h1>
-
-          <p className="text-sm text-slate-600 mt-1">
-            Select your desired move-in and move-out dates
-          </p>
-        </div>
-        <div
-          className={`overflow-hidden transition-all duration-300 ease-in-out
-      ${active === "when" ? "max-h-96 opacity-100 mt-3" : "max-h-0 opacity-0"}
-    `}
+          className={`flex bg-white  rounded-2xl p-4 shadow-lg flex-col transition-transform duration-200  ${whereFocus ? " rounded-none fixed h-screen w-full transition-transform duration-200 " : " mx-3 mt-3"}`}
         >
           <div
-            className="flex flex-col  gap-y-10 pb-10"
-            onFocus={() => setWhenFocus(true)}
+            className="flex justify-between"
+            onClick={() => setActive("where")}
           >
-            <Controller
-              name="beginDate"
-              control={control}
-              render={({ field }) => (
-                <div>
-                  <Label>Begin Date</Label>
-                  <CalendarComponent
-                    value={field.value ?? new Date()}
-                    onChange={field.onChange}
+            <h1 className="text-2xl font-bold">Where</h1>{" "}
+            {whereFocus == true && (
+              <button title="close" onClick={() => setWhereFocus(false)}>
+                <ArrowLeft size={32} />
+              </button>
+            )}
+          </div>
+          <p
+            className="text-sm text-slate-600 mt-1"
+            onClick={() => setActive("where")}
+          >
+            Search by campus or location
+          </p>
+          <div
+            className={`overflow-hidden transition-all duration-300 ease-in-out
+      ${active === "where" ? "max-h-96 opacity-100 mt-3" : "max-h-0 opacity-0"}
+    `}
+          >
+            <div className="flex items-center border rounded-2xl p-2 mt-3">
+              <Search />{" "}
+              <input
+                type="text"
+                placeholder="Search for a campus or location"
+                className=" px-2 py-1 w-full"
+                onFocus={() => setWhereFocus(true)}
+              />
+            </div>
+            <div className="mt-2">suggested Campuses</div>
+            <div className="flex flex-col space-y-2">
+              {Array.from(["UCLA", "UCSD", "UC Berkeley", "UCI"]).map(
+                (campus) => (
+                  <WhereItem
+                    key={campus}
+                    campus={campus}
+                    onPick={() => handleChange("when", false)}
                   />
-                </div>
+                ),
               )}
-            />
-            <Controller
-              name="endDate"
-              control={control}
-              render={({ field }) => (
-                <div>
-                  <Label>End Date</Label>
-                  <CalendarComponent
-                    value={field.value ?? new Date()}
-                    onChange={field.onChange}
-                  />
-                </div>
-              )}
-            />
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Filter Section */}
-      <div className="flex bg-white mx-3 mt-3 rounded-2xl p-4 shadow-lg flex-col  mb-3">
-        {/* header only is clickable */}
-        <div
-          className="cursor-pointer select-none"
-          onClick={() => setActive("filter")}
-        >
-          <h1 className="text-2xl font-bold">Filters</h1>
-          <p className="text-sm text-slate-600 mt-1">
-            Refine results by price, amenities, and more
-          </p>
+        {/* When Section */}
+        <div className="flex bg-white mx-3 mt-3 rounded-2xl p-4 shadow-lg flex-col transition-transform duration-200">
+          <div
+            className="flex flex-col justify-between"
+            onClick={() => setActive("when")}
+          >
+            <h1 className="text-2xl font-bold">When</h1>
+
+            <p className="text-sm text-slate-600 mt-1">
+              Select your desired move-in and move-out dates
+            </p>
+          </div>
+          <div
+            className={`overflow-hidden transition-all duration-300 ease-in-out
+      ${active === "when" ? "max-h-96 opacity-100 mt-3" : "max-h-0 opacity-0"}
+    `}
+          >
+            <div
+              className="flex flex-col  gap-y-10 pb-10"
+              onFocus={() => setWhenFocus(true)}
+            >
+              <Controller
+                name="beginDate"
+                control={control}
+                render={({ field }) => (
+                  <div>
+                    <Label>Begin Date</Label>
+                    <CalendarComponent
+                      value={field.value ?? new Date()}
+                      onChange={field.onChange}
+                    />
+                  </div>
+                )}
+              />
+              <Controller
+                name="endDate"
+                control={control}
+                render={({ field }) => (
+                  <div>
+                    <Label>End Date</Label>
+                    <CalendarComponent
+                      value={field.value ?? new Date()}
+                      onChange={field.onChange}
+                    />
+                  </div>
+                )}
+              />
+            </div>
+          </div>
         </div>
 
-        {/* animated body */}
-        <div
-          className={[
-            "grid transition-[grid-template-rows,opacity] duration-300 ease-in-out",
-            active === "filter"
-              ? "grid-rows-[1fr] opacity-100 mt-3"
-              : "grid-rows-[0fr] opacity-0",
-          ].join(" ")}
-        >
-          <div className="overflow-hidden">
-            <div
-              className="flex flex-col gap-4"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Price */}
-              <div className="rounded-2xl border border-slate-200 p-4">
-                <div className="flex items-center justify-between">
-                  <p className="font-semibold text-slate-900">Price</p>
-                  <p className="text-sm text-slate-600">
-                    ${filters.minPrice} - ${filters.maxPrice}
-                  </p>
-                </div>
+        {/* Filter Section */}
+        <div className="flex bg-white mx-3 mt-3 rounded-2xl p-4 shadow-lg flex-col  mb-3">
+          {/* header only is clickable */}
+          <div
+            className="cursor-pointer select-none"
+            onClick={() => setActive("filter")}
+          >
+            <h1 className="text-2xl font-bold">Filters</h1>
+            <p className="text-sm text-slate-600 mt-1">
+              Refine results by price, amenities, and more
+            </p>
+          </div>
 
-                <div className="mt-3 space-y-3">
-                  <div>
-                    <label className="text-xs text-slate-500">Min</label>
-                    <input
-                      title="minPrice"
-                      type="range"
-                      min={0}
-                      max={4000}
-                      step={50}
-                      value={filters.minPrice}
-                      onChange={(e) =>
-                        setFilters((f) => ({
-                          ...f,
-                          minPrice: Math.min(
-                            Number(e.target.value),
-                            f.maxPrice,
-                          ),
-                        }))
-                      }
-                      className="w-full"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-xs text-slate-500">Max</label>
-                    <input
-                      title="maxPrice"
-                      type="range"
-                      min={0}
-                      max={4000}
-                      step={50}
-                      value={filters.maxPrice}
-                      onChange={(e) =>
-                        setFilters((f) => ({
-                          ...f,
-                          maxPrice: Math.max(
-                            Number(e.target.value),
-                            f.minPrice,
-                          ),
-                        }))
-                      }
-                      className="w-full"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Roommates */}
-              <div className="rounded-2xl border border-slate-200 p-4">
-                <p className="font-semibold text-slate-900">Roommates</p>
-                <p className="text-sm text-slate-600 mt-1">
-                  Max roommates you're okay with
-                </p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {[
-                    { label: "Any", value: 0 },
-                    { label: "1", value: 1 },
-                    { label: "2", value: 2 },
-                    { label: "3+", value: 3 },
-                  ].map((r) => (
-                    <Pill
-                      key={r.value}
-                      label={r.label}
-                      active={filters.roommates === r.value}
-                      onClick={() =>
-                        setFilters((f) => ({ ...f, roommates: r.value as any }))
-                      }
-                    />
-                  ))}
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                {FILTER_CATEGORIES.map((category) => (
-                  <div
-                    key={category.id}
-                    className="rounded-2xl border border-slate-200 p-4"
-                  >
-                    <p className="font-semibold text-slate-900">
-                      {category.label}
+          {/* animated body */}
+          <div
+            className={[
+              "grid transition-[grid-template-rows,opacity] duration-300 ease-in-out",
+              active === "filter"
+                ? "grid-rows-[1fr] opacity-100 mt-3"
+                : "grid-rows-[0fr] opacity-0",
+            ].join(" ")}
+          >
+            <div className="overflow-hidden">
+              <div
+                className="flex flex-col gap-4"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Price */}
+                <div className="rounded-2xl border border-slate-200 p-4">
+                  <div className="flex items-center justify-between">
+                    <p className="font-semibold text-slate-900">Price</p>
+                    <p className="text-sm text-slate-600">
+                      ${filters.minPrice} - ${filters.maxPrice}
                     </p>
+                  </div>
 
-                    <div className="mt-3 grid grid-cols-2 gap-2">
-                      {category.items.map((item) => (
-                        <Toggle
-                          key={item.key}
-                          label={item.label}
-                          active={!!filterValues[item.key]}
-                          onClick={() =>
-                            setFilterValues((v) => ({
-                              ...v,
-                              [item.key]: !v[item.key],
-                            }))
-                          }
-                        />
-                      ))}
+                  <div className="mt-3 space-y-3">
+                    <div>
+                      <label className="text-xs text-slate-500">Min</label>
+                      <input
+                        title="minPrice"
+                        type="range"
+                        min={0}
+                        max={4000}
+                        step={50}
+                        value={filters.minPrice}
+                        onChange={(e) =>
+                          setFilters((f) => ({
+                            ...f,
+                            minPrice: Math.min(
+                              Number(e.target.value),
+                              f.maxPrice,
+                            ),
+                          }))
+                        }
+                        className="w-full"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-xs text-slate-500">Max</label>
+                      <input
+                        title="maxPrice"
+                        type="range"
+                        min={0}
+                        max={4000}
+                        step={50}
+                        value={filters.maxPrice}
+                        onChange={(e) =>
+                          setFilters((f) => ({
+                            ...f,
+                            maxPrice: Math.max(
+                              Number(e.target.value),
+                              f.minPrice,
+                            ),
+                          }))
+                        }
+                        className="w-full"
+                      />
                     </div>
                   </div>
-                ))}
+                </div>
+
+                {/* Roommates */}
+                <div className="rounded-2xl border border-slate-200 p-4">
+                  <p className="font-semibold text-slate-900">Roommates</p>
+                  <p className="text-sm text-slate-600 mt-1">
+                    Max roommates you're okay with
+                  </p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {[
+                      { label: "Any", value: 0 },
+                      { label: "1", value: 1 },
+                      { label: "2", value: 2 },
+                      { label: "3+", value: 3 },
+                    ].map((r) => (
+                      <Pill
+                        key={r.value}
+                        label={r.label}
+                        active={filters.roommates === r.value}
+                        onClick={() =>
+                          setFilters((f) => ({
+                            ...f,
+                            roommates: r.value as any,
+                          }))
+                        }
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  {FILTER_CATEGORIES.map((category) => (
+                    <div
+                      key={category.id}
+                      className="rounded-2xl border border-slate-200 p-4"
+                    >
+                      <p className="font-semibold text-slate-900">
+                        {category.label}
+                      </p>
+
+                      <div className="mt-3 grid grid-cols-2 gap-2">
+                        {category.items.map((item) => (
+                          <Toggle
+                            key={item.key}
+                            label={item.label}
+                            active={!!filterValues[item.key]}
+                            onClick={() =>
+                              setFilterValues((v) => ({
+                                ...v,
+                                [item.key]: !v[item.key],
+                              }))
+                            }
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-      {/* Actions */}
-      <div className="flex gap-2 bg-white px-5 py-2 mx-3 rounded-2xl mb-20">
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            resetFilters();
-          }}
-          className="flex-1 rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold hover:bg-slate-50"
-        >
-          Reset
-        </button>
+        {/* Actions */}
+        <div className="flex gap-2 bg-white px-5 py-2 mx-3 rounded-2xl mb-20">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              resetFilters();
+            }}
+            className="flex-1 rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold hover:bg-slate-50"
+          >
+            Reset
+          </button>
 
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            // Hook this into your search query / API call
-            // e.g. onApply(filters)
-            console.log("apply filters:", filters);
-            setOpenSearch(false);
-          }}
-          className="flex-1 rounded-2xl bg-slate-900 text-white px-4 py-3 text-sm font-semibold hover:bg-slate-800"
-        >
-          Apply
-        </button>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              // Hook this into your search query / API call
+              // e.g. onApply(filters)
+              console.log("apply filters:", filters);
+              setOpenSearch(false);
+            }}
+            className="flex-1 rounded-2xl bg-slate-900 text-white px-4 py-3 text-sm font-semibold hover:bg-slate-800"
+          >
+            Apply
+          </button>
+        </div>
       </div>
     </div>
   );

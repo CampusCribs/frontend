@@ -1,6 +1,5 @@
 import {
   ArrowLeftIcon,
-  Bookmark,
   Calendar,
   CircleUserRound,
   DollarSign,
@@ -12,7 +11,7 @@ import {
   X,
 } from "lucide-react";
 import IndividualSlider from "./IndividualSlider";
-import { useNavigate } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import { useEffect, useMemo, useState } from "react";
 
 // MapLibre
@@ -20,63 +19,7 @@ import Map, { Marker } from "react-map-gl/maplibre";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import ShareModal from "@/components/ui/ShareModal";
-
-type Tag = { name: string };
-
-type FakePost = {
-  id: string;
-  userId: string;
-  userThumbnailUrl?: string;
-
-  firstName: string;
-  lastName: string;
-  username: string;
-  institutionName: string;
-
-  title: string;
-  description: string;
-  price: number;
-  roommates: number;
-  termStartDate: string; // ISO
-  termEndDate: string; // ISO
-
-  tags: Tag[];
-  mediaIds: string[];
-
-  location: { lat: number; lng: number; label: string };
-};
-
-const FAKE_POST: FakePost = {
-  id: "post_123",
-  userId: "user_abc",
-  userThumbnailUrl: "", // set a URL to show image
-
-  firstName: "Johnny",
-  lastName: "Edwards",
-  username: "johnnyedwards",
-  institutionName: "University of California, Berkeley",
-
-  title: "Sunny Private Room on Short Vine",
-  description:
-    "Private room in a 3BR. Walk to campus, in-unit laundry, furnished common area. Looking for someone clean + respectful. Close to restaurants and a bus stop.",
-  price: 850,
-  roommates: 2,
-  termStartDate: "2026-05-10T00:00:00.000Z",
-  termEndDate: "2026-08-15T00:00:00.000Z",
-
-  tags: [
-    { name: "Private bedroom" },
-    { name: "In-unit laundry" },
-    { name: "Furnished" },
-    { name: "Walkable" },
-    { name: "Utilities included" },
-    { name: "Desk included" },
-  ],
-
-  mediaIds: ["m1", "m2", "m3"],
-
-  location: { lat: 39.1279, lng: -84.5146, label: "Near Short Vine" },
-};
+import { useGetPostsPostid } from "@/gen";
 
 function formatDateISO(iso: string) {
   return new Date(iso).toISOString().split("T")[0];
@@ -159,10 +102,13 @@ const LocationMapCard = ({
 
 const IndividualPage = () => {
   const navigate = useNavigate();
-  const post = useMemo(() => FAKE_POST, []);
+
+  const { postId } = useParams<{ postId: string }>();
   const [liked, setLiked] = useState(false);
   const [openShare, setOpenShare] = useState(false);
   const [openReport, setOpenReport] = useState(false);
+  const { data: postData, isLoading } = useGetPostsPostid(postId || "");
+  console.log(postData);
   useEffect(() => {
     localStorage.setItem("headerText", "Crib Details");
   }, []);
@@ -182,9 +128,9 @@ const IndividualPage = () => {
       {/* Slider */}
       <div>
         <IndividualSlider
-          images={post.mediaIds}
-          userId={post.userId}
-          postId={post.id}
+          images={postData?.data.mediaIds || []}
+          userId={postData?.data.userId || ""}
+          postId={postData?.data.postId || ""}
         />
       </div>
       <div className="flex flex-row w-full gap-4 items-center my-1 ">
@@ -212,9 +158,9 @@ const IndividualPage = () => {
           onClick={() => navigate("/profile/123")}
         >
           <div className="h-16 w-16 rounded-full overflow-hidden border shadow-sm bg-slate-100 grid place-items-center shrink-0">
-            {post.userThumbnailUrl ? (
+            {postData?.data.userThumbnailUrl ? (
               <img
-                src={post.userThumbnailUrl}
+                src={postData?.data.userThumbnailUrl}
                 alt="profile"
                 className="h-full w-full object-cover"
               />
@@ -225,13 +171,13 @@ const IndividualPage = () => {
 
           <div className="flex flex-col min-w-0">
             <h1 className="text-lg font-semibold text-slate-900 leading-tight truncate">
-              {post.firstName} {post.lastName}
+              {postData?.data.firstName} {postData?.data.lastName}
             </h1>
             <p className="text-sm text-slate-600 leading-tight">
-              @{post.username}
+              @{postData?.data.username}
             </p>
             <p className="text-xs text-slate-500 mt-1 truncate">
-              {post.institutionName}
+              {postData?.data.institutionName}
             </p>
           </div>
         </div>
@@ -239,10 +185,10 @@ const IndividualPage = () => {
       {/* Post content */}
       <div className="px-5 pt-4">
         <div className="text-2xl font-semibold text-slate-900">
-          {post.title}
+          {postData?.data.title}
         </div>
         <div className="mt-2 text-base text-slate-700 break-words leading-relaxed">
-          {post.description}
+          {postData?.data.description}
         </div>
       </div>
 
@@ -251,21 +197,28 @@ const IndividualPage = () => {
         {/* Price */}
         <div className="flex items-baseline gap-2">
           <DollarSign size={18} className="text-slate-400 shrink-0" />
-          <span className=" text-slate-900">${post.price} / month</span>
+          <span className=" text-slate-900">
+            ${postData?.data.price} / month
+          </span>
         </div>
 
         {/* Roommates */}
         <div className="flex items-baseline gap-2 mt-1">
           <Users size={18} className="text-slate-400 shrink-0" />
-          <span className="text-slate-900">{post.roommates} roommates</span>
+          <span className="text-slate-900">
+            {postData?.data.roommates} roommates
+          </span>
         </div>
 
         {/* Lease */}
         <div className="flex items-baseline gap-2 mt-1">
           <Calendar size={18} className="text-slate-400 shrink-0" />
           <span className="text-slate-900">
-            {formatDateISO(post.termStartDate)} →{" "}
-            {formatDateISO(post.termEndDate)}
+            {postData?.data.termStartDate &&
+              formatDateISO(postData?.data.termStartDate)}{" "}
+            →{" "}
+            {postData?.data.termEndDate &&
+              formatDateISO(postData?.data.termEndDate)}
           </span>
         </div>
 
@@ -273,10 +226,10 @@ const IndividualPage = () => {
         <div className="flex items-start gap-2 mt-2">
           <Tag size={18} className="text-slate-400 mt-[2px] shrink-0" />
           <div className="text-slate-600">
-            {post.tags.map((t, i) => (
+            {postData?.data.tags.map((t, i) => (
               <span key={`${t.name}-${i}`}>
                 {t.name}
-                {i < post.tags.length - 1 && (
+                {i < postData?.data.tags.length - 1 && (
                   <span className="text-slate-400"> · </span>
                 )}
               </span>
@@ -286,16 +239,18 @@ const IndividualPage = () => {
       </div>
 
       {/* ✅ Map (different style) */}
-      <LocationMapCard
-        lat={post.location.lat}
-        lng={post.location.lng}
-        label={post.location.label}
-      />
+      {postData?.data.location.lat && postData?.data.location.lng && (
+        <LocationMapCard
+          lat={postData?.data.location.lat}
+          lng={postData?.data.location.lng}
+          label={postData?.data.location.label}
+        />
+      )}
       {/* CTA */}
       <div className="flex flex-row-reverse px-5 pt-5">
         <button
           className="bg-black rounded-full py-3 px-5 my-2 shadow-lg text-white font-semibold cursor-pointer active:scale-[0.99]"
-          onClick={() => navigate(`/chats/${post.username}`)}
+          onClick={() => navigate(`/chats/${postData?.data.username}`)}
         >
           Chat
         </button>
@@ -311,7 +266,7 @@ const IndividualPage = () => {
         <ShareModal
           open={openShare}
           onClose={() => setOpenShare(false)}
-          title={`Check out ${post.firstName}'s crib on CampusCribs`}
+          title={`Check out ${postData?.data.firstName}'s crib on CampusCribs`}
           url={window.location.href}
         />
       )}

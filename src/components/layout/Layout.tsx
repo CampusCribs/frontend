@@ -15,7 +15,7 @@ const Layout = () => {
           <div className="sticky top-0 z-50 bg-white">
             <Header />
           </div>
-          <div className="grow">
+          <div className="grow shadow-sm">
             <ScrollRestorationBlocker />
             <Outlet />
           </div>

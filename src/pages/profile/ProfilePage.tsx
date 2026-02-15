@@ -8,6 +8,7 @@ import {
   Heart,
 } from "lucide-react";
 import { useNavigate } from "react-router";
+import { BlogCard, fakePost } from "../community/Community";
 
 /** ---------------------------------------------
  * Types
@@ -16,15 +17,15 @@ export type Tag = { name: string };
 
 type BaseProfilePost = {
   id: string;
-  type: "HOUSING" | "COMMUNITY";
+  type: "CRIB" | "COMMUNITY";
   tags: Tag[];
 };
 
 /** ---------------------------------------------
- * HOUSING (listing-style)
+ * CRIB (listing-style)
  * --------------------------------------------*/
-export type HousingPost = BaseProfilePost & {
-  type: "HOUSING";
+export type CRIBPost = BaseProfilePost & {
+  type: "CRIB";
   title: string;
   description: string;
   imageUrl: string; // single hero image
@@ -55,8 +56,38 @@ export type CommunityPost = {
 /** ---------------------------------------------
  * Union used by the profile page renderer
  * --------------------------------------------*/
-export type Post = HousingPost | CommunityPost;
+export type Post = CRIBPost | CommunityPost;
+const ProfileToggle = ({ active, onChange }: ProfileToggleProps) => {
+  return (
+    <div className="border-b w-full">
+      <div className="flex">
+        {["CRIB", "COMMUNITY"].map((tab) => {
+          const isActive = active === tab;
 
+          return (
+            <button
+              key={tab}
+              onClick={() => onChange(tab as Tab)}
+              className="flex-1 relative py-3 text-sm font-medium"
+            >
+              <span
+                className={
+                  isActive ? "text-black" : "text-gray-500 hover:text-black"
+                }
+              >
+                {tab === "CRIB" ? "Cribs" : "Community"}
+              </span>
+
+              {isActive && (
+                <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-black rounded-full" />
+              )}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
 /** ---------------------------------------------
  * Page
  * --------------------------------------------*/
@@ -75,41 +106,25 @@ export default function ProfilePage() {
   };
 
   // Example post (swap type to show different layout)
-  // const post: Post | null = {
-  //   type: "HOUSING",
-  //   id: "post_123",
-  //   title: "Sunny Private Room on Short Vine",
-  //   description:
-  //     "Private room in a 3BR. Walk to campus, in-unit laundry, furnished common area. Looking for someone clean + respectful.",
-  //   imageUrl:
-  //     "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1800&q=80",
-  //   isVerified: true,
-  //   price: 850,
-  //   roommates: 2,
-  //   tags: [
-  //     { name: "Short Vine" },
-  //     { name: "Walkable" },
-  //     { name: "Laundry" },
-  //     { name: "Furnished" },
-  //   ],
-  // };
-  const post: CommunityPost = {
-    title: "Hey I am looking fo a Roomate!",
-    type: "COMMUNITY",
-    id: "community_456",
-    intent: "Looking for Roommate",
-    createdAtLabel: "Posted 2h ago",
-    body:
-      "Looking for a roommate to join me and my friends this semester. " +
-      "Chill group, close to campus, and we love hosting BBQs in our backyard.",
-    images: [
-      "https://images.unsplash.com/photo-1505691938895-1758d7feb511",
-      "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85",
-      "https://images.unsplash.com/photo-1507089947368-19c1da9775ae",
-      "https://images.unsplash.com/photo-1507089947368-19c1da9775ae",
+  const post: Post | null = {
+    type: "CRIB",
+    id: "post_123",
+    title: "Sunny Private Room on Short Vine",
+    description:
+      "Private room in a 3BR. Walk to campus, in-unit laundry, furnished common area. Looking for someone clean + respectful.",
+    imageUrl:
+      "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1800&q=80",
+    isVerified: true,
+    price: 850,
+    roommates: 2,
+    tags: [
+      { name: "Short Vine" },
+      { name: "Walkable" },
+      { name: "Laundry" },
+      { name: "Furnished" },
     ],
   };
-
+  const [activeTab, setActiveTab] = useState<"CRIB" | "COMMUNITY">("CRIB");
   return (
     <div className="min-h-dvh w-full bg-white">
       {/* Top bar (tighter) */}
@@ -197,7 +212,24 @@ export default function ProfilePage() {
         </div>
 
         <div className="border-t border-slate-100" />
-
+        <ProfileToggle active={activeTab} onChange={setActiveTab} />
+        <div className="mt-2">
+          {activeTab === "CRIB" && post && (
+            <ProfilePostCard
+              post={post}
+              user={{ username: user.username, avatarUrl: user.avatarUrl }}
+              onViewListing={() => navigate(`/cribs/${post.id}`)}
+              onShare={() => console.log("share")}
+              onSave={() => console.log("save")}
+            />
+          )}
+        </div>
+        <div>
+          {activeTab === "COMMUNITY" &&
+            Array.from({ length: 6 }).map((_, i) => (
+              <BlogCard key={i} post={{ ...fakePost, id: String(i) }} />
+            ))}
+        </div>
         {/* ... your Post section stays the same ... */}
         {!post && (
           <div className="px-4 py-10 text-center">
@@ -216,17 +248,6 @@ export default function ProfilePage() {
             </button>
           </div>
         )}
-        {post && post.type == "COMMUNITY" ? (
-          <CommunityPostCardProfileMinimal post={post} />
-        ) : (
-          <ProfilePostCard
-            post={post}
-            user={{ username: user.username, avatarUrl: user.avatarUrl }}
-            onViewListing={() => navigate(`/cribs/${post.id}`)}
-            onShare={() => console.log("share")}
-            onSave={() => console.log("save")}
-          />
-        )}
       </div>
     </div>
   );
@@ -242,7 +263,7 @@ function ProfilePostCard({
   onShare,
   onSave,
 }: {
-  post: HousingPost;
+  post: CRIBPost;
   user: { username: string; avatarUrl?: string };
   onViewListing: () => void;
   onShare: () => void;
@@ -298,7 +319,7 @@ function ProfilePostCard({
             {/* Small meta line depending on post type */}
             <div className="mt-1 text-[12px] text-slate-500">
               @{user.username}
-              {post.type === "HOUSING" ? (
+              {post.type === "CRIB" ? (
                 <>
                   {" "}
                   • ${post.price}/mo • {post.roommates} roommates
@@ -343,59 +364,6 @@ function ProfilePostCard({
           View listing
         </button>
       </div>
-    </div>
-  );
-}
-
-/** ---------------------------------------------
- * CommunityPostCard
- * - Designed to drop into ProfilePage where ProfilePostCard is used
- * --------------------------------------------*/
-
-export function CommunityPostCardProfileMinimal({
-  post,
-}: {
-  post: CommunityPost;
-}) {
-  const images = useMemo(
-    () => (post.images ?? []).filter(Boolean),
-    [post.images],
-  );
-  const gridImages = images.slice(0, 4); // 2x2 max
-
-  return (
-    <div className="px-4 py-6 border-b border-slate-100 bg-white">
-      <div className="flex font-medium text-lg text-slate-800 ">
-        {post.title}
-      </div>
-      {/* Intent tag */}
-      <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
-        {post.intent}
-      </div>
-
-      {/* Grey helper line */}
-      <div className="mt-1 text-[12px] text-slate-400">
-        {post.createdAtLabel ?? "Community post"}
-      </div>
-
-      {/* Big paragraph */}
-      <div className="mt-4 text-[15px] leading-relaxed text-slate-800 whitespace-pre-line">
-        {post.body}
-      </div>
-
-      {/* 2x2 images */}
-      {gridImages.length > 0 && (
-        <div className="mt-5 grid grid-cols-2 gap-2">
-          {gridImages.map((src, i) => (
-            <img
-              key={`${post.id}-img-${i}`}
-              src={src}
-              alt="post"
-              className="w-full aspect-square rounded-xl object-cover border border-slate-100"
-            />
-          ))}
-        </div>
-      )}
     </div>
   );
 }

@@ -5,4 +5,12 @@ info:
 
 paths:
   /curated/cribs:
-    $ref: ./paths/curated.yaml
+    $ref: ./paths/curated/curated.yaml
+
+  /posts/{postId}:
+    $ref: ./paths/posts/postsByPostId.yaml
+  /posts/{username}/list:
+    $ref: ./paths/posts/listPostsByUserName.yaml
+
+  /profile/{username}:
+    $ref: ./paths/profile/profileBaseByUsername.yaml

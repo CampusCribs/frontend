@@ -1,0 +1,118 @@
+components:
+  schemas:
+    Tag:
+      type: object
+      required: [ name ]
+      properties:
+        name:
+          type: string
+      additionalProperties: false
+
+    # -----------------------------
+    # Discriminated union
+    # -----------------------------
+    Post:
+      oneOf:
+      - $ref: "#/components/schemas/CRIBPost"
+      - $ref: "#/components/schemas/CommunityPost"
+      discriminator:
+        propertyName: type
+        mapping:
+          CRIB: "#/components/schemas/CRIBPost"
+          COMMUNITY: "#/components/schemas/CommunityPost"
+      required: [ type ]
+
+    # -----------------------------
+    # BaseProfilePost (optional as a named schema)
+    # Note: CommunityPost does NOT extend this in your TS, so this is used
+    # only by CRIBPost via allOf.
+    # -----------------------------
+    BaseProfilePost:
+      type: object
+      required: [ id, type, tags ]
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum: [ CRIB, COMMUNITY ]
+        tags:
+          type: array
+          items:
+            $ref: "#/components/schemas/Tag"
+      additionalProperties: false
+
+    # -----------------------------
+    # CRIBPost
+    # -----------------------------
+    CRIBPost:
+      allOf:
+      - $ref: "#/components/schemas/BaseProfilePost"
+      - type: object
+        required:
+        - type
+        - title
+        - description
+        - imageUrl
+        - isVerified
+        - price
+        - roommates
+        properties:
+          type:
+            type: string
+            enum: [ CRIB ]
+          title:
+            type: string
+          description:
+            type: string
+          imageUrl:
+            type: string
+            format: uri
+            description: Single hero image URL
+          isVerified:
+            type: boolean
+          price:
+            type: number
+            format: float
+          roommates:
+            type: integer
+            minimum: 0
+        additionalProperties: false
+
+    # -----------------------------
+    # CommunityPost
+    # -----------------------------
+    CommunityPost:
+      type: object
+      required:
+      - id
+      - type
+      - title
+      - intent
+      - body
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum: [ COMMUNITY ]
+        title:
+          type: string
+
+        intent:
+          type: string
+          description: Intent tag (single), e.g. "Looking for Roommate"
+
+        body:
+          type: string
+
+        images:
+          type: array
+          items:
+            type: string
+            format: uri
+
+        createdAtLabel:
+          type: string
+          description: UI-only label, e.g. "Posted 2h ago"
+      additionalProperties: false

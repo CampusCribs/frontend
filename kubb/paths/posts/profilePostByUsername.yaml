@@ -1,9 +1,0 @@
-ProfilePostByUserNameResponse:
-  oneOf:
-  - $ref: "../schemas/profile/ProfilePost.yaml#/components/schemas/LandlordProfile"
-  - $ref: "../schemas/profile/ProfilePost.yaml#/components/schemas/StudentProfile"
-  discriminator:
-    propertyName: role
-    mapping:
-      Landlord: "#/components/schemas/LandlordProfile"
-      Student: "#/components/schemas/StudentProfile"

@@ -7,6 +7,9 @@ paths:
   /curated/cribs:
     $ref: ./paths/curated/curated.yaml
 
+  /curated/community:
+    $ref: ./paths/curated/curatedCommunity.yaml
+
   /posts/{postId}:
     $ref: ./paths/posts/postsByPostId.yaml
   /posts/{username}/list:
@@ -14,3 +17,9 @@ paths:
 
   /profile/{username}:
     $ref: ./paths/profile/profileBaseByUsername.yaml
+
+  /posts/community/{username}:
+    $ref: ./paths/profile/profileCommunityListByUsername.yaml
+
+  /posts/cribs/{username}:
+    $ref: ./paths/profile/profileCribByUsername.yaml

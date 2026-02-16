@@ -36,6 +36,7 @@ import IndividualChat from "./pages/chat/IndividualChat";
 import UltraMinimalOnboarding from "./pages/login/NewUserFlow";
 import PostBlog from "./pages/profile/post/PostBlog";
 import { ProfileNavHome, ProfileNavUsername } from "./pages/profile/ProfileNav";
+import { IndividualCommunityExample } from "./pages/community/IndividualCommunity";
 // import Partners from "./pages/partners/Partners";
 
 function App() {
@@ -54,6 +55,10 @@ function App() {
               <Route path="/map" element={<Map />} />
               <Route path="/support" element={<SupportPage />} />
               <Route path="/community" element={<Community />} />
+              <Route
+                path="/community/:id"
+                element={<IndividualCommunityExample />}
+              />
               <Route path="/chats" element={<Chats />} />
               <Route
                 path="/profile/:username"

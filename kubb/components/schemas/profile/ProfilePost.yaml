@@ -1,118 +1,158 @@
 components:
   schemas:
-    Tag:
+    PostTag:
       type: object
-      required: [ name ]
+      required:
+      - name
       properties:
         name:
           type: string
-      additionalProperties: false
+          example: Walkable
 
-    # -----------------------------
-    # Discriminated union
-    # -----------------------------
-    Post:
-      oneOf:
-      - $ref: "#/components/schemas/CRIBPost"
-      - $ref: "#/components/schemas/CommunityPost"
-      discriminator:
-        propertyName: type
-        mapping:
-          CRIB: "#/components/schemas/CRIBPost"
-          COMMUNITY: "#/components/schemas/CommunityPost"
-      required: [ type ]
-
-    # -----------------------------
-    # BaseProfilePost (optional as a named schema)
-    # Note: CommunityPost does NOT extend this in your TS, so this is used
-    # only by CRIBPost via allOf.
-    # -----------------------------
-    BaseProfilePost:
+    ProfileCribPost:
       type: object
-      required: [ id, type, tags ]
+      required:
+      - type
+      - id
+      - title
+      - description
+      - imageUrl
+      - isVerified
+      - price
+      - roommates
+      - tags
       properties:
-        id:
-          type: string
         type:
           type: string
-          enum: [ CRIB, COMMUNITY ]
+          enum: [ CRIB ]
+          example: CRIB
+
+        id:
+          type: string
+          example: post_123
+
+        title:
+          type: string
+          example: Sunny Private Room on Short Vine
+
+        description:
+          type: string
+          example: >
+            Private room in a 3BR. Walk to campus, in-unit laundry, furnished common area. Looking for someone clean + respectful.
+
+        imageUrl:
+          type: string
+          format: uri
+          example: https://images.unsplash.com/photo-1505693416388-ac5ce068fe85
+
+        isVerified:
+          type: boolean
+          example: true
+
+        price:
+          type: number
+          format: float
+          example: 850
+
+        roommates:
+          type: integer
+          example: 2
+
         tags:
           type: array
           items:
-            $ref: "#/components/schemas/Tag"
-      additionalProperties: false
+            $ref: "#/components/schemas/PostTag"
 
-    # -----------------------------
-    # CRIBPost
-    # -----------------------------
-    CRIBPost:
-      allOf:
-      - $ref: "#/components/schemas/BaseProfilePost"
-      - type: object
-        required:
-        - type
-        - title
-        - description
-        - imageUrl
-        - isVerified
-        - price
-        - roommates
-        properties:
-          type:
-            type: string
-            enum: [ CRIB ]
-          title:
-            type: string
-          description:
-            type: string
-          imageUrl:
-            type: string
-            format: uri
-            description: Single hero image URL
-          isVerified:
-            type: boolean
-          price:
-            type: number
-            format: float
-          roommates:
-            type: integer
-            minimum: 0
-        additionalProperties: false
-
-    # -----------------------------
-    # CommunityPost
-    # -----------------------------
     CommunityPost:
       type: object
       required:
       - id
-      - type
-      - title
+      - name
+      - username
+      - avatarUrl
       - intent
       - body
+      - images
+      - createdAt
+      - likes
+      - comments
       properties:
         id:
           type: string
-        type:
+          example: community_1
+
+        name:
           type: string
-          enum: [ COMMUNITY ]
-        title:
+          example: Johnny Edwards
+
+        username:
           type: string
+          example: johnnyedwards
+
+        avatarUrl:
+          type: string
+          format: uri
+          example: https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS3krGAS5w7YyUrBn7Y55sqCFh13aR2La_dYQ&s
 
         intent:
           type: string
-          description: Intent tag (single), e.g. "Looking for Roommate"
+          example: Looking for Roommate
 
         body:
           type: string
+          example: Looking for a roommate to join me and my friends this semester. Chill group, close to campus.
 
         images:
           type: array
           items:
             type: string
             format: uri
+          example:
+          - https://images.unsplash.com/photo-1505691938895-1758d7feb511
+          - https://images.unsplash.com/photo-1493809842364-78817add7ffb
+          - https://images.unsplash.com/photo-1484154218962-a197022b5858
+          - https://images.unsplash.com/photo-1502005229762-cf1b2da7c5d6
 
-        createdAtLabel:
+        createdAt:
           type: string
-          description: UI-only label, e.g. "Posted 2h ago"
-      additionalProperties: false
+          description: Human-readable label for the UI (e.g., "2h ago")
+          example: 2h ago
+
+        likes:
+          type: integer
+          minimum: 0
+          example: 24
+
+        comments:
+          type: integer
+          minimum: 0
+          example: 8
+
+    PageCommunityPost:
+      type: object
+      required: [ items, page, size, totalElements, totalPages ]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/CommunityPost"
+        page:
+          type: integer
+          format: int32
+          minimum: 0
+          maximum: 1000
+        size:
+          type: integer
+          format: int32
+          minimum: 1
+          maximum: 100
+        totalElements:
+          type: integer
+          format: int64
+          minimum: 0
+          maximum: 20
+        totalPages:
+          type: integer
+          format: int32
+          minimum: 0
+          maximum: 1000

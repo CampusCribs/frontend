@@ -9,16 +9,17 @@ import LoadingPage from "../loading/LoadingPage";
 export const ProfileNavUsername = () => {
   const { username } = useParams<{ username: string }>();
   const { data, isLoading, isError } = useGetProfileUsername(username || "");
-  console.log(data);
+
   if (isLoading) {
     return <LoadingPage />;
   }
+
   if (data) {
-    if (data.data.role === "STUDENT") {
-      return <ProfileUsernamePage />;
+    if (data.data.role !== "STUDENT") {
+      return <ProfileUsernamePage student={data.data} />;
     }
 
-    if (data.data.role === "LANDLORD") {
+    if (data.data.role !== "LANDLORD") {
       return <LandlordUsernamePage landlord={data.data} />; //finished wireing non profile
     }
   }

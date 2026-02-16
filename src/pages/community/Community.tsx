@@ -1,22 +1,10 @@
-import { Bookmark, Heart, MessageCircle, Search, Share2 } from "lucide-react";
+import { Bookmark, Heart, MessageCircle, Search, Send } from "lucide-react";
 import GuidedSearch from "../cribs/GuidedSearch";
 import { useState } from "react";
 import { useNavigate } from "react-router";
+import { CommunityPost, useGetCuratedCommunity } from "@/gen/index";
 
-export type BlogPost = {
-  id: string;
-  name: string;
-  username: string;
-  avatarUrl: string;
-  intent: string;
-  body: string;
-  images: string[];
-  createdAt: string;
-  likes: number;
-  comments: number;
-};
-
-export const fakePost: BlogPost = {
+export const fakePost: CommunityPost = {
   id: "1",
   name: "Johnny Edwards",
   username: "johnnyedwards",
@@ -41,7 +29,7 @@ type ImageGridProps = {
   images: string[];
 };
 
-const ImageGrid = ({ images }: ImageGridProps) => {
+export const ImageGrid = ({ images }: ImageGridProps) => {
   if (!images || images.length === 0) return null;
 
   const count = images.length;
@@ -121,6 +109,12 @@ const ImageGrid = ({ images }: ImageGridProps) => {
 
 const Community = () => {
   const [openSearch, setOpenSearch] = useState(false);
+
+  const {
+    data: community,
+    isLoading: isCommunityLoading,
+    isError: isCommunityError,
+  } = useGetCuratedCommunity();
   return (
     <div className="w-full h-full ">
       {" "}
@@ -135,20 +129,24 @@ const Community = () => {
         </div>
       </div>
       <div>
-        {Array.from(Array(10).keys()).map((_, index) => (
-          <BlogCard key={index} post={fakePost} />
-        ))}
+        {community &&
+          community.data.items.map((data, index) => (
+            <BlogCard post={data} key={index} />
+          ))}
       </div>
       {openSearch && <GuidedSearch setOpenSearch={setOpenSearch} />}
     </div>
   );
 };
 
-export const BlogCard = ({ post }: { post: BlogPost }) => {
+export const BlogCard = ({ post }: { post: CommunityPost }) => {
   const navigate = useNavigate();
 
   return (
-    <div className="bg-white border-b p-4 py-6 hover:bg-gray-50 transition">
+    <div
+      className="bg-white border-b p-4 py-6 hover:bg-gray-50 transition"
+      onClick={() => navigate(`/community/${post.id}`)}
+    >
       {/* Header */}
       <div
         className="flex items-center gap-3 mb-2 cursor-pointer"
@@ -199,12 +197,15 @@ export const BlogCard = ({ post }: { post: BlogPost }) => {
 
         {/* Share */}
         <button className="flex items-center gap-1 hover:text-green-500 transition">
-          <Share2 size={18} />
+          <Send size={18} />
           <span>Share</span>
         </button>
 
         {/* Bookmark */}
-        <button className="flex items-center gap-1 hover:text-yellow-500 transition">
+        <button
+          title="bookmark"
+          className="flex items-center gap-1 hover:text-yellow-500 transition"
+        >
           <Bookmark size={18} />
         </button>
       </div>

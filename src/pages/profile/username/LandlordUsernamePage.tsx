@@ -49,16 +49,6 @@ export default function LandlordUsernamePage({
   const navigate = useNavigate();
   const { username } = useParams<{ username: string }>();
   const [openShare, setOpenShare] = useState<boolean>(false);
-  // Placeholder user
-  // const user = {
-  //   name: "Johnny Edwards",
-  //   username: "johnnyedwards",
-  //   school: "UC Berkeley",
-  //   bio: "CS student. Looking for a clean, chill roommate near campus. Gym + coffee + grind.",
-  //   email: "johnnyedwards@gmail.com",
-  //   phone: "(513) 555-0123",
-  //   avatarUrl: "", // set to URL to see avatar image
-  // };
 
   const isVerified = false;
   const params = {

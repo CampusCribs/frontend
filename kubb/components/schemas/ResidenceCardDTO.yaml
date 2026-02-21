@@ -1,0 +1,147 @@
+components:
+  schemas:
+
+    # type used in residence card
+    AvailabilityImmediate:
+      type: object
+      required: [ type ]
+      properties:
+        type:
+          type: string
+          enum: [ IMMEDIATE ]
+          example: IMMEDIATE
+      example:
+        type: IMMEDIATE
+
+    # type used in residence card
+    AvailabilityDate:
+      type: object
+      required: [ type, date ]
+      properties:
+        type:
+          type: string
+          enum: [ DATE ]
+          example: DATE
+        date:
+          type: string
+          format: date
+          description: ISO-8601 date (e.g., 2026-08-01)
+          example: "2026-08-01"
+      example:
+        type: DATE
+        date: "2026-08-01"
+
+    # residence card dto used in profile and search results
+    ResidenceCardDTO:
+      type: object
+      description: Fields required to render the ResidenceCard component.
+      required:
+      - id
+      - thumbnailUrl
+      - locationLabel
+      - priceMonthly
+      - availability
+      - role
+      - verification
+      - identity
+      properties:
+        id:
+          type: string
+          example: abc123
+
+        thumbnailUrl:
+          type: string
+          format: uri
+          example: https://images.unsplash.com/photo-1560185007-c5ca9d2c014d?auto=format&fit=crop&w=1400&q=80
+
+        locationLabel:
+          type: string
+          example: "Clifton · Cincinnati, OH"
+
+        priceMonthly:
+          type: integer
+          format: int32
+          minimum: 0
+          example: 875
+
+        availability:
+          description: Availability for the listing (either immediate or a specific date).
+          oneOf:
+          - $ref: "#/components/schemas/AvailabilityImmediate"
+          - $ref: "#/components/schemas/AvailabilityDate"
+          discriminator:
+            propertyName: type
+            mapping:
+              IMMEDIATE: "#/components/schemas/AvailabilityImmediate"
+              DATE: "#/components/schemas/AvailabilityDate"
+          # optional: gives Swagger/UI a sample even though it's oneOf
+          example:
+            type: IMMEDIATE
+
+        role:
+          type: string
+          description: Who posted the listing.
+          enum: [ STUDENT, LANDLORD ]
+          example: LANDLORD
+
+        verification:
+          type: string
+          description: Verification status of the poster.
+          enum: [ VERIFIED, UNVERIFIED ]
+          example: VERIFIED
+
+        identity:
+          type: object
+          description: Identity line shown on the card (company + university).
+          required: [ companyName, universityName ]
+          properties:
+            companyName:
+              type: string
+              example: Queen City Property Group
+            universityName:
+              type: string
+              example: University of Cincinnati
+          example:
+            companyName: Queen City Property Group
+            universityName: University of Cincinnati
+
+      example:
+        id: abc123
+        thumbnailUrl: https://images.unsplash.com/photo-1560185007-c5ca9d2c014d?auto=format&fit=crop&w=1400&q=80
+        locationLabel: "Clifton · Cincinnati, OH"
+        priceMonthly: 875
+        availability:
+          type: DATE
+          date: "2026-08-01"
+        role: LANDLORD
+        verification: VERIFIED
+        identity:
+          companyName: Queen City Property Group
+          universityName: University of Cincinnati
+
+    PageResidenceCardDTO:
+      allOf:
+      - $ref: "./Pagination.yaml#/components/schemas/Page"
+      - type: object
+        properties:
+          items:
+            type: array
+            items:
+              $ref: "#/components/schemas/ResidenceCardDTO"
+      example:
+        items:
+        - id: abc123
+          thumbnailUrl: https://images.unsplash.com/photo-1560185007-c5ca9d2c014d?auto=format&fit=crop&w=1400&q=80
+          locationLabel: "Clifton · Cincinnati, OH"
+          priceMonthly: 875
+          availability:
+            type: IMMEDIATE
+          role: LANDLORD
+          verification: VERIFIED
+          identity:
+            companyName: Queen City Property Group
+            universityName: University of Cincinnati
+        page: 0
+        size: 10
+        totalElements: 42
+        totalPages: 5

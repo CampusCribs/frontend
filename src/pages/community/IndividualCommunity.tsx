@@ -1,7 +1,7 @@
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import {
-  ArrowLeft,
+  ArrowLeftIcon,
   Bookmark,
   Heart,
   MessageCircle,
@@ -163,31 +163,20 @@ export function IndividualCommunity({
   return (
     <div className="min-h-screen bg-white">
       {/* Sticky top bar */}
-      <div className="sticky top-0 z-20 bg-white/90 backdrop-blur border-b">
-        <div className="max-w-2xl mx-auto px-4 py-3 flex items-center gap-3">
-          <button
-            className="p-2 rounded-full hover:bg-gray-100 transition"
-            onClick={() => navigate(-1)}
-            aria-label="Back"
-          >
-            <ArrowLeft size={18} />
-          </button>
-          <div className="flex-1">
-            <div className="text-sm font-semibold">Post</div>
-            <div className="text-xs text-gray-500">
-              Community • {post?.createdAtLabel ?? "Posted recently"}
-            </div>
-          </div>
-          <button className="p-2 rounded-full hover:bg-gray-100 transition">
-            <MoreHorizontal size={18} />
-          </button>
+      <div className="px-3 pt-3">
+        <div
+          onClick={() => window.history.back()}
+          className="cursor-pointer inline-flex items-center"
+        >
+          <ArrowLeftIcon size={32} />
+          <span className="ml-2">Back</span>
         </div>
       </div>
 
       {/* Main content */}
       <div className="max-w-2xl mx-auto">
         {/* Post (BlogCard-style) */}
-        <div className="bg-white border-b p-4 py-6">
+        <div className="bg-white border-b px-4 pt-3 pb-6">
           {/* Header */}
           <div
             className="flex items-center gap-3 mb-2 cursor-pointer"
@@ -204,7 +193,10 @@ export function IndividualCommunity({
                   <h3 className="font-semibold text-sm">{post.name}</h3>
                   <p className="text-xs text-gray-500">{post.intent}</p>
                 </div>
-                <button className="p-2 rounded-full hover:bg-gray-100 transition">
+                <button
+                  title="more"
+                  className="p-2 rounded-full hover:bg-gray-100 transition"
+                >
                   <MoreHorizontal size={18} className="text-gray-500" />
                 </button>
               </div>

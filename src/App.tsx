@@ -12,7 +12,6 @@ import CribsPage from "@/pages/cribs/CribsPage";
 import ProtectedRoute from "@/components/route/ProtectedRoute";
 import ReverseProtectedRoute from "@/components/route/ReverseProtectedRoute";
 import LoginPage from "@/pages/login/LoginPage";
-import ProfilePage from "@/pages/profile/ProfilePage";
 import SupportPage from "./pages/support/SupportPage";
 import Post from "@/pages/profile/post/Post";
 import IndividualPage from "./pages/cribs/individual/IndividualPage";

@@ -3,7 +3,19 @@ info:
   title: CampusCribs API
   version: 1.0.0
 paths:
-  /curated/cribs:
+  /app//me:
+    get:
+      tags:
+        - User
+      summary: Get current user
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+  /app/cribs:
     get:
       summary: List curated cribs
       parameters:
@@ -19,9 +31,9 @@ paths:
                 $ref: '#/components/schemas/PageResidenceCardDTO'
         '400':
           $ref: '#/components/responses/BadRequest'
-  /curated/community:
+  /app/community:
     get:
-      summary: List curated cribs
+      summary: List curated community posts
       parameters:
         - $ref: '#/components/parameters/PageParam'
         - $ref: '#/components/parameters/SizeParam'
@@ -35,9 +47,10 @@ paths:
                 $ref: '#/components/schemas/PageCommunityPost'
         '400':
           $ref: '#/components/responses/BadRequest'
-  /posts/{postId}:
+  /app/individualcrib/{postId}:
     get:
       summary: get individual crib
+      operationId: getIndividualCrib
       parameters:
         - in: path
           name: postId
@@ -53,7 +66,7 @@ paths:
                 $ref: '#/components/schemas/IndividualPost'
         '400':
           $ref: '#/components/responses/BadRequest'
-  /posts/{username}/list:
+  /app/profile/{username}:
     get:
       summary: List curated cribs
       parameters:
@@ -71,96 +84,102 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PageResidenceCardDTO'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-  /profile/{username}:
-    get:
-      parameters:
-        - name: username
-          in: path
-          required: true
-          schema:
-            type: string
-      summary: Get current user profile
-      responses:
-        '200':
-          description: Profile data
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProfileResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-  /posts/community/{username}:
-    get:
-      summary: List curated cribs
-      parameters:
-        - $ref: '#/components/parameters/PageParam'
-        - $ref: '#/components/parameters/SizeParam'
-        - $ref: '#/components/parameters/SortParam'
-        - name: username
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CommunityPost'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-  /posts/cribs/{username}:
-    get:
-      parameters:
-        - name: username
-          in: path
-          required: true
-          schema:
-            type: string
-      summary: Get current user profile
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProfileCribPost'
+                $ref: '#/components/schemas/ProfilePageResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
 components:
-  parameters:
-    PageParam:
-      name: page
-      in: query
-      schema:
-        type: integer
-        format: int32
-        minimum: 0
-        default: 0
-    SizeParam:
-      name: size
-      in: query
-      schema:
-        type: integer
-        format: int32
-        minimum: 1
-        maximum: 100
-        default: 20
-    SortParam:
-      name: sort
-      in: query
-      description: Sort by one or more fields, e.g. sort=priceMonthly,asc&sort=createdAt,desc
-      schema:
-        type: array
-        items:
-          type: string
-      style: form
-      explode: true
   schemas:
+    User:
+      type: object
+      required:
+        - id
+        - firstName
+        - lastName
+        - username
+        - createdAt
+        - role
+        - verificationStatus
+      properties:
+        id:
+          type: string
+          format: uuid
+        firstName:
+          type: string
+        lastName:
+          type: string
+        username:
+          type: string
+        newsletterConsent:
+          type: boolean
+        bio:
+          type: string
+        thumbnailMediaId:
+          type: string
+          format: uuid
+        createdAt:
+          type: string
+          format: string
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+        role:
+          type: string
+          description: Who posted the listing.
+          enum:
+            - STUDENT
+            - LANDLORD
+        verificationStatus:
+          type: string
+          description: Verification status of the poster.
+          enum:
+            - VERIFIED
+            - UNVERIFIED
+    Page:
+      type: object
+      required:
+        - items
+        - page
+        - size
+        - totalElements
+        - totalPages
+      properties:
+        items:
+          type: array
+          items: {}
+          example: []
+        page:
+          type: integer
+          format: int32
+          minimum: 0
+          example: 0
+        size:
+          type: integer
+          format: int32
+          minimum: 1
+          example: 10
+        totalElements:
+          type: integer
+          format: int64
+          minimum: 0
+          example: 42
+        totalPages:
+          type: integer
+          format: int32
+          minimum: 0
+          example: 5
+        sort:
+          type: string
+          nullable: true
+          example: priceMonthly,asc
+      example:
+        items: []
+        page: 0
+        size: 10
+        totalElements: 42
+        totalPages: 5
+        sort: null
     AvailabilityImmediate:
       type: object
       required:
@@ -169,7 +188,10 @@ components:
         type:
           type: string
           enum:
-            - Immediate
+            - IMMEDIATE
+          example: IMMEDIATE
+      example:
+        type: IMMEDIATE
     AvailabilityDate:
       type: object
       required:
@@ -179,46 +201,16 @@ components:
         type:
           type: string
           enum:
-            - Date
+            - DATE
+          example: DATE
         date:
           type: string
           format: date
           description: ISO-8601 date (e.g., 2026-08-01)
-    Availability:
-      description: Availability for the listing (either immediate or a specific date).
-      oneOf:
-        - $ref: '#/components/schemas/AvailabilityImmediate'
-        - $ref: '#/components/schemas/AvailabilityDate'
-      discriminator:
-        propertyName: type
-        mapping:
-          Immediate: '#/components/schemas/AvailabilityImmediate'
-          Date: '#/components/schemas/AvailabilityDate'
-    PosterRole:
-      type: string
-      description: Who posted the listing.
-      enum:
-        - Student
-        - Landlord
-    VerificationStatus:
-      type: string
-      description: Verification status of the poster.
-      enum:
-        - Verified
-        - Unverified
-    ListingIdentity:
-      type: object
-      description: Identity line shown on the card (company + university).
-      required:
-        - companyName
-        - universityName
-      properties:
-        companyName:
-          type: string
-          example: Queen City Property Group
-        universityName:
-          type: string
-          example: University of Cincinnati
+          example: '2026-08-01'
+      example:
+        type: DATE
+        date: '2026-08-01'
     ResidenceCardDTO:
       type: object
       description: Fields required to render the ResidenceCard component.
@@ -248,46 +240,86 @@ components:
           minimum: 0
           example: 875
         availability:
-          $ref: '#/components/schemas/Availability'
+          description: Availability for the listing (either immediate or a specific date).
+          oneOf:
+            - $ref: '#/components/schemas/AvailabilityImmediate'
+            - $ref: '#/components/schemas/AvailabilityDate'
+          discriminator:
+            propertyName: type
+            mapping:
+              IMMEDIATE: '#/components/schemas/AvailabilityImmediate'
+              DATE: '#/components/schemas/AvailabilityDate'
+          example:
+            type: IMMEDIATE
         role:
-          $ref: '#/components/schemas/PosterRole'
+          type: string
+          description: Who posted the listing.
+          enum:
+            - STUDENT
+            - LANDLORD
+          example: LANDLORD
         verification:
-          $ref: '#/components/schemas/VerificationStatus'
+          type: string
+          description: Verification status of the poster.
+          enum:
+            - VERIFIED
+            - UNVERIFIED
+          example: VERIFIED
         identity:
-          $ref: '#/components/schemas/ListingIdentity'
+          type: object
+          description: Identity line shown on the card (company + university).
+          required:
+            - companyName
+            - universityName
+          properties:
+            companyName:
+              type: string
+              example: Queen City Property Group
+            universityName:
+              type: string
+              example: University of Cincinnati
+          example:
+            companyName: Queen City Property Group
+            universityName: University of Cincinnati
+      example:
+        id: abc123
+        thumbnailUrl: https://images.unsplash.com/photo-1560185007-c5ca9d2c014d?auto=format&fit=crop&w=1400&q=80
+        locationLabel: Clifton · Cincinnati, OH
+        priceMonthly: 875
+        availability:
+          type: DATE
+          date: '2026-08-01'
+        role: LANDLORD
+        verification: VERIFIED
+        identity:
+          companyName: Queen City Property Group
+          universityName: University of Cincinnati
     PageResidenceCardDTO:
-      type: object
-      required:
-        - items
-        - page
-        - size
-        - totalElements
-        - totalPages
-      properties:
+      allOf:
+        - $ref: '#/components/schemas/Page'
+        - type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/ResidenceCardDTO'
+      example:
         items:
-          type: array
-          items:
-            $ref: '#/components/schemas/ResidenceCardDTO'
-        page:
-          type: integer
-          format: int32
-          minimum: 0
-          maximum: 1000
-        size:
-          type: integer
-          format: int32
-          minimum: 1
-          maximum: 100
-        totalElements:
-          type: integer
-          format: int64
-          minimum: 0
-          maximum: 20
-        totalPages:
-          type: integer
-          format: int32
-          minimum: 0
-          maximum: 1000
+          - id: abc123
+            thumbnailUrl: https://images.unsplash.com/photo-1560185007-c5ca9d2c014d?auto=format&fit=crop&w=1400&q=80
+            locationLabel: Clifton · Cincinnati, OH
+            priceMonthly: 875
+            availability:
+              type: IMMEDIATE
+            role: LANDLORD
+            verification: VERIFIED
+            identity:
+              companyName: Queen City Property Group
+              universityName: University of Cincinnati
+        page: 0
+        size: 10
+        totalElements: 42
+        totalPages: 5
     FieldError:
       type: object
       required:
@@ -396,38 +428,14 @@ components:
           minimum: 0
           example: 8
     PageCommunityPost:
-      type: object
-      required:
-        - items
-        - page
-        - size
-        - totalElements
-        - totalPages
-      properties:
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/CommunityPost'
-        page:
-          type: integer
-          format: int32
-          minimum: 0
-          maximum: 1000
-        size:
-          type: integer
-          format: int32
-          minimum: 1
-          maximum: 100
-        totalElements:
-          type: integer
-          format: int64
-          minimum: 0
-          maximum: 20
-        totalPages:
-          type: integer
-          format: int32
-          minimum: 0
-          maximum: 1000
+      allOf:
+        - $ref: '#/components/schemas/Page'
+        - type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/CommunityPost'
     PostTag:
       type: object
       required:
@@ -548,7 +556,7 @@ components:
         - LANDLORD
         - STUDENT
       example: LANDLORD
-    schemas-VerificationStatus:
+    VerificationStatus:
       type: string
       enum:
         - VERIFIED
@@ -589,7 +597,7 @@ components:
         role:
           $ref: '#/components/schemas/ProfileRole'
         verification:
-          $ref: '#/components/schemas/schemas-VerificationStatus'
+          $ref: '#/components/schemas/VerificationStatus'
     LandlordProfile:
       allOf:
         - $ref: '#/components/schemas/BaseProfile'
@@ -610,7 +618,7 @@ components:
             school:
               type: string
               example: UC Berkeley
-    ProfileResponse:
+    Profile:
       oneOf:
         - $ref: '#/components/schemas/LandlordProfile'
         - $ref: '#/components/schemas/StudentProfile'
@@ -673,6 +681,53 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/schemas-PostTag'
+    ProfilePageResponse:
+      type: object
+      required:
+        - profile
+      properties:
+        profile:
+          $ref: '#/components/schemas/Profile'
+        cribs:
+          nullable: true
+          oneOf:
+            - $ref: '#/components/schemas/PageResidenceCardDTO'
+            - $ref: '#/components/schemas/ProfileCribPost'
+          description: |
+            Student profiles return a single featured crib post. Landlord profiles return a paged list of residence cards.
+        community:
+          $ref: '#/components/schemas/PageCommunityPost'
+          nullable: true
+  parameters:
+    PageParam:
+      name: page
+      in: query
+      required: false
+      description: Zero-based page index.
+      schema:
+        type: integer
+        format: int32
+        minimum: 0
+        example: 0
+    SizeParam:
+      name: size
+      in: query
+      required: false
+      description: Page size.
+      schema:
+        type: integer
+        format: int32
+        minimum: 1
+        maximum: 100
+        example: 10
+    SortParam:
+      name: sort
+      in: query
+      required: false
+      description: Sorting criteria (e.g. "priceMonthly,asc").
+      schema:
+        type: string
+        example: priceMonthly,asc
   responses:
     BadRequest:
       description: Bad Request

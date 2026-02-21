@@ -2,7 +2,7 @@ import { Bookmark, Heart, MessageCircle, Search, Send } from "lucide-react";
 import GuidedSearch from "../cribs/GuidedSearch";
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import { CommunityPost, useGetCuratedCommunity } from "@/gen/index";
+import { CommunityPost, useGetAppCommunityInfinite } from "@/gen/index";
 
 export const fakePost: CommunityPost = {
   id: "1",
@@ -114,7 +114,7 @@ const Community = () => {
     data: community,
     isLoading: isCommunityLoading,
     isError: isCommunityError,
-  } = useGetCuratedCommunity();
+  } = useGetAppCommunityInfinite();
   return (
     <div className="w-full h-full ">
       {" "}
@@ -184,7 +184,10 @@ export const BlogCard = ({ post }: { post: CommunityPost }) => {
       {/* Engagement Row */}
       <div className="flex justify-between items-center text-gray-500 text-sm">
         {/* Like */}
-        <button className="flex items-center gap-1 hover:text-red-500 transition">
+        <button
+          onClick={(e) => e.stopPropagation()}
+          className="flex items-center gap-1 hover:text-red-500 transition"
+        >
           <Heart size={18} />
           <span>{post.likes}</span>
         </button>

@@ -1,0 +1,21 @@
+components:
+  schemas:
+    ProfilePageResponse:
+      type: object
+      required: [ profile ]
+      properties:
+        profile:
+          $ref: "../schemas/Profile.yaml#/components/schemas/Profile"
+
+        cribs:
+          nullable: true
+          oneOf:
+          - $ref: "../schemas/ResidenceCardDTO.yaml#/components/schemas/PageResidenceCardDTO"
+          - $ref: "../schemas/ProfilePost.yaml#/components/schemas/ProfileCribPost"
+
+          description: >
+            Student profiles return a single featured crib post. Landlord profiles return a paged list of residence cards.
+
+        community:
+          $ref: "../schemas/ProfilePost.yaml#/components/schemas/PageCommunityPost"
+          nullable: true

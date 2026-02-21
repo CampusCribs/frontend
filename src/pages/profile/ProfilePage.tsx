@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 import {
   ArrowLeft,
   CircleUserRound,
@@ -8,56 +8,33 @@ import {
   Heart,
 } from "lucide-react";
 import { useNavigate } from "react-router";
-import { BlogCard, fakePost } from "../community/Community";
+import { BlogCard } from "../community/Community";
+import {
+  LandlordProfile,
+  PageCommunityPost,
+  PageResidenceCardDTO,
+  ProfileCribPost,
+  StudentProfile,
+} from "@/gen";
 
-/** ---------------------------------------------
- * Types
- * --------------------------------------------*/
-export type Tag = { name: string };
+function isProfileCribPost(
+  cribs: ProfileCribPost | PageResidenceCardDTO | null | undefined,
+): cribs is ProfileCribPost {
+  return (
+    !!cribs &&
+    typeof cribs === "object" &&
+    "type" in cribs &&
+    cribs.type === "CRIB"
+  );
+}
 
-type BaseProfilePost = {
-  id: string;
-  type: "CRIB" | "COMMUNITY";
-  tags: Tag[];
-};
-
-/** ---------------------------------------------
- * CRIB (listing-style)
- * --------------------------------------------*/
-export type CRIBPost = BaseProfilePost & {
-  type: "CRIB";
-  title: string;
-  description: string;
-  imageUrl: string; // single hero image
-  isVerified: boolean;
-  price: number;
-  roommates: number;
-};
-
-/** ---------------------------------------------
- * COMMUNITY (feed/blog-style)
- * --------------------------------------------*/
-export type CommunityPost = {
-  title: string;
-  type: "COMMUNITY";
-  id: string;
-
-  // intent tag (single)
-  intent: string; // e.g. "Looking for Roommate"
-
-  // content
-  body: string;
-  images?: string[];
-
-  // optional
-  createdAtLabel?: string; // "Posted 2h ago" (used only as grey line)
-};
-
-/** ---------------------------------------------
- * Union used by the profile page renderer
- * --------------------------------------------*/
-export type Post = CRIBPost | CommunityPost;
-const ProfileToggle = ({ active, onChange }: ProfileToggleProps) => {
+const ProfileToggle = ({
+  active,
+  onChange,
+}: {
+  active: string;
+  onChange: Dispatch<SetStateAction<"CRIB" | "COMMUNITY">>;
+}) => {
   return (
     <div className="border-b w-full">
       <div className="flex">
@@ -67,7 +44,7 @@ const ProfileToggle = ({ active, onChange }: ProfileToggleProps) => {
           return (
             <button
               key={tab}
-              onClick={() => onChange(tab as Tab)}
+              onClick={() => onChange(tab as "CRIB" | "COMMUNITY")}
               className="flex-1 relative py-3 text-sm font-medium"
             >
               <span
@@ -91,39 +68,17 @@ const ProfileToggle = ({ active, onChange }: ProfileToggleProps) => {
 /** ---------------------------------------------
  * Page
  * --------------------------------------------*/
-export default function ProfilePage() {
+export default function ProfilePage({
+  profile,
+  cribs,
+  community,
+}: {
+  profile: LandlordProfile;
+  cribs: ProfileCribPost | PageResidenceCardDTO | null | undefined;
+  community: PageCommunityPost | null | undefined;
+}) {
   const navigate = useNavigate();
 
-  // Placeholder user
-  const user = {
-    name: "Johnny Edwards",
-    username: "johnnyedwards",
-    school: "UC Berkeley",
-    bio: "CS student. Looking for a clean, chill roommate near campus. Gym + coffee + grind.",
-    email: "johnnyedwards@gmail.com",
-    phone: "(513) 555-0123",
-    avatarUrl: "", // set to URL to see avatar image
-  };
-
-  // Example post (swap type to show different layout)
-  const post: Post | null = {
-    type: "CRIB",
-    id: "post_123",
-    title: "Sunny Private Room on Short Vine",
-    description:
-      "Private room in a 3BR. Walk to campus, in-unit laundry, furnished common area. Looking for someone clean + respectful.",
-    imageUrl:
-      "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1800&q=80",
-    isVerified: true,
-    price: 850,
-    roommates: 2,
-    tags: [
-      { name: "Short Vine" },
-      { name: "Walkable" },
-      { name: "Laundry" },
-      { name: "Furnished" },
-    ],
-  };
   const [activeTab, setActiveTab] = useState<"CRIB" | "COMMUNITY">("CRIB");
   return (
     <div className="min-h-dvh w-full bg-white">
@@ -156,9 +111,9 @@ export default function ProfilePage() {
           <div className="flex items-start gap-4">
             {/* Avatar */}
             <div className="h-[72px] w-[72px] rounded-full bg-slate-50 border border-slate-200 overflow-hidden flex items-center justify-center shrink-0">
-              {user.avatarUrl ? (
+              {profile.avatarUrl ? (
                 <img
-                  src={user.avatarUrl}
+                  src={profile.avatarUrl}
                   alt="Profile"
                   className="h-full w-full object-cover"
                 />
@@ -172,22 +127,22 @@ export default function ProfilePage() {
               {/* Name + handle */}
               <div className="space-y-0.5">
                 <div className="text-[15px] font-semibold text-slate-900 leading-tight">
-                  {user.name}
+                  {profile.name}
                 </div>
                 <div className="text-xs text-slate-500 truncate">
-                  @{user.username} · {user.school}
+                  @{profile.username} · {profile.market}
                 </div>
               </div>
 
               {/* Bio */}
               <div className="mt-2.5 text-sm text-slate-700 leading-snug">
-                {user.bio}
+                {profile.bio}
               </div>
 
               {/* Contact */}
               <div className="mt-3 text-xs text-slate-500 space-y-1">
-                <div className="truncate">{user.email}</div>
-                <div className="truncate">{user.phone}</div>
+                <div className="truncate">{profile.email}</div>
+                <div className="truncate">{profile.phone}</div>
               </div>
             </div>
           </div>
@@ -206,7 +161,7 @@ export default function ProfilePage() {
               className="flex-1 rounded-xl text-white px-4 bg-slate-900 hover:bg-slate-800 py-2.5 text-sm font-semibold transition"
               onClick={() => console.log("create/edit post")}
             >
-              {post ? "Edit post" : "Create post"}
+              {cribs ? "Edit post" : "Create post"}
             </button>
           </div>
         </div>
@@ -214,11 +169,14 @@ export default function ProfilePage() {
         <div className="border-t border-slate-100" />
         <ProfileToggle active={activeTab} onChange={setActiveTab} />
         <div className="mt-2">
-          {activeTab === "CRIB" && post && (
+          {activeTab === "CRIB" && cribs && isProfileCribPost(cribs) && (
             <ProfilePostCard
-              post={post}
-              user={{ username: user.username, avatarUrl: user.avatarUrl }}
-              onViewListing={() => navigate(`/cribs/${post.id}`)}
+              post={cribs}
+              user={{
+                username: profile.username,
+                avatarUrl: profile.avatarUrl,
+              }}
+              onViewListing={() => navigate(`/cribs/${cribs.id}`)}
               onShare={() => console.log("share")}
               onSave={() => console.log("save")}
             />
@@ -226,12 +184,13 @@ export default function ProfilePage() {
         </div>
         <div>
           {activeTab === "COMMUNITY" &&
-            Array.from({ length: 6 }).map((_, i) => (
-              <BlogCard key={i} post={{ ...fakePost, id: String(i) }} />
+            community &&
+            community.items.map((data, index) => (
+              <BlogCard post={data} key={index} />
             ))}
         </div>
         {/* ... your Post section stays the same ... */}
-        {!post && (
+        {!cribs && (
           <div className="px-4 py-10 text-center">
             <div className="text-sm font-semibold text-slate-900">
               No post yet
@@ -263,7 +222,7 @@ function ProfilePostCard({
   onShare,
   onSave,
 }: {
-  post: CRIBPost;
+  post: ProfileCribPost;
   user: { username: string; avatarUrl?: string };
   onViewListing: () => void;
   onShare: () => void;
@@ -294,6 +253,7 @@ function ProfilePostCard({
         </button>
 
         <button
+          title="save"
           type="button"
           className="inline-flex items-center gap-2 text-sm font-semibold transition"
           onClick={() => {

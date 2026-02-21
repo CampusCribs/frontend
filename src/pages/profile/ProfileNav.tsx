@@ -1,26 +1,38 @@
-import { useGetProfileUsername } from "@/gen";
-import LandlordProfilePage from "./LandlordPage";
 import ProfilePage from "./ProfilePage";
 import LandlordUsernamePage from "./username/LandlordUsernamePage";
 import ProfileUsernamePage from "./username/ProfileUsernamePage";
 import { useParams } from "react-router";
 import LoadingPage from "../loading/LoadingPage";
+import { useMe } from "@/hooks/use-me";
+import { useGetAppProfileUsername } from "@/gen";
+import LandlordPage from "./LandlordPage";
 
 export const ProfileNavUsername = () => {
   const { username } = useParams<{ username: string }>();
-  const { data, isLoading, isError } = useGetProfileUsername(username || "");
-
+  const { data, isLoading, isError } = useGetAppProfileUsername(username || "");
+  console.log(data);
   if (isLoading) {
     return <LoadingPage />;
   }
 
   if (data) {
-    if (data.data.role !== "STUDENT") {
-      return <ProfileUsernamePage student={data.data} />;
+    if (data.data.profile.role === "STUDENT") {
+      return (
+        <ProfileUsernamePage
+          student={data.data.profile}
+          cribs={data.data.cribs}
+          community={data.data.community}
+        />
+      );
     }
 
-    if (data.data.role !== "LANDLORD") {
-      return <LandlordUsernamePage landlord={data.data} />; //finished wireing non profile
+    if (data.data.profile.role === "LANDLORD") {
+      return (
+        <LandlordUsernamePage
+          profile={data.data.profile}
+          cribs={data.data.cribs}
+        />
+      );
     }
   }
   if (isError) {
@@ -29,13 +41,30 @@ export const ProfileNavUsername = () => {
 };
 
 export const ProfileNavHome = () => {
-  const role = "STUDENT";
-
-  if (role === "STUDENT") {
-    return <ProfilePage />;
+  const me = useMe();
+  const { data, isLoading, isError } = useGetAppProfileUsername(
+    me?.me?.username || "",
+  );
+  console.log(data);
+  if (isLoading) {
+    return <LoadingPage />;
   }
 
-  if (role === "LANDLORD") {
-    return <LandlordProfilePage />;
+  if (data?.data) {
+    if (data.data.profile.role === "STUDENT") {
+      return (
+        <ProfilePage
+          profile={data.data.profile}
+          community={data?.data.community}
+          cribs={data?.data.cribs}
+        />
+      );
+    }
+
+    if (data.data.profile.role === "LANDLORD") {
+      return (
+        <LandlordPage profile={data.data.profile} cribs={data.data.cribs} />
+      );
+    }
   }
 };

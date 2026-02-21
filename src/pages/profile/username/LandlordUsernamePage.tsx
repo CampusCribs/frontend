@@ -6,64 +6,36 @@ import {
   CircleUserRound,
   MessageCircleMore,
   Send,
-  Tag,
 } from "lucide-react";
-import { useNavigate, useParams } from "react-router";
-import { landlordProfile } from "@/gen";
-import { useGetPostsUsernameListInfinite } from "@/gen";
+import { useNavigate } from "react-router";
+import { LandlordProfile, PageResidenceCardDTO, ProfileCribPost } from "@/gen";
 import { ResidenceCard } from "@/pages/cribs/CribsPage";
 import ShareModal from "@/components/ui/ShareModal";
 
-/** ---------------------------------------------
- * Types
- * --------------------------------------------*/
-export type Tag = { name: string };
-
-type BaseProfilePost = {
-  id: string;
-  type: "CRIB" | "COMMUNITY";
-  tags: Tag[];
-};
-
-/** ---------------------------------------------
- * CRIB (listing-style)
- * --------------------------------------------*/
-export type CRIBPost = BaseProfilePost & {
-  type: "CRIB";
-  title: string;
-  description: string;
-  imageUrl: string; // single hero image
-  isVerified: boolean;
-  price: number;
-  roommates: number;
-};
+function isPageResidenceCardDTO(
+  cribs: ProfileCribPost | PageResidenceCardDTO | null | undefined,
+): cribs is PageResidenceCardDTO {
+  return (
+    !!cribs &&
+    typeof cribs === "object" &&
+    "items" in cribs &&
+    Array.isArray((cribs as PageResidenceCardDTO).items)
+  );
+}
 
 /** ---------------------------------------------
  * Page
  * --------------------------------------------*/
 export default function LandlordUsernamePage({
-  landlord,
+  profile,
+  cribs,
 }: {
-  landlord: landlordProfile;
+  profile: LandlordProfile;
+  cribs: ProfileCribPost | PageResidenceCardDTO | null | undefined;
 }) {
   const navigate = useNavigate();
-  const { username } = useParams<{ username: string }>();
   const [openShare, setOpenShare] = useState<boolean>(false);
-
-  const isVerified = false;
-  const params = {
-    page: 0,
-    size: 10,
-    sort: ["createdAt,desc"],
-  };
-  const {
-    data: curated,
-    isError: curated_error,
-    isLoading: curated_isLoading,
-  } = useGetPostsUsernameListInfinite(username || "");
-
-  console.log(curated_error);
-  const [activeTab, setActiveTab] = useState<"CRIB" | "COMMUNITY">("CRIB");
+  const isVerified = profile.verification === "VERIFIED";
   return (
     <div className="min-h-dvh w-full bg-white">
       {/* Top bar (tighter) */}
@@ -86,9 +58,9 @@ export default function LandlordUsernamePage({
           <div className="flex items-start gap-4">
             {/* Avatar */}
             <div className="h-[72px] w-[72px] rounded-full bg-slate-50 border border-slate-200 overflow-hidden flex items-center justify-center shrink-0">
-              {landlord.avatarUrl ? (
+              {profile.avatarUrl ? (
                 <img
-                  src={landlord.avatarUrl}
+                  src={profile.avatarUrl}
                   alt="Profile"
                   className="h-full w-full object-cover"
                 />
@@ -102,7 +74,7 @@ export default function LandlordUsernamePage({
               {/* Name + handle */}
               <div className="flex items-center gap-2">
                 <div className="text-[15px] font-semibold text-slate-900 leading-tight">
-                  {landlord.name}
+                  {profile.name}
                 </div>
 
                 {/* Trust badge */}
@@ -128,18 +100,18 @@ export default function LandlordUsernamePage({
                 </span>
               </div>
               <div className="text-xs text-slate-500 truncate">
-                @{landlord.username} · {landlord.market}
+                @{profile.username} · {profile.market}
               </div>
 
               {/* Bio */}
               <div className="mt-2.5 text-sm text-slate-700 leading-snug">
-                {landlord.bio}
+                {profile.bio}
               </div>
 
               {/* Contact */}
               <div className="mt-3 text-xs text-slate-500 space-y-1">
-                <div className="truncate">{landlord.email}</div>
-                <div className="truncate">{landlord.phone}</div>
+                <div className="truncate">{profile.email}</div>
+                <div className="truncate">{profile.phone}</div>
               </div>
             </div>
           </div>
@@ -149,7 +121,7 @@ export default function LandlordUsernamePage({
             <button
               type="button"
               className="flex-1 rounded-xl px-4 py-3 text-sm border border-slate-200 items-center justify-center  gap-3 flex font-semibold text-slate-900 hover:bg-slate-50 transition"
-              onClick={() => navigate(`/chats/${landlord.username}`)}
+              onClick={() => navigate(`/chats/${profile.username}`)}
             >
               <MessageCircleMore />
               Message
@@ -174,22 +146,14 @@ export default function LandlordUsernamePage({
           </div>
         </div>
         <div className="grid grid-cols-2 gap-1 w-full p-2">
-          {curated?.pages.map((page) =>
-            page.data?.items.map((crib) => (
-              <>
-                <ResidenceCard key={crib.id} data={crib} />
-                <ResidenceCard key={crib.id} data={crib} />
-                <ResidenceCard key={crib.id} data={crib} />
-                <ResidenceCard key={crib.id} data={crib} />
-                <ResidenceCard key={crib.id} data={crib} />
-                <ResidenceCard key={crib.id} data={crib} />
-                <ResidenceCard key={crib.id} data={crib} />
-              </>
-            )),
-          )}
+          {isPageResidenceCardDTO(cribs) &&
+            cribs.items.length > 0 &&
+            cribs.items.map((crib) => (
+              <ResidenceCard key={crib.id} data={crib} />
+            ))}
         </div>
         {/* ... your Post section stays the same ... */}
-        {!curated && !curated_error && !curated_isLoading && (
+        {isPageResidenceCardDTO(cribs) && cribs.items.length === 0 && (
           <div className="px-4 py-10 text-center">
             <div className="text-sm font-semibold text-slate-900">
               No post yet
@@ -206,13 +170,12 @@ export default function LandlordUsernamePage({
             </button>
           </div>
         )}
-        {curated_isLoading && "Loading..."}
       </div>
       {openShare && (
         <ShareModal
           open={openShare}
           onClose={() => setOpenShare(false)}
-          title={`Check out ${landlord.name}'s Profile on CampusCribs`}
+          title={`Check out ${profile.name}'s Profile on CampusCribs`}
           url={window.location.href}
         />
       )}

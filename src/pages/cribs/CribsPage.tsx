@@ -20,7 +20,11 @@ import { buildImageURL } from "@/lib/image-resolver";
 import Lottie from "lottie-react";
 import house from "@/components/ui/houseanimation.json";
 import GuidedSearch from "./GuidedSearch";
-import { ResidenceCardDTO, useGetCuratedCribsInfinite } from "@/gen";
+import {
+  GetAppCribsQueryParams,
+  ResidenceCardDTO,
+  useGetAppCribsInfinite,
+} from "@/gen";
 
 const CribsPage = () => {
   //variables to store the selected tags and the state of the tag selector and find the intersection of the tags
@@ -51,25 +55,17 @@ const CribsPage = () => {
     ) as Partial<T>;
   }
 
-  const params = omitNullish({
+  const params: GetAppCribsQueryParams = omitNullish({
     page: 0,
     size: 10,
-    sort: ["createdAt,desc"],
-    tag: selectedTags, // [] will be dropped
-    roommatesMin,
-    roommatesMax,
-    minPrice,
-    maxPrice,
-    startDate: start, // "" or null gets dropped
-    endDate: end,
-    verification,
+    sort: "createdAt,desc",
   });
 
   const {
     data: curated,
     error: curated_error,
     isLoading: curated_isLoading,
-  } = useGetCuratedCribsInfinite(params);
+  } = useGetAppCribsInfinite(params);
 
   useEffect(() => {
     if (inView) {

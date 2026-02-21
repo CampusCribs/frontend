@@ -1,0 +1,47 @@
+components:
+  schemas:
+    Page:
+      type: object
+      required: [ items, page, size, totalElements, totalPages ]
+      properties:
+        items:
+          type: array
+          items: {} # left open; specialized via allOf
+          example: [] # works as a generic default
+
+        page:
+          type: integer
+          format: int32
+          minimum: 0
+          example: 0
+
+        size:
+          type: integer
+          format: int32
+          minimum: 1
+          example: 10
+
+        totalElements:
+          type: integer
+          format: int64
+          minimum: 0
+          example: 42
+
+        totalPages:
+          type: integer
+          format: int32
+          minimum: 0
+          example: 5
+
+        sort:
+          type: string
+          nullable: true
+          example: "priceMonthly,asc"
+
+      example:
+        items: []
+        page: 0
+        size: 10
+        totalElements: 42
+        totalPages: 5
+        sort: null

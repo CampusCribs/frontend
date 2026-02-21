@@ -1,0 +1,21 @@
+get:
+  summary: List curated cribs
+  parameters:
+  - $ref: ../components/params/Parameters.yaml#/components/parameters/PageParam
+  - $ref: ../components/params/Parameters.yaml#/components/parameters/SizeParam
+  - $ref: ../components/params/Parameters.yaml#/components/parameters/SortParam
+  - name: username
+    in: path
+    required: true
+    schema:
+      type: string
+  responses:
+    "200":
+      description: OK
+      content:
+        application/json:
+          schema:
+            $ref: ../components/responses/ProfileResponse.yaml#/components/schemas/ProfilePageResponse
+
+    "400":
+      $ref: ../components/responses/ErrorResponse.yaml#/components/responses/BadRequest

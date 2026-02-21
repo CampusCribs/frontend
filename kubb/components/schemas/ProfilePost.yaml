@@ -129,30 +129,11 @@ components:
           example: 8
 
     PageCommunityPost:
-      type: object
-      required: [ items, page, size, totalElements, totalPages ]
-      properties:
-        items:
-          type: array
+      allOf:
+      - $ref: "./Pagination.yaml#/components/schemas/Page"
+      - type: object
+        properties:
           items:
-            $ref: "#/components/schemas/CommunityPost"
-        page:
-          type: integer
-          format: int32
-          minimum: 0
-          maximum: 1000
-        size:
-          type: integer
-          format: int32
-          minimum: 1
-          maximum: 100
-        totalElements:
-          type: integer
-          format: int64
-          minimum: 0
-          maximum: 20
-        totalPages:
-          type: integer
-          format: int32
-          minimum: 0
-          maximum: 1000
+            type: array
+            items:
+              $ref: "#/components/schemas/CommunityPost"

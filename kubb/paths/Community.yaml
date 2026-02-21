@@ -1,0 +1,16 @@
+get:
+  summary: List curated community posts
+  parameters:
+  - $ref: ../components/params/Parameters.yaml#/components/parameters/PageParam
+  - $ref: ../components/params/Parameters.yaml#/components/parameters/SizeParam
+  - $ref: ../components/params/Parameters.yaml#/components/parameters/SortParam
+  responses:
+    "200":
+      description: OK
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/ProfilePost.yaml#/components/schemas/PageCommunityPost
+
+    "400":
+      $ref: ../components/responses/ErrorResponse.yaml#/components/responses/BadRequest

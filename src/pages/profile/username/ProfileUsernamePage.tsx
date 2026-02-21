@@ -6,15 +6,45 @@ import {
   Tag,
   Heart,
   MessageCircleMore,
+  AlertCircle,
+  CheckCircle2,
 } from "lucide-react";
-import { useNavigate, useParams } from "react-router";
-import { BlogCard, fakePost } from "@/pages/community/Community";
+import { useNavigate } from "react-router";
+import { BlogCard } from "@/pages/community/Community";
 import {
+  PageCommunityPost,
+  PageResidenceCardDTO,
   ProfileCribPost,
   StudentProfile,
-  useGetPostsCommunityUsernameInfinite,
-  useGetPostsCribsUsername,
 } from "@/gen";
+import ShareModal from "@/components/ui/ShareModal";
+
+function isProfileCribPost(
+  cribs: ProfileCribPost | PageResidenceCardDTO | null | undefined,
+): cribs is ProfileCribPost {
+  return (
+    !!cribs &&
+    typeof cribs === "object" &&
+    "type" in cribs &&
+    cribs.type === "CRIB"
+  );
+}
+
+function isPageCommunityPost(
+  value:
+    | PageCommunityPost
+    | ProfileCribPost
+    | PageResidenceCardDTO
+    | null
+    | undefined,
+): value is PageCommunityPost {
+  return (
+    !!value &&
+    typeof value === "object" &&
+    "items" in value &&
+    Array.isArray((value as PageCommunityPost).items)
+  );
+}
 
 const ProfileToggle = ({
   active,
@@ -32,7 +62,7 @@ const ProfileToggle = ({
           return (
             <button
               key={tab}
-              onClick={() => onChange(tab)}
+              onClick={() => onChange(tab as Toggle)}
               className="flex-1 relative py-3 text-sm font-medium"
             >
               <span
@@ -59,25 +89,18 @@ type Toggle = "COMMUNITY" | "CRIB";
  * --------------------------------------------*/
 export default function ProfileUsernamePage({
   student,
+  cribs,
+  community,
 }: {
   student: StudentProfile;
+  cribs: ProfileCribPost | PageResidenceCardDTO | null | undefined;
+  community: PageCommunityPost | null | undefined;
 }) {
   const navigate = useNavigate();
   const [openShare, setOpenShare] = useState(false);
-  const { username } = useParams<{ username: string }>();
   const [activeTab, setActiveTab] = useState<Toggle>("CRIB");
 
-  const {
-    data: crib,
-    isLoading: isCribLoading,
-    isError: isCribError,
-  } = useGetPostsCribsUsername(username || "");
-
-  const {
-    data: community,
-    isLoading: isCommunityLoading,
-    isError: isCommunityError,
-  } = useGetPostsCommunityUsernameInfinite(username || "");
+  const isVerified = student.verification === "VERIFIED";
   return (
     <div className=" w-full bg-white">
       {/* Top bar (tighter) */}
@@ -118,11 +141,30 @@ export default function ProfileUsernamePage({
                 <div className="text-[15px] font-semibold text-slate-900 leading-tight">
                   {student.name}
                 </div>
-                <div className="text-xs text-slate-500 truncate">
-                  @{student.username} · {student.school}
-                </div>
+                <span
+                  className={[
+                    "inline-flex items-center gap-1 rounded-full px-2 py-1 text-[11px] font-semibold ring-1 ring-inset",
+                    isVerified
+                      ? "bg-emerald-50 text-emerald-700 ring-emerald-200"
+                      : "bg-gray-100 text-gray-600 ring-gray-200",
+                  ].join(" ")}
+                  title={
+                    isVerified
+                      ? "This user is verified."
+                      : "This user has not completed verification yet."
+                  }
+                >
+                  {isVerified ? (
+                    <CheckCircle2 size={12} />
+                  ) : (
+                    <AlertCircle size={12} />
+                  )}
+                  {isVerified ? "Verified student" : "Unverified student"}
+                </span>
               </div>
-
+              <div className="text-xs text-slate-500 truncate">
+                @{student.username} · {student.school}
+              </div>
               {/* Bio */}
               <div className="mt-2.5 text-sm text-slate-700 leading-snug">
                 {student.bio}
@@ -163,14 +205,14 @@ export default function ProfileUsernamePage({
           onChange={(tab: Toggle) => setActiveTab(tab)}
         />
         <div className="mt-2">
-          {activeTab === "CRIB" && crib && (
+          {activeTab === "CRIB" && cribs && isProfileCribPost(cribs) && (
             <ProfilePostCard
-              post={crib.data}
+              post={cribs}
               user={{
                 username: student.username,
                 avatarUrl: student.avatarUrl,
               }}
-              onViewListing={() => navigate(`/cribs/${crib.data.id}`)}
+              onViewListing={() => navigate(`/cribs/${cribs.id}`)}
               onShare={() => console.log("share")}
               onSave={() => console.log("save")}
             />
@@ -178,12 +220,13 @@ export default function ProfileUsernamePage({
         </div>
         <div>
           {activeTab === "COMMUNITY" &&
-            community?.pages.map((data, index) => (
+            isPageCommunityPost(community) &&
+            community?.items.map((data, index) => (
               <BlogCard post={data.data} key={index} />
             ))}
         </div>
         {/* ... your Post section stays the same ... */}
-        {!crib && (
+        {activeTab === "CRIB" && !cribs && (
           <div className="px-4 py-10 text-center">
             <div className="text-sm font-semibold text-slate-900">
               No post yet
@@ -201,6 +244,13 @@ export default function ProfileUsernamePage({
           </div>
         )}
       </div>
+      {openShare && (
+        <ShareModal
+          open={openShare}
+          url={window.location.href}
+          onClose={() => setOpenShare(false)}
+        />
+      )}
     </div>
   );
 }

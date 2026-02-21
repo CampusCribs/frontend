@@ -4,22 +4,19 @@ info:
   version: 1.0.0
 
 paths:
-  /curated/cribs:
-    $ref: ./paths/curated/curated.yaml
+  /app//me:
+    $ref: ./paths/me.yaml
 
-  /curated/community:
-    $ref: ./paths/curated/curatedCommunity.yaml
+  /app/cribs:
+    $ref: ./paths/Cribs.yaml
 
-  /posts/{postId}:
-    $ref: ./paths/posts/postsByPostId.yaml
-  /posts/{username}/list:
-    $ref: ./paths/posts/listPostsByUserName.yaml
+  /app/community:
+    $ref: ./paths/Community.yaml
 
-  /profile/{username}:
-    $ref: ./paths/profile/profileBaseByUsername.yaml
+  /app/individualcrib/{postId}:
+    $ref: ./paths/IndividualCrib.yaml
 
-  /posts/community/{username}:
-    $ref: ./paths/profile/profileCommunityListByUsername.yaml
+  # /app/individualcommunity/{postId}:
 
-  /posts/cribs/{username}:
-    $ref: ./paths/profile/profileCribByUsername.yaml
+  /app/profile/{username}:
+    $ref: ./paths/profile.yaml

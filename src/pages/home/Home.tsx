@@ -2,11 +2,11 @@ import HatHouseBlack from "@/components/ui/HatHouseBlack";
 import { useNavigate } from "react-router";
 import { ResidenceCard } from "../cribs/CribsPage";
 import { Check, Lock, ShieldUser } from "lucide-react";
-import { useGetCuratedCribsInfinite } from "@/gen";
+import { useGetAppCribsInfinite } from "@/gen";
 
 const Home = () => {
   const navigate = useNavigate();
-  const { data: curatedData } = useGetCuratedCribsInfinite();
+  const { data: curatedData } = useGetAppCribsInfinite();
   return (
     <div className="w-full overflow-hidden ">
       {" "}

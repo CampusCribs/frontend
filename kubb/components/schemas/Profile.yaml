@@ -69,3 +69,13 @@ components:
           school:
             type: string
             example: UC Berkeley
+
+    Profile:
+      oneOf:
+      - $ref: "#/components/schemas/LandlordProfile"
+      - $ref: "#/components/schemas/StudentProfile"
+      discriminator:
+        propertyName: role
+        mapping:
+          LANDLORD: "#/components/schemas/LandlordProfile"
+          STUDENT: "#/components/schemas/StudentProfile"

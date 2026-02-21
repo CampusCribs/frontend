@@ -19,7 +19,7 @@ import Map, { Marker } from "react-map-gl/maplibre";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import ShareModal from "@/components/ui/ShareModal";
-import { useGetPostsPostid } from "@/gen";
+import { useGetIndividualCrib, useGetPostsPostid } from "@/gen";
 
 function formatDateISO(iso: string) {
   return new Date(iso).toISOString().split("T")[0];
@@ -107,7 +107,7 @@ const IndividualPage = () => {
   const [liked, setLiked] = useState(false);
   const [openShare, setOpenShare] = useState(false);
   const [openReport, setOpenReport] = useState(false);
-  const { data: postData, isLoading } = useGetPostsPostid(postId || "");
+  const { data: postData, isLoading } = useGetIndividualCrib(postId || "");
   console.log(postData);
   useEffect(() => {
     localStorage.setItem("headerText", "Crib Details");

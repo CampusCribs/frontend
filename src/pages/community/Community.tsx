@@ -130,9 +130,11 @@ const Community = () => {
       </div>
       <div>
         {community &&
-          community.data.items.map((data, index) => (
-            <BlogCard post={data} key={index} />
-          ))}
+          community.pages.map((data, index) =>
+            data.data.items.map((post) => (
+              <BlogCard key={post.id} post={post} />
+            )),
+          )}
       </div>
       {openSearch && <GuidedSearch setOpenSearch={setOpenSearch} />}
     </div>

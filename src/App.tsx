@@ -1,10 +1,4 @@
-import {
-  BrowserRouter,
-  Navigate,
-  Route,
-  Routes,
-  useParams,
-} from "react-router";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router";
 import Layout from "@/components/layout/Layout";
 
 import CribsPage from "@/pages/cribs/CribsPage";
@@ -32,7 +26,7 @@ import Community from "./pages/community/Community";
 import Home from "./pages/home/Home";
 import Map from "./pages/map/Map";
 import IndividualChat from "./pages/chat/IndividualChat";
-import UltraMinimalOnboarding from "./pages/login/NewUserFlow";
+import Onboarding from "./pages/onboarding/Onboarding";
 import PostBlog from "./pages/profile/post/PostBlog";
 import { ProfileNavHome, ProfileNavUsername } from "./pages/profile/ProfileNav";
 import { IndividualCommunityExample } from "./pages/community/IndividualCommunity";
@@ -47,7 +41,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/about" element={<About />} />
-            <Route path="/onboarding" element={<UltraMinimalOnboarding />} />
+            <Route path="/onboarding" element={<Onboarding />} />
             <Route element={<Layout />}>
               <Route path="/cribs" element={<CribsPage />} />
               <Route path="/cribs/:postId" element={<IndividualPage />} />

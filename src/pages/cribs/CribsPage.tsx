@@ -5,9 +5,11 @@ import {
   Building2,
   CheckCircle2,
   ChevronRight,
+  CircleX,
   Clock,
   MapPin,
   Search,
+  SearchX,
   ShieldCheck,
 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -86,7 +88,7 @@ const CribsPage = () => {
         </div>
         <div className="flex flex-col">
           <div className="w-full ">
-            {/* {curated_isLoading && (
+            {curated_isLoading && (
               <div className="flex w-full h-[400px] justify-center items-center ">
                 <div className="flex flex-col items-center justify-center">
                   <Lottie
@@ -98,8 +100,8 @@ const CribsPage = () => {
                   <div>loading...</div>
                 </div>
               </div>
-            )} */}
-            {/* {curated_error?.response?.status && curated_error && (
+            )}
+            {curated_error?.response?.status && curated_error && (
               <div className="flex w-full h-[400px] justify-center items-center ">
                 <div className="flex flex-col">
                   <div className="flex justify-center mb-4">
@@ -108,8 +110,8 @@ const CribsPage = () => {
                   <div>An Error Occured</div>
                 </div>
               </div>
-            )} */}
-            {/* {curated?.pages[0].status === 202 && (
+            )}
+            {curated?.pages[0].status === 202 && (
               <div className="flex w-full h-[400px] justify-center items-center ">
                 <div className="flex flex-col">
                   <div className="flex justify-center mb-4">
@@ -118,24 +120,8 @@ const CribsPage = () => {
                   <div>No residences found</div>
                 </div>
               </div>
-            )} */}
+            )}
             <div className="grid grid-cols-2 gap-1 w-full p-2">
-              {/* {curated &&
-                curated.pages.map((item) =>
-                  item.data.content?.map((residence) => (
-                    <ResidenceCard
-                      key={residence.id}
-                      userId={residence.userId || ""}
-                      thumbnail={residence.mediaId || ""}
-                      id={residence.id || ""}
-                      price={residence.price || 0}
-                      location="CUF"
-                      name={residence.name || ""}
-                      iconKey={residence.iconKey || ""}
-                      ableToUse={residence.ableToUse || false}
-                    />
-                  ))
-                )} */}
               {curated?.pages.map((page) =>
                 page.data?.items.map((crib) => (
                   <>

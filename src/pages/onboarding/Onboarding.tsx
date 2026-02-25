@@ -76,7 +76,7 @@ const heardFromOptions: { key: HeardFrom; label: string }[] = [
   { key: "OTHER", label: "Other" },
 ];
 
-export default function UltraMinimalOnboarding({
+export default function Onboarding({
   onFinish,
 }: {
   onFinish?: (data: OnboardingState) => void;

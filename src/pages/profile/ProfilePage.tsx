@@ -152,7 +152,7 @@ export default function ProfilePage({
             <button
               type="button"
               className="flex-1 rounded-xl px-4 py-2.5 text-sm border border-slate-200 font-semibold text-slate-900 hover:bg-slate-50 transition"
-              onClick={() => console.log("edit profile")}
+              onClick={() => navigate("/settings")}
             >
               Edit profile
             </button>

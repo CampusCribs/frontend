@@ -38,17 +38,8 @@ export default function LandlordPage({
   return (
     <div className="min-h-dvh w-full bg-white">
       {/* Top bar (tighter) */}
-      <div className="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-slate-100">
-        <div className="mx-auto w-full max-w-[520px] px-3 h-12 flex items-center justify-between">
-          <button
-            type="button"
-            className="p-1.5 -ml-1 rounded-full hover:bg-slate-100 transition"
-            onClick={() => window.history.back()}
-            aria-label="Back"
-          >
-            <ArrowLeft size={20} />
-          </button>
-
+      <div className="sticky top-0 z-40 bg-white/95 backdrop-blur border-slate-100">
+        <div className="mx-auto w-full max-w-[520px] px-3 h-12 flex items-center justify-end">
           <button
             type="button"
             className="p-1.5 -mr-1 rounded-full hover:bg-slate-100 transition"
@@ -62,7 +53,7 @@ export default function LandlordPage({
 
       <div className="mx-auto w-full max-w-[520px]">
         {/* Profile header (cleaner rhythm) */}
-        <div className="px-4 pt-5 pb-5">
+        <div className="px-4 pb-5">
           <div className="flex items-start gap-4">
             {/* Avatar */}
             <div className="h-[72px] w-[72px] rounded-full bg-slate-50 border border-slate-200 overflow-hidden flex items-center justify-center shrink-0">

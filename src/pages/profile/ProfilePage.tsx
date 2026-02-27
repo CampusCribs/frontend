@@ -1,99 +1,25 @@
-import { Dispatch, SetStateAction, useState } from "react";
-import {
-  ArrowLeft,
-  CircleUserRound,
-  Settings,
-  Send,
-  Tag,
-  Heart,
-} from "lucide-react";
+import { useState } from "react";
+import { CircleUserRound, Settings, Send, Tag, Heart } from "lucide-react";
 import { useNavigate } from "react-router";
-import { BlogCard } from "../community/Community";
-import {
-  LandlordProfile,
-  PageCommunityPost,
-  PageResidenceCardDTO,
-  ProfileCribPost,
-  StudentProfile,
-} from "@/gen";
 
-function isProfileCribPost(
-  cribs: ProfileCribPost | PageResidenceCardDTO | null | undefined,
-): cribs is ProfileCribPost {
-  return (
-    !!cribs &&
-    typeof cribs === "object" &&
-    "type" in cribs &&
-    cribs.type === "CRIB"
-  );
-}
-
-const ProfileToggle = ({
-  active,
-  onChange,
-}: {
-  active: string;
-  onChange: Dispatch<SetStateAction<"CRIB" | "COMMUNITY">>;
-}) => {
-  return (
-    <div className="border-b w-full">
-      <div className="flex">
-        {["CRIB", "COMMUNITY"].map((tab) => {
-          const isActive = active === tab;
-
-          return (
-            <button
-              key={tab}
-              onClick={() => onChange(tab as "CRIB" | "COMMUNITY")}
-              className="flex-1 relative py-3 text-sm font-medium"
-            >
-              <span
-                className={
-                  isActive ? "text-black" : "text-gray-500 hover:text-black"
-                }
-              >
-                {tab === "CRIB" ? "Cribs" : "Community"}
-              </span>
-
-              {isActive && (
-                <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-black rounded-full" />
-              )}
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
-};
-/** ---------------------------------------------
- * Page
- * --------------------------------------------*/
-export default function ProfilePage({
-  profile,
-  cribs,
-  community,
-}: {
-  profile: LandlordProfile;
-  cribs: ProfileCribPost | PageResidenceCardDTO | null | undefined;
-  community: PageCommunityPost | null | undefined;
-}) {
+export default function ProfilePage() {
   const navigate = useNavigate();
+  const profile = {
+    name: "John Doe",
+    username: "johndoe",
+    market: "New York University",
+    bio: "Student at NYU. Love exploring the city and finding cool places to live!",
+    email: "",
+    avatarUrl:
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS3krGAS5w7YyUrBn7Y55sqCFh13aR2La_dYQ&s",
+    phone: "123-456-7890",
+  };
 
-  const [activeTab, setActiveTab] = useState<"CRIB" | "COMMUNITY">("CRIB");
   return (
     <div className="min-h-dvh w-full bg-white">
       {/* Top bar (tighter) */}
       <div className="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-slate-100">
-        <div className="mx-auto w-full max-w-[520px] px-3 h-12 flex items-center justify-between">
-          <button
-            type="button"
-            className="p-1.5 -ml-1 rounded-full hover:bg-slate-100 transition"
-            onClick={() => window.history.back()}
-            aria-label="Back"
-          >
-            <ArrowLeft size={20} />
-          </button>
-
+        <div className="mx-auto w-full max-w-[520px] px-3 h-12 flex items-center justify-end">
           <button
             type="button"
             className="p-1.5 -mr-1 rounded-full hover:bg-slate-100 transition"
@@ -152,45 +78,44 @@ export default function ProfilePage({
             <button
               type="button"
               className="flex-1 rounded-xl px-4 py-2.5 text-sm border border-slate-200 font-semibold text-slate-900 hover:bg-slate-50 transition"
-              onClick={() => navigate("/settings")}
+              onClick={() => navigate("/settings/profile")}
             >
               Edit profile
             </button>
             <button
               type="button"
               className="flex-1 rounded-xl text-white px-4 bg-slate-900 hover:bg-slate-800 py-2.5 text-sm font-semibold transition"
-              onClick={() => console.log("create/edit post")}
+              onClick={() => navigate(`/post/edit`)}
             >
-              {cribs ? "Edit post" : "Create post"}
+              Edit post
             </button>
           </div>
         </div>
 
         <div className="border-t border-slate-100" />
-        <ProfileToggle active={activeTab} onChange={setActiveTab} />
+        <div className="border-b w-full">
+          <div className="flex">
+            <button className="flex-1 relative py-3 text-sm font-medium">
+              <span className={"text-black"}>Cribs</span>
+
+              <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-black rounded-full" />
+            </button>
+          </div>
+        </div>
         <div className="mt-2">
-          {activeTab === "CRIB" && cribs && isProfileCribPost(cribs) && (
-            <ProfilePostCard
-              post={cribs}
+          {/* <ProfilePostCard
+              post={{}}
               user={{
                 username: profile.username,
                 avatarUrl: profile.avatarUrl,
               }}
-              onViewListing={() => navigate(`/cribs/${cribs.id}`)}
+              onViewListing={() => navigate(`/cribs/${}`)}
               onShare={() => console.log("share")}
               onSave={() => console.log("save")}
-            />
-          )}
+            /> */}
         </div>
-        <div>
-          {activeTab === "COMMUNITY" &&
-            community &&
-            community.items.map((data, index) => (
-              <BlogCard post={data} key={index} />
-            ))}
-        </div>
-        {/* ... your Post section stays the same ... */}
-        {!cribs && (
+
+        {true && (
           <div className="px-4 py-10 text-center">
             <div className="text-sm font-semibold text-slate-900">
               No post yet
@@ -222,7 +147,7 @@ function ProfilePostCard({
   onShare,
   onSave,
 }: {
-  post: ProfileCribPost;
+  post: {};
   user: { username: string; avatarUrl?: string };
   onViewListing: () => void;
   onShare: () => void;

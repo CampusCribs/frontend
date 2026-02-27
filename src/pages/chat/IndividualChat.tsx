@@ -1,45 +1,26 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router";
-import {
-  ArrowLeftIcon,
-  CalendarIcon,
-  FileTextIcon,
-  MoreHorizontal,
-} from "lucide-react";
-import SubmitApplication from "./SubmitApplication";
-import BookTourModal from "./BookTourModal";
+import { ArrowLeftIcon, MoreHorizontal } from "lucide-react";
 
 type IndividualChatProps = {
   // top bar
   name?: string;
   avatarUrl?: string;
-
-  // role behavior
-  isLandlordAccount?: boolean; // if the OTHER party is a landlord, show lead actions
 };
 
 const IndividualChat = ({
   name = "Johnny Edwards",
   avatarUrl = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS3krGAS5w7YyUrBn7Y55sqCFh13aR2La_dYQ&s",
-  isLandlordAccount = true,
 }: IndividualChatProps) => {
   const navigate = useNavigate();
 
   const [message, setMessage] = useState("");
-  const [showLeadNudge, setShowLeadNudge] = useState(isLandlordAccount);
+
   const [open, setOpen] = useState(false);
-  const [openTourModal, setOpenTourModal] = useState(false);
-  const [openApplicationModal, setOpenApplicationModal] = useState(false);
-  // Optional: auto-hide the lead strip after a moment (keeps it noticeable but not annoying)
-  React.useEffect(() => {
-    if (!isLandlordAccount) return;
-    const t = window.setTimeout(() => setShowLeadNudge(false), 5500);
-    return () => window.clearTimeout(t);
-  }, [isLandlordAccount]);
 
   const handleSend = () => {
     if (!message.trim()) return;
-    // TODO: send message
+    // TODO: sendmessage
     setMessage("");
   };
 
@@ -123,41 +104,6 @@ const IndividualChat = ({
 
         {/* Composer area */}
         <div className="border-t border-gray-200 bg-white px-3 pt-2 pb-3">
-          {/* Lead initiation (only when chatting with landlord account) */}
-          {isLandlordAccount &&
-            (showLeadNudge ? (
-              <div className="mb-2 flex items-center justify-between gap-2 rounded-2xl border border-blue-200 bg-blue-50 px-3 py-2">
-                <div className="min-w-0">
-                  <div className="text-sm font-medium text-blue-800 truncate">
-                    Quick actions
-                  </div>
-                  <div className="text-xs text-blue-700 truncate">
-                    Request a tour or submit an application
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  className="text-xs text-blue-700 hover:text-blue-900 font-medium px-2 py-1 rounded-xl hover:bg-blue-100 transition"
-                  onClick={() => setShowLeadNudge(false)}
-                >
-                  Dismiss
-                </button>
-              </div>
-            ) : (
-              <div className="mb-2 flex gap-2 overflow-x-auto no-scrollbar">
-                <LeadPill
-                  icon={<CalendarIcon size={14} />}
-                  label="Request tour"
-                  onClick={() => setOpenTourModal(true)}
-                />
-                <LeadPill
-                  icon={<FileTextIcon size={14} />}
-                  label="Submit application"
-                  onClick={() => setOpenApplicationModal(true)}
-                />
-              </div>
-            ))}
-
           {/* Input row */}
           <div className="flex items-center gap-2">
             <input
@@ -180,24 +126,6 @@ const IndividualChat = ({
           </div>
         </div>
       </div>
-      {openApplicationModal && (
-        <SubmitApplication
-          open={openApplicationModal}
-          onClose={() => setOpenApplicationModal(false)}
-          onSubmit={(data) => {
-            console.log("Application submitted:", data);
-          }}
-        />
-      )}
-      {openTourModal && (
-        <BookTourModal
-          open={openTourModal}
-          onClose={() => setOpenTourModal(false)}
-          onSubmit={(data) => {
-            console.log("Tour booked:", data);
-          }}
-        />
-      )}
     </div>
   );
 };

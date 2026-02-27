@@ -1,4 +1,4 @@
-import { Heart, House, MapPlus, MessageSquare, Users } from "lucide-react";
+import { House, MessageSquare, PlusSquare } from "lucide-react";
 import { useNavigate } from "react-router";
 
 const Footer = () => {
@@ -20,32 +20,19 @@ const Footer = () => {
           Cribs
         </div>
       </div>
-      <div
-        className="mx-auto flex flex-col items-center"
-        onClick={() => navigate("/map")}
-      >
-        <MapPlus
-          size={32}
-          className={pathname === "map" ? "" : "text-gray-500"}
-        />
-        <div
-          className={`text-xs ${pathname === "map" ? "text-black" : "text-gray-500"}`}
-        >
-          Map
-        </div>
-      </div>
+
       <div
         className=" mx-auto flex flex-col items-center"
-        onClick={() => navigate("/community")}
+        onClick={() => navigate("/post")}
       >
-        <Users
+        <PlusSquare
           size={32}
-          className={pathname === "community" ? "" : "text-gray-500"}
+          className={pathname === "post" ? "" : "text-gray-500"}
         />
         <div
-          className={`text-xs ${pathname === "community" ? "text-black" : "text-gray-500"}`}
+          className={`text-xs ${pathname === "post" ? "text-black" : "text-gray-500"}`}
         >
-          Community
+          Post
         </div>
       </div>
       <div
@@ -62,20 +49,7 @@ const Footer = () => {
           Chats
         </div>
       </div>
-      <div
-        className=" mx-auto flex flex-col items-center"
-        onClick={() => navigate("/favorites")}
-      >
-        <Heart
-          size={32}
-          className={pathname === "favorites" ? "" : "text-gray-500"}
-        />
-        <div
-          className={`text-xs ${pathname === "favorites" ? "text-black" : "text-gray-500"}`}
-        >
-          Favorites
-        </div>
-      </div>
+
       <div
         className="mx-auto flex flex-col items-center"
         onClick={() => navigate("/profile")}

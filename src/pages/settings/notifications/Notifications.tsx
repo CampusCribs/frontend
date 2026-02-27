@@ -1,90 +1,160 @@
-// import { useGetNotificationsInfinite, useMarkNotificationAsRead } from "@/gen";
-import useAuthenticatedClientConfig from "@/hooks/use-authenticated-client-config";
-import { ArrowLeftIcon } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router";
+import { useState } from "react";
 
-const Notifications = () => {
-  const config = useAuthenticatedClientConfig();
-  // const { data } = useGetNotificationsInfinite({}, { ...config });
-  return (
-    <div>
-      <div className=" pt-3">
-        <div className="px-3 pt-3">
-          <div
-            onClick={() => window.history.back()}
-            className="cursor-pointer inline-flex items-center"
-          >
-            <ArrowLeftIcon size={32} />
-            <span className="ml-2">Back</span>
-          </div>
-        </div>
-        <div className="flex items-center justify-center text-xl font-semibold mt-5">
-          Notifications
-        </div>
-        <div className="flex justify-center items-center">
-          <div className="flex flex-col mt-3 w-full py-5 rounded-lg">
-            {/* {data &&
-            data.pages?.flatMap((page) => page.data?.content).length > 0 ? (
-              data.pages.map((item) =>
-                item.data?.content?.map((item) => (
-                  <Notification
-                    title={item.title || ""}
-                    content={item.content || ""}
-                    isRead={item.read}
-                    id={item.id || ""}
-                  />
-                ))
-              )
-            ) : (
-              <div className="flex items-center justify-center border-t pt-10">
-                No notifications
-              </div>
-            )}
-            {data &&
-              data.pages.flatMap((page) => page.data.content).length > 0 && (
-                <div className="w-full border-t" />
-              )} */}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const Notification = ({
-  title,
-  content,
-  isRead,
-  id,
-}: {
-  title: string;
-  content: string;
-  isRead?: boolean;
-  id: string;
-}) => {
-  const config = useAuthenticatedClientConfig();
-  // const { mutateAsync } = useMarkNotificationAsRead({ ...config });
-
+export default function NotificationSettingsPage() {
   const navigate = useNavigate();
-  const handleClick = async () => {
-    // await mutateAsync({ id: id }).then(() => navigate("/profile"));
-  };
+
+  const [settings, setSettings] = useState({
+    // In-web (in-app UI notifications inside the webapp)
+    webMessages: true,
+    webContactRequests: true,
+    webSystem: true,
+
+    // Email
+    emailSecurityAlerts: true, // often best to keep on
+    emailProductUpdates: true,
+    emailMarketing: false,
+  });
+
   return (
-    <div
-      className="border-t w-full px-4 py-2 flex cursor-pointer"
-      onClick={handleClick}
-    >
-      <div className="flex flex-col gap-y-1.5">
-        <div className="font-semibold ">{title}</div>
-        <div className="text-sm">{content}</div>
+    <div className="mx-auto min-h-[100dvh] bg-white">
+      {/* Header */}
+      <div className="flex items-center gap-3 px-4 pt-4">
+        <button
+          title="back"
+          onClick={() => navigate(-1)}
+          className="p-2 rounded-full hover:bg-black/5 transition"
+          type="button"
+        >
+          <ArrowLeft size={20} />
+        </button>
+
+        <h1 className="text-xl font-semibold text-black/90">Notifications</h1>
       </div>
-      {!isRead && (
-        <div className="ml-auto flex items-center justify-center">
-          <div className="h-2 w-2 rounded-full bg-red-500" />
+
+      <div className="mt-4 border-t">
+        {/* In-web */}
+        <div className="px-5 py-5 border-b">
+          <div className="mb-4">
+            <h2 className="text-base font-semibold text-black/90">In-web</h2>
+            <p className="text-sm text-black/60">
+              Notifications you see inside CampusCribs (bell, inbox, badges).
+            </p>
+          </div>
+
+          <div className="space-y-5">
+            <div className="flex items-center justify-between gap-4">
+              <div className="min-w-0">
+                <Label className="cursor-pointer">Messages</Label>
+                <p className="text-xs text-black/50 mt-1">
+                  Show notifications for new DMs.
+                </p>
+              </div>
+              <Switch
+                checked={settings.webMessages}
+                onCheckedChange={(v) =>
+                  setSettings((s) => ({ ...s, webMessages: v }))
+                }
+              />
+            </div>
+
+            <div className="flex items-center justify-between gap-4">
+              <div className="min-w-0">
+                <Label className="cursor-pointer">Contact requests</Label>
+                <p className="text-xs text-black/50 mt-1">
+                  Notify when someone requests your contact info.
+                </p>
+              </div>
+              <Switch
+                checked={settings.webContactRequests}
+                onCheckedChange={(v) =>
+                  setSettings((s) => ({ ...s, webContactRequests: v }))
+                }
+              />
+            </div>
+
+            <div className="flex items-center justify-between gap-4">
+              <div className="min-w-0">
+                <Label className="cursor-pointer">System</Label>
+                <p className="text-xs text-black/50 mt-1">
+                  Post status, verification, important updates inside the app.
+                </p>
+              </div>
+              <Switch
+                checked={settings.webSystem}
+                onCheckedChange={(v) =>
+                  setSettings((s) => ({ ...s, webSystem: v }))
+                }
+              />
+            </div>
+
+            <p className="text-xs text-black/45">
+              Tip: these don’t affect whether you can receive messages—only
+              whether CampusCribs shows notification alerts in the UI.
+            </p>
+          </div>
         </div>
-      )}
+
+        {/* Email */}
+        <div className="px-5 py-5">
+          <div className="mb-4">
+            <h2 className="text-base font-semibold text-black/90">Email</h2>
+            <p className="text-sm text-black/60">
+              Notifications sent to your inbox.
+            </p>
+          </div>
+
+          <div className="space-y-5">
+            <div className="flex items-center justify-between gap-4">
+              <div className="min-w-0">
+                <Label className="cursor-pointer">Security alerts</Label>
+                <p className="text-xs text-black/50 mt-1">
+                  Login alerts, password/email changes, suspicious activity.
+                </p>
+              </div>
+              <Switch
+                checked={settings.emailSecurityAlerts}
+                onCheckedChange={(v) =>
+                  setSettings((s) => ({ ...s, emailSecurityAlerts: v }))
+                }
+              />
+            </div>
+
+            <div className="flex items-center justify-between gap-4">
+              <div className="min-w-0">
+                <Label className="cursor-pointer">Product updates</Label>
+                <p className="text-xs text-black/50 mt-1">
+                  Feature launches and improvements.
+                </p>
+              </div>
+              <Switch
+                checked={settings.emailProductUpdates}
+                onCheckedChange={(v) =>
+                  setSettings((s) => ({ ...s, emailProductUpdates: v }))
+                }
+              />
+            </div>
+
+            <div className="flex items-center justify-between gap-4">
+              <div className="min-w-0">
+                <Label className="cursor-pointer">Marketing</Label>
+                <p className="text-xs text-black/50 mt-1">
+                  Occasional promotions, tips, and offers.
+                </p>
+              </div>
+              <Switch
+                checked={settings.emailMarketing}
+                onCheckedChange={(v) =>
+                  setSettings((s) => ({ ...s, emailMarketing: v }))
+                }
+              />
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
-};
-
-export default Notifications;
+}

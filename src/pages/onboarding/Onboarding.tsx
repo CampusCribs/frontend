@@ -1,16 +1,17 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Home,
-  ShieldCheck,
   User2,
-  Building2,
   AtSign,
   CalendarDays,
+  Phone,
+  Search,
+  ChevronDown,
+  ShieldCheck,
 } from "lucide-react";
 import { useNavigate } from "react-router";
 
-type Role = "STUDENT" | "LANDLORD";
-type Goal = "FIND_HOUSING" | "FIND_ROOMMATES";
+type Goal = "FIND_LEASE" | "POST_LISTING";
 
 type HeardFrom =
   | "TIKTOK"
@@ -21,31 +22,23 @@ type HeardFrom =
   | "CAMPUS"
   | "OTHER";
 
-type OnboardingState = {
-  role: Role | null;
+type PhoneVerifyStatus = "UNVERIFIED" | "CODE_SENT" | "VERIFIED";
 
-  // basics (shared)
+type OnboardingState = {
+  phoneCountry: string;
+  phoneNumber: string;
+  phoneOtp: string;
+  phoneStatus: PhoneVerifyStatus;
+
   fullName: string;
   username: string;
+  birthday: string;
 
-  // student-only basics
-  birthday: string; // YYYY-MM-DD
-
-  // landlord-only basics
-  companyName: string;
-
-  // student flow
   major: string;
   goal: Goal | null;
 
-  // landlord flow
-  campus: string;
-  rooms: number | null;
-  ein: string; // optional
-
-  // marketing
   heardFrom: HeardFrom | null;
-  heardFromOther: string; // if OTHER
+  heardFromOther: string;
 };
 
 const majors = [
@@ -55,14 +48,6 @@ const majors = [
   "Nursing",
   "Biology",
   "Psychology",
-  "Other",
-];
-
-const campuses = [
-  "University of Cincinnati",
-  "Xavier University",
-  "Ohio State University",
-  "University of Dayton",
   "Other",
 ];
 
@@ -76,6 +61,31 @@ const heardFromOptions: { key: HeardFrom; label: string }[] = [
   { key: "OTHER", label: "Other" },
 ];
 
+const COUNTRY_CODES = [
+  { code: "US", dial: "+1", flag: "🇺🇸", label: "United States" },
+  { code: "CA", dial: "+1", flag: "🇨🇦", label: "Canada" },
+  { code: "GB", dial: "+44", flag: "🇬🇧", label: "United Kingdom" },
+  { code: "DE", dial: "+49", flag: "🇩🇪", label: "Germany" },
+  { code: "FR", dial: "+33", flag: "🇫🇷", label: "France" },
+];
+
+function digitsOnly(v: string) {
+  return v.replace(/\D/g, "");
+}
+
+function formatUSPhone(value: string) {
+  const digits = digitsOnly(value).slice(0, 10);
+  const len = digits.length;
+  if (len === 0) return "";
+  if (len < 4) return `(${digits}`;
+  if (len < 7) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+  return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+}
+
+function isValidOtp(code: string) {
+  return /^\d{6}$/.test(code);
+}
+
 export default function Onboarding({
   onFinish,
 }: {
@@ -83,92 +93,79 @@ export default function Onboarding({
 }) {
   const navigate = useNavigate();
 
+  // 0 Phone entry, 1 Code verify, 2 Basics, 3 Major, 4 Marketing, 5 Goal
   const [step, setStep] = useState(0);
+  const maxStep = 5;
+
   const [data, setData] = useState<OnboardingState>({
-    role: null,
+    phoneCountry: "US",
+    phoneNumber: "",
+    phoneOtp: "",
+    phoneStatus: "UNVERIFIED",
 
     fullName: "",
     username: "",
-
     birthday: "",
-    companyName: "",
 
     major: "",
     goal: null,
-
-    campus: "",
-    rooms: null,
-    ein: "",
 
     heardFrom: null,
     heardFromOther: "",
   });
 
-  const isLandlord = data.role === "LANDLORD";
-  const isStudent = data.role === "STUDENT";
+  const selectedCountry =
+    COUNTRY_CODES.find((c) => c.code === data.phoneCountry) ?? COUNTRY_CODES[0];
 
-  // Step maps:
-  // STUDENT: 0 Role, 1 Basics, 2 Major, 3 Marketing, 4 Goal
-  // LANDLORD: 0 Role, 1 Basics, 2 Campus, 3 Rooms, 4 Marketing, 5 Verify
-  const studentSteps = 5;
-  const landlordSteps = 6;
-  const maxStep = isLandlord ? landlordSteps - 1 : studentSteps - 1;
+  const isUSLike = selectedCountry.dial === "+1";
+  const phoneDigits = digitsOnly(data.phoneNumber);
 
   const canContinue = useMemo(() => {
-    if (step === 0) return data.role !== null;
+    if (step === 0) {
+      return isUSLike ? phoneDigits.length === 10 : phoneDigits.length >= 6;
+    }
+    if (step === 1) return data.phoneStatus === "VERIFIED";
 
-    // Basics step (role-dependent)
-    if (step === 1) {
+    if (step === 2) {
       if (!data.fullName.trim()) return false;
       if (!data.username.trim()) return false;
-
-      if (isStudent) {
-        // require birthday
-        return data.birthday.trim().length > 0;
-      }
-      if (isLandlord) {
-        // require company name
-        return data.companyName.trim().length > 0;
-      }
-      return false;
+      if (!data.birthday.trim()) return false;
+      return true;
     }
 
-    if (isStudent) {
-      if (step === 2) return data.major.trim().length > 0;
+    if (step === 3) return data.major.trim().length > 0;
 
-      // Marketing before last question (Goal)
-      if (step === 3) {
-        if (data.heardFrom === null) return false;
-        if (data.heardFrom === "OTHER")
-          return data.heardFromOther.trim().length > 0;
-        return true;
-      }
-
-      if (step === 4) return data.goal !== null;
-      return false;
+    if (step === 4) {
+      if (data.heardFrom === null) return false;
+      if (data.heardFrom === "OTHER")
+        return data.heardFromOther.trim().length > 0;
+      return true;
     }
 
-    if (isLandlord) {
-      if (step === 2) return data.campus.trim().length > 0;
-      if (step === 3) return data.rooms !== null && data.rooms > 0;
-
-      // Marketing before last question (Verify)
-      if (step === 4) {
-        if (data.heardFrom === null) return false;
-        if (data.heardFrom === "OTHER")
-          return data.heardFromOther.trim().length > 0;
-        return true;
-      }
-
-      if (step === 5) return true; // EIN optional
-      return false;
-    }
+    if (step === 5) return data.goal !== null;
 
     return false;
-  }, [step, data, isStudent, isLandlord, isLandlord, isStudent]);
+  }, [step, data, isUSLike, phoneDigits.length]);
 
-  const next = () => {
+  // ✅ Auto-advance when verified (minimal + reliable)
+  useEffect(() => {
+    if (step === 1 && data.phoneStatus === "VERIFIED") {
+      setStep(2);
+    }
+  }, [step, data.phoneStatus]);
+
+  const next = async () => {
     if (!canContinue) return;
+
+    // Step 0 -> Step 1: send OTP (separate API call)
+    if (step === 0) {
+      // TODO: replace with API call
+      // await api.sendOtp({ country: data.phoneCountry, phone: phoneDigits })
+      await new Promise((r) => setTimeout(r, 250));
+      setData((p) => ({ ...p, phoneStatus: "CODE_SENT" }));
+      setStep(1);
+      return;
+    }
 
     if (step < maxStep) {
       setStep((s) => s + 1);
@@ -176,43 +173,49 @@ export default function Onboarding({
     }
 
     onFinish?.(data);
-    console.log("onboarding submit:", data);
-
-    navigate(isLandlord ? "/profile" : "/cribs");
+    navigate("/cribs");
   };
 
   const back = () => setStep((s) => Math.max(0, s - 1));
 
   return (
     <div className="min-h-[100dvh] w-full max-w-md mx-auto px-4 pt-8 pb-6 flex flex-col">
-      <div className="flex-1 justify-items-center">
+      <div className="flex mb-20 justify-items-center">
         {step === 0 && (
-          <RoleStep
-            value={data.role}
-            onChange={(role) => setData((p) => ({ ...p, role }))}
-          />
-        )}
-
-        {step === 1 && (
-          <BasicsStep
-            role={data.role}
-            fullName={data.fullName}
-            username={data.username}
-            birthday={data.birthday}
-            companyName={data.companyName}
+          <PhoneEntryStep
+            phoneCountry={data.phoneCountry}
+            phoneNumber={data.phoneNumber}
             onChange={(patch) => setData((p) => ({ ...p, ...patch }))}
           />
         )}
 
-        {/* STUDENT */}
-        {isStudent && step === 2 && (
+        {step === 1 && (
+          <PhoneCodeStep
+            phoneCountry={data.phoneCountry}
+            phoneNumber={data.phoneNumber}
+            phoneOtp={data.phoneOtp}
+            phoneStatus={data.phoneStatus}
+            onChange={(patch) => setData((p) => ({ ...p, ...patch }))}
+          />
+        )}
+
+        {step === 2 && (
+          <BasicsStep
+            fullName={data.fullName}
+            username={data.username}
+            birthday={data.birthday}
+            onChange={(patch) => setData((p) => ({ ...p, ...patch }))}
+          />
+        )}
+
+        {step === 3 && (
           <MajorStep
             major={data.major}
             onChange={(major) => setData((p) => ({ ...p, major }))}
           />
         )}
 
-        {isStudent && step === 3 && (
+        {step === 4 && (
           <MarketingStep
             heardFrom={data.heardFrom}
             heardFromOther={data.heardFromOther}
@@ -220,125 +223,240 @@ export default function Onboarding({
           />
         )}
 
-        {isStudent && step === 4 && (
+        {step === 5 && (
           <GoalStep
             value={data.goal}
             onChange={(goal) => setData((p) => ({ ...p, goal }))}
           />
         )}
-
-        {/* LANDLORD */}
-        {isLandlord && step === 2 && (
-          <CampusStep
-            campus={data.campus}
-            onChange={(campus) => setData((p) => ({ ...p, campus }))}
-          />
-        )}
-
-        {isLandlord && step === 3 && (
-          <RoomsStep
-            rooms={data.rooms}
-            onChange={(rooms) => setData((p) => ({ ...p, rooms }))}
-          />
-        )}
-
-        {isLandlord && step === 4 && (
-          <MarketingStep
-            heardFrom={data.heardFrom}
-            heardFromOther={data.heardFromOther}
-            onChange={(patch) => setData((p) => ({ ...p, ...patch }))}
-          />
-        )}
-
-        {isLandlord && step === 5 && (
-          <VerifyStep
-            ein={data.ein}
-            onChange={(ein) => setData((p) => ({ ...p, ein }))}
-          />
-        )}
       </div>
 
-      <div className="pt-6 flex items-center gap-3">
-        <button
-          type="button"
-          onClick={back}
-          disabled={step === 0}
-          className="w-24 rounded-2xl px-4 py-3 text-sm font-semibold text-black/60 disabled:opacity-30"
-        >
-          Back
-        </button>
+      {/* Keep it super basic: hide nav buttons on code page */}
+      {step !== 1 && (
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={back}
+            disabled={step === 0}
+            className="w-24 rounded-2xl px-4 py-3 text-sm font-semibold text-black/60 disabled:opacity-30"
+          >
+            Back
+          </button>
 
-        <button
-          type="button"
-          onClick={next}
-          disabled={!canContinue}
-          className="flex-1 rounded-2xl px-4 py-3 text-sm font-semibold text-white bg-neutral-900 disabled:opacity-40"
-        >
-          {step < maxStep ? "Continue" : "Finish"}
-        </button>
-      </div>
+          <button
+            type="button"
+            onClick={next}
+            disabled={!canContinue}
+            className="flex-1 rounded-2xl px-4 py-3 text-sm font-semibold text-white bg-neutral-900 disabled:opacity-40"
+          >
+            {step < maxStep ? "Continue" : "Finish"}
+          </button>
+        </div>
+      )}
     </div>
   );
 }
 
-/* ---------------- Step 0 ---------------- */
+/* ---------------- Step 0 (Phone entry) ---------------- */
 
-function RoleStep({
-  value,
+function PhoneEntryStep({
+  phoneCountry,
+  phoneNumber,
   onChange,
 }: {
-  value: Role | null;
-  onChange: (r: Role) => void;
+  phoneCountry: string;
+  phoneNumber: string;
+  onChange: (
+    patch: Partial<Pick<OnboardingState, "phoneCountry" | "phoneNumber">>,
+  ) => void;
 }) {
+  const [countryOpen, setCountryOpen] = useState(false);
+
+  const selectedCountry =
+    COUNTRY_CODES.find((c) => c.code === phoneCountry) ?? COUNTRY_CODES[0];
+
+  const isUSLike = selectedCountry.dial === "+1";
+  const displayedNumber = isUSLike ? formatUSPhone(phoneNumber) : phoneNumber;
+
   return (
     <div className="flex flex-col gap-4 w-full h-full">
-      <div className="text-lg font-semibold text-black/85">Who are you?</div>
+      <div className="text-lg font-semibold text-black/85">
+        Enter your phone
+      </div>
 
-      <div className="flex flex-col gap-3 w-full items-center">
-        <Box
-          label="Student or User"
-          selected={value === "STUDENT"}
-          onClick={() => onChange("STUDENT")}
-          icon={<User2 size={80} />}
-        />
-        <Box
-          label="Landlord or Property Manager"
-          selected={value === "LANDLORD"}
-          onClick={() => onChange("LANDLORD")}
-          icon={<Home size={80} />}
+      <div className="text-sm text-black/60">
+        We’ll text you a verification code.
+      </div>
+
+      <div className="w-full rounded-2xl border border-black/10 bg-white px-4 py-4 flex items-center gap-3">
+        <div className="text-black/60">
+          <Phone size={18} />
+        </div>
+
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => setCountryOpen((v) => !v)}
+            className="flex items-center gap-2 rounded-xl border border-black/10 bg-white px-3 py-2 text-sm hover:bg-black/[0.02] focus:outline-none"
+          >
+            <span className="text-lg">{selectedCountry.flag}</span>
+            <span className="text-sm text-black/80">
+              {selectedCountry.dial}
+            </span>
+            <ChevronDown size={14} className="text-black/50" />
+          </button>
+
+          {countryOpen && (
+            <div className="absolute left-0 top-[110%] z-50 w-56 rounded-2xl border border-black/10 bg-white shadow-lg overflow-hidden">
+              {COUNTRY_CODES.map((c) => (
+                <button
+                  key={c.code}
+                  type="button"
+                  onClick={() => {
+                    onChange({ phoneCountry: c.code, phoneNumber: "" });
+                    setCountryOpen(false);
+                  }}
+                  className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-black/[0.04] text-left"
+                >
+                  <span className="text-lg">{c.flag}</span>
+                  <span className="flex-1 text-black/80">{c.label}</span>
+                  <span className="text-black/60">{c.dial}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <input
+          inputMode="tel"
+          placeholder={isUSLike ? "(555) 555-5555" : "Phone number"}
+          value={displayedNumber}
+          onChange={(e) => {
+            const formatted = isUSLike
+              ? formatUSPhone(e.target.value)
+              : e.target.value;
+            onChange({ phoneNumber: formatted });
+          }}
+          className="flex-1 text-sm text-left text-black/80 font-[Inter] outline-none bg-transparent"
         />
       </div>
     </div>
   );
 }
 
-/* ---------------- Step 1 (Basics) ---------------- */
+/* ---------------- Step 1 (Code verify) ---------------- */
+
+function PhoneCodeStep({
+  phoneCountry,
+  phoneNumber,
+  phoneOtp,
+  phoneStatus,
+  onChange,
+}: {
+  phoneCountry: string;
+  phoneNumber: string;
+  phoneOtp: string;
+  phoneStatus: PhoneVerifyStatus;
+  onChange: (
+    patch: Partial<Pick<OnboardingState, "phoneOtp" | "phoneStatus">>,
+  ) => void;
+}) {
+  const selectedCountry =
+    COUNTRY_CODES.find((c) => c.code === phoneCountry) ?? COUNTRY_CODES[0];
+
+  const dial = selectedCountry.dial;
+
+  const verify = async (code?: string) => {
+    const otp = code ?? phoneOtp; // <- use the newest value if provided
+    if (!isValidOtp(otp)) return;
+
+    await new Promise((r) => setTimeout(r, 200));
+
+    if (otp === "123456") {
+      onChange({ phoneStatus: "VERIFIED" });
+      return;
+    }
+
+    onChange({ phoneOtp: "" });
+    alert("Invalid code. Try 123456 for now.");
+  };
+
+  const resend = async () => {
+    // TODO: replace with resend API call
+    await new Promise((r) => setTimeout(r, 150));
+    alert("Resent (dummy). Use 123456.");
+  };
+
+  return (
+    <div className="flex flex-col gap-4 w-full h-full">
+      <div className="text-lg font-semibold text-black/85">
+        Enter verification code
+      </div>
+
+      <div className="text-sm text-black/60">
+        Sent to{" "}
+        <span className="font-semibold text-black/75">
+          {dial} {phoneNumber}
+        </span>
+      </div>
+
+      <div className="w-full rounded-2xl border border-black/10 bg-white px-4 py-4 flex items-center gap-3">
+        <div className="text-black/60">
+          <ShieldCheck size={18} />
+        </div>
+
+        <input
+          inputMode="numeric"
+          autoComplete="one-time-code"
+          placeholder="123456"
+          value={phoneOtp}
+          onChange={(e) => {
+            const value = digitsOnly(e.target.value).slice(0, 6);
+            onChange({ phoneOtp: value });
+
+            if (value.length === 6) {
+              verify(value); // <- pass the fresh 6 digits
+            }
+          }}
+          className="w-full text-center text-lg tracking-[0.35em] font-semibold text-black/80 outline-none bg-transparent"
+        />
+      </div>
+
+      <button
+        type="button"
+        onClick={verify}
+        disabled={!isValidOtp(phoneOtp) || phoneStatus !== "CODE_SENT"}
+        className="w-full rounded-2xl px-4 py-3 text-sm font-semibold text-white bg-neutral-900 disabled:opacity-40"
+      >
+        Verify
+      </button>
+
+      <button
+        type="button"
+        onClick={resend}
+        className="w-full rounded-2xl px-4 py-3 text-sm font-semibold text-black/70 border border-black/10 hover:bg-black/[0.03] transition"
+      >
+        Resend code
+      </button>
+    </div>
+  );
+}
+
+/* ---------------- Step 2 (Basics) ---------------- */
 
 function BasicsStep({
-  role,
   fullName,
   username,
   birthday,
-  companyName,
   onChange,
 }: {
-  role: Role | null;
   fullName: string;
   username: string;
   birthday: string;
-  companyName: string;
   onChange: (
-    patch: Partial<
-      Pick<
-        OnboardingState,
-        "fullName" | "username" | "birthday" | "companyName"
-      >
-    >,
+    patch: Partial<Pick<OnboardingState, "fullName" | "username" | "birthday">>,
   ) => void;
 }) {
-  const isStudent = role === "STUDENT";
-  const isLandlord = role === "LANDLORD";
-
   return (
     <div className="flex flex-col gap-4 w-full h-full">
       <div className="text-lg font-semibold text-black/85">Basic info</div>
@@ -357,77 +475,18 @@ function BasicsStep({
         onChange={(v) => onChange({ username: v })}
       />
 
-      {isStudent && (
-        <LabeledInput
-          icon={<CalendarDays size={18} />}
-          placeholder="Birthday (YYYY-MM-DD)"
-          value={birthday}
-          type="date"
-          onChange={(v) => onChange({ birthday: v })}
-        />
-      )}
-
-      {isLandlord && (
-        <LabeledInput
-          icon={<Building2 size={18} />}
-          placeholder="Company name"
-          value={companyName}
-          onChange={(v) => onChange({ companyName: v })}
-        />
-      )}
-
-      {!isStudent && !isLandlord && (
-        <div className="text-sm text-black/60">
-          Select a role first, then we’ll ask the right questions.
-        </div>
-      )}
+      <LabeledInput
+        icon={<CalendarDays size={18} />}
+        placeholder="Birthday"
+        value={birthday}
+        type="date"
+        onChange={(v) => onChange({ birthday: v })}
+      />
     </div>
   );
 }
 
-/* ---------------- Marketing (before last question) ---------------- */
-
-function MarketingStep({
-  heardFrom,
-  heardFromOther,
-  onChange,
-}: {
-  heardFrom: HeardFrom | null;
-  heardFromOther: string;
-  onChange: (
-    patch: Partial<Pick<OnboardingState, "heardFrom" | "heardFromOther">>,
-  ) => void;
-}) {
-  return (
-    <div className="flex flex-col gap-4 w-full h-full">
-      <div className="text-lg font-semibold text-black/85">
-        Where did you hear about us?
-      </div>
-
-      <div className="grid grid-cols-2 gap-3">
-        {heardFromOptions.map((opt) => (
-          <SmallChoice
-            key={opt.key}
-            label={opt.label}
-            selected={heardFrom === opt.key}
-            onClick={() => onChange({ heardFrom: opt.key })}
-          />
-        ))}
-      </div>
-
-      {heardFrom === "OTHER" && (
-        <input
-          placeholder="Tell us where"
-          value={heardFromOther}
-          onChange={(e) => onChange({ heardFromOther: e.target.value })}
-          className="w-full rounded-2xl border border-black/10 bg-white px-4 py-4 text-sm text-left text-black/80 font-[Inter]"
-        />
-      )}
-    </div>
-  );
-}
-
-/* ---------------- STUDENT Step ---------------- */
+/* ---------------- Major ---------------- */
 
 function MajorStep({
   major,
@@ -473,6 +532,50 @@ function MajorStep({
   );
 }
 
+/* ---------------- Marketing ---------------- */
+
+function MarketingStep({
+  heardFrom,
+  heardFromOther,
+  onChange,
+}: {
+  heardFrom: HeardFrom | null;
+  heardFromOther: string;
+  onChange: (
+    patch: Partial<Pick<OnboardingState, "heardFrom" | "heardFromOther">>,
+  ) => void;
+}) {
+  return (
+    <div className="flex flex-col gap-4 w-full h-full">
+      <div className="text-lg font-semibold text-black/85">
+        Where did you hear about us?
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        {heardFromOptions.map((opt) => (
+          <SmallChoice
+            key={opt.key}
+            label={opt.label}
+            selected={heardFrom === opt.key}
+            onClick={() => onChange({ heardFrom: opt.key })}
+          />
+        ))}
+      </div>
+
+      {heardFrom === "OTHER" && (
+        <input
+          placeholder="Tell us where"
+          value={heardFromOther}
+          onChange={(e) => onChange({ heardFromOther: e.target.value })}
+          className="w-full rounded-2xl border border-black/10 bg-white px-4 py-4 text-sm text-left text-black/80 font-[Inter]"
+        />
+      )}
+    </div>
+  );
+}
+
+/* ---------------- Goal ---------------- */
+
 function GoalStep({
   value,
   onChange,
@@ -488,137 +591,18 @@ function GoalStep({
 
       <div className="flex flex-col gap-3 items-center">
         <Box
-          label="Find housing"
-          selected={value === "FIND_HOUSING"}
-          onClick={() => onChange("FIND_HOUSING")}
+          label="Post a Listing"
+          selected={value === "POST_LISTING"}
+          onClick={() => onChange("POST_LISTING")}
           icon={<Home size={80} />}
         />
         <Box
-          label="Find roommates"
-          selected={value === "FIND_ROOMMATES"}
-          onClick={() => onChange("FIND_ROOMMATES")}
-          icon={<User2 size={80} />}
+          label="Find a Lease"
+          selected={value === "FIND_LEASE"}
+          onClick={() => onChange("FIND_LEASE")}
+          icon={<Search size={80} />}
         />
       </div>
-    </div>
-  );
-}
-
-/* ---------------- LANDLORD Steps ---------------- */
-
-function CampusStep({
-  campus,
-  onChange,
-}: {
-  campus: string;
-  onChange: (v: string) => void;
-}) {
-  const [open, setOpen] = useState(false);
-
-  return (
-    <div className="flex flex-col gap-4 relative w-full h-full">
-      <div className="text-lg font-semibold text-black/85">
-        Which campus are you near?
-      </div>
-
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        className="w-full rounded-2xl border border-black/10 bg-white px-4 py-4 text-sm text-left text-black/80 font-[Inter]"
-      >
-        {campus || "Select a campus"}
-      </button>
-
-      {open && (
-        <div className="absolute top-full left-0 right-0 mt-2 z-10 rounded-2xl border border-black/10 bg-white max-h-64 overflow-auto">
-          {campuses.map((c) => (
-            <button
-              key={c}
-              type="button"
-              onClick={() => {
-                onChange(c);
-                setOpen(false);
-              }}
-              className="w-full px-4 py-3 text-sm text-left font-[Inter] text-black/80 hover:bg-black/5"
-            >
-              {c}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function RoomsStep({
-  rooms,
-  onChange,
-}: {
-  rooms: number | null;
-  onChange: (v: number) => void;
-}) {
-  return (
-    <div className="flex flex-col gap-4 w-full h-full">
-      <div className="text-lg font-semibold text-black/85">
-        How many rooms are you listing?
-      </div>
-
-      <div className="grid grid-cols-2 gap-3">
-        <SmallChoice
-          label="1"
-          selected={rooms === 1}
-          onClick={() => onChange(1)}
-        />
-        <SmallChoice
-          label="2"
-          selected={rooms === 2}
-          onClick={() => onChange(2)}
-        />
-        <SmallChoice
-          label="3"
-          selected={rooms === 3}
-          onClick={() => onChange(3)}
-        />
-        <SmallChoice
-          label="4+"
-          selected={rooms !== null && rooms >= 4}
-          onClick={() => onChange(4)}
-        />
-      </div>
-    </div>
-  );
-}
-
-function VerifyStep({
-  ein,
-  onChange,
-}: {
-  ein: string;
-  onChange: (v: string) => void;
-}) {
-  return (
-    <div className="flex flex-col gap-4 w-full h-full">
-      <div className="text-lg font-semibold text-black/85">
-        Want to get verified?
-      </div>
-
-      <div className="w-full rounded-2xl border border-black/10 bg-white p-4 flex items-start gap-3">
-        <div className="pt-0.5 text-black/85">
-          <ShieldCheck size={18} />
-        </div>
-        <div className="text-sm text-black/70 leading-relaxed">
-          Verified landlords get more trust from students. You can skip this
-          now.
-        </div>
-      </div>
-
-      <input
-        inputMode="numeric"
-        placeholder="EIN (optional)"
-        value={ein}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-2xl border border-black/10 bg-white px-4 py-4 text-sm text-left text-black/80 font-[Inter]"
-      />
     </div>
   );
 }

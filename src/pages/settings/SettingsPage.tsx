@@ -32,12 +32,12 @@ export default function SettingsPage() {
   const navigate = useNavigate();
 
   return (
-    <div className="max-w-md mx-auto min-h-[100dvh] bg-white">
+    <div className="  mx-auto min-h-[100dvh] bg-white">
       {/* Header */}
       <div className="flex items-center gap-3 px-4 pt-4">
         <button
           title="back"
-          onClick={() => navigate(-1)}
+          onClick={() => navigate("/profile")}
           className="p-2 rounded-full hover:bg-black/5 transition"
         >
           <ArrowLeft size={20} />
@@ -51,9 +51,9 @@ export default function SettingsPage() {
           <button
             key={setting.id}
             onClick={() => navigate(setting.link)}
-            className="w-full flex items-center justify-between px-6 py-4 text-left border-b hover:bg-black/[0.03] transition"
+            className="w-full flex items-center justify-between px-1 py-4 text-left border-b hover:bg-black/[0.03] transition"
           >
-            <div className="flex flex-col">
+            <div className="flex flex-col px-5">
               <span className="text-base font-medium text-black/90">
                 {setting.name}
               </span>

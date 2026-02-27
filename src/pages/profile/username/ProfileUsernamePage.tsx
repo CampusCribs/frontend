@@ -87,15 +87,7 @@ type Toggle = "COMMUNITY" | "CRIB";
 /** ---------------------------------------------
  * Page
  * --------------------------------------------*/
-export default function ProfileUsernamePage({
-  student,
-  cribs,
-  community,
-}: {
-  student: StudentProfile;
-  cribs: ProfileCribPost | PageResidenceCardDTO | null | undefined;
-  community: PageCommunityPost | null | undefined;
-}) {
+export default function ProfileUsernamePage() {
   const navigate = useNavigate();
   const [openShare, setOpenShare] = useState(false);
   const [activeTab, setActiveTab] = useState<Toggle>("CRIB");

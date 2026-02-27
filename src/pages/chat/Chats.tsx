@@ -45,7 +45,6 @@ function Chats() {
             avatarUrl="https://randomuser.me/api/portraits/lego/1.jpg"
             lastMessage="Is this place still open?"
             lastMessageAt="Yesterday"
-            role="UNVERIFIED"
           />
         </>
       ))}
@@ -53,33 +52,12 @@ function Chats() {
   );
 }
 
-type UserRole = "STUDENT" | "LANDLORD" | "UNVERIFIED";
-
 type ChatProps = {
   chatId: string;
   name: string;
   avatarUrl: string;
   lastMessage: string;
   lastMessageAt: string;
-  role: UserRole;
-};
-
-const roleConfig = {
-  STUDENT: {
-    label: "Student",
-    icon: ShieldCheckIcon,
-    badge: "bg-emerald-50 text-emerald-600",
-  },
-  LANDLORD: {
-    label: "Landlord",
-    icon: BadgeCheckIcon,
-    badge: "bg-blue-50 text-blue-600",
-  },
-  UNVERIFIED: {
-    label: "Unverified",
-    icon: HelpCircleIcon,
-    badge: "bg-gray-100 text-gray-500",
-  },
 };
 
 const Chat = ({
@@ -88,10 +66,8 @@ const Chat = ({
   avatarUrl,
   lastMessage,
   lastMessageAt,
-  role,
 }: ChatProps) => {
   const navigate = useNavigate();
-  const RoleIcon = roleConfig[role].icon;
 
   return (
     <div
@@ -114,13 +90,6 @@ const Chat = ({
           <div className="ml-2 min-w-0">
             <div className="flex items-center gap-2">
               <h3 className="font-semibold truncate">{name}</h3>
-
-              <span
-                className={`flex items-center gap-1 text-xs px-2 py-0.5 rounded-full ${roleConfig[role].badge}`}
-              >
-                <RoleIcon size={12} />
-                {roleConfig[role].label}
-              </span>
             </div>
 
             <p className="text-sm text-gray-500 truncate max-w-[220px]">

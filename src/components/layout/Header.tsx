@@ -45,9 +45,6 @@ const Header = () => {
             )}
           </div>
         )}
-        <div className="flex items-center text-2xl font-bold cursor-pointer mr-3">
-          <SquarePlus onClick={() => navigate("/profile/post")} size={28} />
-        </div>
       </div>
     </div>
   );

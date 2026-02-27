@@ -76,7 +76,7 @@ export default function UltraMinimalCreatePost({
 
   return (
     <div className="min-h-[100dvh] w-full max-w-md mx-auto px-4 pt-8 pb-6 flex flex-col">
-      <div className="flex-1">
+      <div className="flex flex-col gap-6 mb-10">
         <div className="mb-6">
           <div className="text-lg font-semibold text-black/85">
             {step === 0 ? "Post details" : step === 1 ? "Tags" : "Images"}
@@ -119,7 +119,7 @@ export default function UltraMinimalCreatePost({
         )}
       </div>
 
-      <div className="pt-6 flex items-center gap-3">
+      <div className=" flex items-center gap-3">
         <button
           type="button"
           onClick={back}

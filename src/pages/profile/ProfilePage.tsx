@@ -1,5 +1,15 @@
 import { useState } from "react";
-import { CircleUserRound, Settings, Send, Tag, Heart } from "lucide-react";
+import {
+  CircleUserRound,
+  Settings,
+  Send,
+  Tag,
+  Heart,
+  CheckCircle2,
+  AlertCircle,
+  Edit,
+  User2,
+} from "lucide-react";
 import { useNavigate } from "react-router";
 
 export default function ProfilePage() {
@@ -14,7 +24,10 @@ export default function ProfilePage() {
       "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS3krGAS5w7YyUrBn7Y55sqCFh13aR2La_dYQ&s",
     phone: "123-456-7890",
   };
-
+  const isVerified = "VERIFIED" === "VERIFIED";
+  const verificationClasses = isVerified
+    ? "bg-emerald-50 text-emerald-700 ring-emerald-200"
+    : "bg-gray-100 text-gray-600 ring-gray-200";
   return (
     <div className="min-h-dvh w-full bg-white">
       {/* Top bar (tighter) */}
@@ -52,8 +65,30 @@ export default function ProfilePage() {
             <div className="min-w-0 flex-1">
               {/* Name + handle */}
               <div className="space-y-0.5">
-                <div className="text-[15px] font-semibold text-slate-900 leading-tight">
-                  {profile.name}
+                <div className="flex justify-between">
+                  <div className="text-[15px] font-semibold text-slate-900 leading-tight">
+                    {profile.name}
+                  </div>
+                  <div>
+                    <span
+                      className={[
+                        "inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium ring-1 ring-inset",
+                        verificationClasses,
+                      ].join(" ")}
+                      title={
+                        isVerified
+                          ? "This student completed verification."
+                          : "This student has not completed verification yet."
+                      }
+                    >
+                      {isVerified ? (
+                        <CheckCircle2 size={12} />
+                      ) : (
+                        <AlertCircle size={12} />
+                      )}
+                      {isVerified ? "Student" : "User"}
+                    </span>
+                  </div>
                 </div>
                 <div className="text-xs text-slate-500 truncate">
                   @{profile.username} · {profile.market}
@@ -66,10 +101,10 @@ export default function ProfilePage() {
               </div>
 
               {/* Contact */}
-              <div className="mt-3 text-xs text-slate-500 space-y-1">
+              {/* <div className="mt-3 text-xs text-slate-500 space-y-1">
                 <div className="truncate">{profile.email}</div>
                 <div className="truncate">{profile.phone}</div>
-              </div>
+              </div> */}
             </div>
           </div>
 
@@ -77,16 +112,18 @@ export default function ProfilePage() {
           <div className="mt-4 flex gap-2">
             <button
               type="button"
-              className="flex-1 rounded-xl px-4 py-2.5 text-sm border border-slate-200 font-semibold text-slate-900 hover:bg-slate-50 transition"
+              className="flex-1 rounded-xl px-4 py-2.5 text-sm border border-slate-200 font-semibold text-slate-900 hover:bg-slate-50 transition justify-center inline-flex items-center"
               onClick={() => navigate("/settings/profile")}
             >
+              <User2 size={16} className="mr-2" />
               Edit profile
             </button>
             <button
               type="button"
-              className="flex-1 rounded-xl text-white px-4 bg-slate-900 hover:bg-slate-800 py-2.5 text-sm font-semibold transition"
-              onClick={() => navigate(`/post/edit`)}
+              className="flex-1 rounded-xl text-white px-4 bg-slate-900 hover:bg-slate-800 py-2.5 text-sm font-semibold transition justify-center inline-flex items-center"
+              onClick={() => navigate(`/post`)}
             >
+              <Edit size={16} className="mr-2" />
               Edit post
             </button>
           </div>

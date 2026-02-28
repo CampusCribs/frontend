@@ -6,7 +6,7 @@ import CribsPage from "@/pages/cribs/CribsPage";
 import ProtectedRoute from "@/components/route/ProtectedRoute";
 import ReverseProtectedRoute from "@/components/route/ReverseProtectedRoute";
 import LoginPage from "@/pages/login/LoginPage";
-import SupportPage from "./pages/support/SupportPage";
+import SupportPage from "./pages/settings/support/SupportPage";
 import Post from "@/pages/post/Post";
 import IndividualPage from "./pages/cribs/individual/IndividualPage";
 import SettingsPage from "./pages/settings/SettingsPage";
@@ -28,6 +28,7 @@ import ProfilePage from "./pages/profile/ProfilePage";
 import NotificationsSettingsPage from "./pages/settings/notifications/Notifications";
 import ProfileSettingsPage from "./pages/settings/profile/Profile";
 import NotificationsInboxPage from "./pages/notifications/Notifications";
+import ProfileUsernamePage from "./pages/profile/username/ProfileUsernamePage";
 
 // import Partners from "./pages/partners/Partners";
 
@@ -44,8 +45,8 @@ function App() {
             <Route element={<Layout />}>
               <Route path="/cribs" element={<CribsPage />} />
               <Route path="/cribs/:postId" element={<IndividualPage />} />
-              <Route path="/map" element={<Map />} />
-              <Route path="/support" element={<SupportPage />} />
+              {/* <Route path="/map" element={<Map />} /> */}
+
               <Route
                 path="/notifications"
                 element={<NotificationsInboxPage />}
@@ -55,6 +56,7 @@ function App() {
               <Route path="/settings" element={<SettingsPage />} />
               <Route path="/settings/privacy" element={<Privacy />} />
               <Route path="/settings/account" element={<Account />} />
+              <Route path="/settings/support" element={<SupportPage />} />
               <Route
                 path="/settings/profile"
                 element={<ProfileSettingsPage />}
@@ -72,6 +74,10 @@ function App() {
                 element={<EmailVerification />}
               />
               <Route path="/profile" element={<ProfilePage />} />
+              <Route
+                path="/profile/:username"
+                element={<ProfileUsernamePage />}
+              />
               <Route path="/post" element={<Post />} />
               {/* </Route> */}
               <Route element={<ReverseProtectedRoute />}>

@@ -183,13 +183,6 @@ export function ResidenceCard({ data }: { data: StudentResidenceCardDTO }) {
     ? "bg-emerald-50 text-emerald-700 ring-emerald-200"
     : "bg-gray-100 text-gray-600 ring-gray-200";
 
-  const displayName = useMemo(() => {
-    const first = data.identity.firstName?.trim() ?? "";
-    const last = data.identity.lastName?.trim() ?? "";
-    const name = `${first} ${last}`.trim();
-    return name || `@${data.identity.username}`;
-  }, [data.identity.firstName, data.identity.lastName, data.identity.username]);
-
   const locationLabel = useMemo(() => {
     return data.areaLabel?.trim()
       ? `${data.campusName} • ${data.areaLabel.trim()}`
@@ -270,9 +263,7 @@ export function ResidenceCard({ data }: { data: StudentResidenceCardDTO }) {
               ) : (
                 <AlertCircle size={12} />
               )}
-              {data.verification === "VERIFIED"
-                ? "Verified student"
-                : "Unverified"}
+              {data.verification === "VERIFIED" ? "Student" : "User"}
             </span>
           </div>
         </div>

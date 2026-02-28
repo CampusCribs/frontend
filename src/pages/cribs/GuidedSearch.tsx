@@ -1,6 +1,5 @@
-import CalendarComponent from "@/components/ui/CalendarComponent";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { set } from "date-fns";
 import { ArrowLeft, School, Search, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -331,9 +330,9 @@ const GuidedSearch = ({
                 render={({ field }) => (
                   <div>
                     <Label>Begin Date</Label>
-                    <CalendarComponent
-                      value={field.value ?? new Date()}
-                      onChange={field.onChange}
+                    <Input
+                      type="date"
+                      onChange={(e) => field.onChange(e.target.value)}
                     />
                   </div>
                 )}
@@ -344,9 +343,9 @@ const GuidedSearch = ({
                 render={({ field }) => (
                   <div>
                     <Label>End Date</Label>
-                    <CalendarComponent
-                      value={field.value ?? new Date()}
-                      onChange={field.onChange}
+                    <Input
+                      type="date"
+                      onChange={(e) => field.onChange(e.target.value)}
                     />
                   </div>
                 )}

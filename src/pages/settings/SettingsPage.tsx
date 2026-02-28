@@ -26,6 +26,12 @@ const settings = [
     description: "Email, push, and in-app alerts",
     link: "/settings/notifications",
   },
+  {
+    id: "support",
+    name: "Support",
+    description: "Contact us for help",
+    link: "/settings/support",
+  },
 ];
 
 export default function SettingsPage() {

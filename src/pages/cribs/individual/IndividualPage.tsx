@@ -8,18 +8,19 @@ import {
   Send,
   Tag,
   Users,
-  X,
 } from "lucide-react";
 import IndividualSlider from "./IndividualSlider";
 import { useNavigate, useParams } from "react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 // MapLibre
 import Map, { Marker } from "react-map-gl/maplibre";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
-import ShareModal from "@/components/ui/ShareModal";
-import { useGetIndividualCrib, useGetPostsPostid } from "@/gen";
+import ShareModal from "@/components/modals/ShareModal";
+import { useGetIndividualCrib } from "@/gen";
+import { LocationInfoCard } from "./LocationInfoCard";
+import { ReportModal } from "@/components/modals/ReportModal";
 
 function formatDateISO(iso: string) {
   return new Date(iso).toISOString().split("T")[0];
@@ -102,9 +103,7 @@ const LocationMapCard = ({
 
 const IndividualPage = () => {
   const navigate = useNavigate();
-
   const { postId } = useParams<{ postId: string }>();
-  const [liked, setLiked] = useState(false);
   const [openShare, setOpenShare] = useState(false);
   const [openReport, setOpenReport] = useState(false);
   const { data: postData, isLoading } = useGetIndividualCrib(postId || "");
@@ -138,12 +137,6 @@ const IndividualPage = () => {
           <Send size={25} />
         </div>
 
-        <div onClick={() => setLiked(!liked)}>
-          <Heart
-            size={25}
-            className={`${liked ? "fill-red-500 " : "text-black"}`}
-          />
-        </div>
         <div
           className="ml-auto mr-5 rotate-3"
           onClick={() => setOpenReport(!openReport)}
@@ -239,11 +232,18 @@ const IndividualPage = () => {
       </div>
 
       {/* ✅ Map (different style) */}
-      {postData?.data.location.lat && postData?.data.location.lng && (
+      {/* {postData?.data.location.lat && postData?.data.location.lng && (
         <LocationMapCard
           lat={postData?.data.location.lat}
           lng={postData?.data.location.lng}
           label={postData?.data.location.label}
+        />
+      )} */}
+      {postData?.data.location?.label && (
+        <LocationInfoCard
+          label={postData.data.location.label}
+          lat={postData.data.location.lat}
+          lng={postData.data.location.lng}
         />
       )}
       {/* CTA */}
@@ -275,158 +275,3 @@ const IndividualPage = () => {
 };
 
 export default IndividualPage;
-
-export type ReportReason =
-  | "HARASSMENT_HATE"
-  | "SPAM_SCAM"
-  | "INAPPROPRIATE"
-  | "IMPERSONATION"
-  | "OTHER";
-
-export type ReportValues = {
-  reason: ReportReason;
-  details?: string;
-};
-
-type Props = {
-  open: boolean;
-  onClose: () => void;
-  onSubmit: (values: ReportValues) => void;
-  title?: string; // e.g. "Report user" / "Report message"
-};
-
-const REASONS: { id: ReportReason; label: string; hint?: string }[] = [
-  { id: "HARASSMENT_HATE", label: "Harassment or hate" },
-  { id: "SPAM_SCAM", label: "Spam or scam" },
-  { id: "INAPPROPRIATE", label: "Inappropriate content" },
-  { id: "IMPERSONATION", label: "Impersonation" },
-  { id: "OTHER", label: "Other" },
-];
-
-const ReportModal = ({ open, onClose, onSubmit, title = "Report" }: Props) => {
-  const [reason, setReason] = useState<ReportReason | null>(null);
-  const [details, setDetails] = useState("");
-
-  // Reset when opened
-  useEffect(() => {
-    if (!open) return;
-    setReason(null);
-    setDetails("");
-  }, [open]);
-
-  // ESC to close
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [open, onClose]);
-
-  const canSubmit = useMemo(() => reason !== null, [reason]);
-
-  if (!open) return null;
-
-  return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 p-4">
-      <div
-        className="w-full max-w-md rounded-2xl bg-white shadow-xl border border-slate-100"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100">
-          <div className="font-semibold text-slate-900">{title}</div>
-          <button
-            type="button"
-            className="p-2 rounded-full hover:bg-slate-100 transition"
-            onClick={onClose}
-            aria-label="Close"
-          >
-            <X size={18} />
-          </button>
-        </div>
-
-        {/* Body */}
-        <div className="px-4 py-4 space-y-4">
-          <div>
-            <div className="text-sm font-semibold text-slate-900">
-              Why are you reporting?
-            </div>
-            <div className="mt-2 space-y-2">
-              {REASONS.map((r) => (
-                <label
-                  key={r.id}
-                  className={[
-                    "flex items-start gap-3 rounded-xl border px-3 py-2.5 cursor-pointer transition",
-                    reason === r.id
-                      ? "border-slate-900 bg-slate-50"
-                      : "border-slate-200 hover:bg-slate-50",
-                  ].join(" ")}
-                >
-                  <input
-                    type="radio"
-                    name="report-reason"
-                    className="mt-1"
-                    checked={reason === r.id}
-                    onChange={() => setReason(r.id)}
-                  />
-                  <div className="min-w-0">
-                    <div className="text-sm font-medium text-slate-900">
-                      {r.label}
-                    </div>
-                    {r.hint ? (
-                      <div className="text-xs text-slate-500">{r.hint}</div>
-                    ) : null}
-                  </div>
-                </label>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <div className="text-xs font-semibold text-slate-700">
-              Details (optional)
-            </div>
-            <textarea
-              value={details}
-              onChange={(e) => setDetails(e.target.value)}
-              placeholder="Share any context that helps us review this..."
-              className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm min-h-[96px] focus:outline-none focus:ring-2 focus:ring-slate-200"
-            />
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="px-4 pb-4 flex gap-2">
-          <button
-            type="button"
-            className="flex-1 rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-900 hover:bg-slate-50 transition"
-            onClick={onClose}
-          >
-            Cancel
-          </button>
-
-          <button
-            type="button"
-            disabled={!canSubmit}
-            className={[
-              "flex-1 rounded-xl px-4 py-2.5 text-sm font-semibold transition",
-              canSubmit
-                ? "bg-rose-600 hover:bg-rose-700 text-white"
-                : "bg-slate-200 text-slate-500 cursor-not-allowed",
-            ].join(" ")}
-            onClick={() => {
-              if (!reason) return;
-              onSubmit({
-                reason,
-                details: details.trim() || undefined,
-              });
-              onClose();
-            }}
-          >
-            Submit report
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};

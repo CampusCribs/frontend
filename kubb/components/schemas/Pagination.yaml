@@ -2,9 +2,9 @@ components:
   schemas:
     Page:
       type: object
-      required: [ items, page, size, totalElements, totalPages ]
+      required: [ content, page, size, totalElements, totalPages ]
       properties:
-        items:
+        content:
           type: array
           items: {} # left open; specialized via allOf
           example: [] # works as a generic default
@@ -33,15 +33,9 @@ components:
           minimum: 0
           example: 5
 
-        sort:
-          type: string
-          nullable: true
-          example: "priceMonthly,asc"
-
       example:
-        items: []
+        content: []
         page: 0
         size: 10
         totalElements: 42
         totalPages: 5
-        sort: null

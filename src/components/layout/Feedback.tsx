@@ -32,24 +32,29 @@ export function FeedbackButton({
   return (
     <>
       {floating && (
-        <button
-          type="button"
-          onClick={() => setOpen(true)}
-          className={[
-            "fixed z-40 right-4",
-            "rounded-full border border-black/10 bg-white",
-            "px-4 py-3 text-sm font-semibold text-black/80",
-            "shadow-sm hover:bg-black/[0.03] transition",
-            "inline-flex items-center gap-2",
-          ].join(" ")}
+        <div
+          className="fixed inset-x-0 z-40 pointer-events-none"
           style={{ bottom: bottomOffset }}
-          aria-label="Send feedback"
         >
-          <MessageSquare size={16} className="text-black/60" />
-          Feedback
-        </button>
+          <div className="mx-auto w-full max-w-[600px] px-4 flex justify-end">
+            <button
+              type="button"
+              onClick={() => setOpen(true)}
+              className={[
+                "pointer-events-auto",
+                "rounded-full border border-black/10 bg-white",
+                "px-4 py-3 text-sm font-semibold text-black/80",
+                "shadow-sm hover:bg-black/[0.03] transition",
+                "inline-flex items-center gap-2",
+              ].join(" ")}
+              aria-label="Send feedback"
+            >
+              <MessageSquare size={16} className="text-black/60" />
+              Feedback
+            </button>
+          </div>
+        </div>
       )}
-
       <FeedbackModal
         open={open}
         onClose={() => setOpen(false)}
@@ -142,7 +147,7 @@ export function FeedbackModal({
       />
 
       {/* Sheet */}
-      <div className="absolute left-0 right-0 bottom-0 bg-white rounded-t-3xl shadow-xl border-t border-black/10">
+      <div className="absolute left-0 right-0 bottom-0 bg-white rounded-t-3xl shadow-xl border-t border-black/10 max-w-[600px] mx-auto">
         <div className="max-w-md mx-auto px-4 pt-4 pb-6">
           {/* Header */}
           <div className="flex items-center justify-between">

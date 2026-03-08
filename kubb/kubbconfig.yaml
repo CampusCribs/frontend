@@ -4,7 +4,7 @@ info:
   version: 1.0.0
 
 paths:
-  /app//me:
+  /app/me:
     $ref: ./paths/me.yaml
 
   /app/cribs:

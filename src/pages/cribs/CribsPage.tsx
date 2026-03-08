@@ -1,13 +1,14 @@
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import {
   AlertCircle,
-  CheckCircle2,
-  ChevronRight,
   Clock,
   MapPin,
   Search,
   CircleX,
   SearchX,
+  Footprints,
+  Car,
+  CheckCircle2,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useInView } from "react-intersection-observer";
@@ -17,165 +18,63 @@ import Lottie from "lottie-react";
 import house from "@/components/ui/houseanimation.json";
 import GuidedSearch from "./GuidedSearch";
 
-type CommuteBucket =
-  | "WALK_LT_5"
-  | "WALK_5_15"
-  | "WALK_15_30"
-  | "DRIVE_LT_20"
-  | "DRIVE_GT_20"
-  | null
-  | undefined;
+import { ResidenceCardDTO } from "@/gen/types/ResidenceCardDTO";
+import { useGetAppCribs } from "@/gen";
 
-function formatCommute(bucket: CommuteBucket) {
-  switch (bucket) {
-    case "WALK_LT_5":
-      return "< 5 min walk";
-    case "WALK_5_15":
-      return "5–15 min walk";
-    case "WALK_15_30":
-      return "15–30 min walk";
-    case "DRIVE_LT_20":
-      return "< 20 min drive";
-    case "DRIVE_GT_20":
-      return "> 20 min drive";
-    default:
-      return null;
+/** ---------- helpers ---------- */
+
+function formatAvailability(a: any): string {
+  // Matches your OpenAPI discriminator style: { type: "IMMEDIATE" } or { type: "DATE", date: "YYYY-MM-DD" }
+  if (!a || !a.type) return "Unknown";
+  if (a.type === "IMMEDIATE") return "now";
+  if (a.type === "DATE" && a.date) return a.date;
+  return "Unknown";
+}
+
+function commuteText(
+  distance?: number,
+  commuteBucket?: string | null,
+): string | null {
+  // Prefer explicit bucket if you have it (nice for UI consistency)
+  if (commuteBucket) {
+    switch (commuteBucket) {
+      case "WALK_5":
+        return "5 min walk to campus";
+      case "WALK_10":
+        return "10 min walk to campus";
+      case "WALK_15":
+        return "15 min walk to campus";
+      case "WALK_20":
+        return "20 min walk to campus";
+      case "DRIVE":
+        return "Short drive to campus";
+      default:
+        break;
+    }
   }
+
+  // Fall back to distance minutes if provided
+  if (
+    typeof distance === "number" &&
+    Number.isFinite(distance) &&
+    distance > 0
+  ) {
+    if (distance <= 20) return `${distance} min walk to campus`;
+    return `${distance} min drive to campus`;
+  }
+
+  return null;
 }
 
-type Availability = { type: "Immediate" } | { type: "Date"; date: string }; // ISO date
-
-function formatAvailability(a: Availability) {
-  if (a.type === "Immediate") return "Immediate";
-  const d = new Date(a.date);
-  if (Number.isNaN(d.getTime())) return a.date;
-  return d.toLocaleDateString(undefined, {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
+function isWalk(distance?: number, commuteBucket?: string | null): boolean {
+  if (commuteBucket) return commuteBucket.startsWith("WALK_");
+  if (typeof distance === "number") return distance <= 20;
+  return true;
 }
 
-// Student-only DTO for this MVP page
-export type StudentResidenceCardDTO = {
-  id: string;
-  thumbnailUrl: string;
+/** ---------- Card ---------- */
 
-  priceMonthly: number;
-  availability: Availability;
-
-  campusName: string;
-  areaLabel?: string | null;
-  commuteBucket?: CommuteBucket;
-
-  identity: {
-    username: string;
-    firstName?: string | null;
-    lastName?: string | null;
-    avatarUrl?: string | null;
-  };
-
-  verification: "VERIFIED" | "UNVERIFIED" | "PENDING";
-
-  beds?: number;
-  baths?: number;
-};
-
-/** ----- Fake Data ----- */
-function seeded<T>(arr: T[], seed: number) {
-  return arr[seed % arr.length];
-}
-
-function makeFakeCrib(i: number): StudentResidenceCardDTO {
-  const campuses = [
-    "University of Cincinnati",
-    "Ohio State University",
-    "NYU",
-    "Purdue University",
-    "University of Michigan",
-  ];
-
-  const areas = [
-    "Near campus",
-    "Downtown",
-    "Clifton",
-    "Off-campus housing",
-    "Short walk to campus",
-    "Near shuttle stop",
-    null,
-  ];
-
-  const commutes: CommuteBucket[] = [
-    "WALK_LT_5",
-    "WALK_5_15",
-    "WALK_15_30",
-    "DRIVE_LT_20",
-    "DRIVE_GT_20",
-    null,
-  ];
-
-  const people = [
-    { username: "avak", firstName: "Ava", lastName: "Khan" },
-    { username: "samr", firstName: "Sam", lastName: "Reed" },
-    { username: "jordanp", firstName: "Jordan", lastName: "Patel" },
-    { username: "miaw", firstName: "Mia", lastName: "Wong" },
-    { username: "noahs", firstName: "Noah", lastName: "Smith" },
-  ];
-
-  const thumbs = [
-    "https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=1200&q=70",
-    "https://images.unsplash.com/photo-1493809842364-78817add7ffb?auto=format&fit=crop&w=1200&q=70",
-    "https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=1200&q=70",
-    "https://images.unsplash.com/photo-1502005229762-cf1b2da7c5d6?auto=format&fit=crop&w=1200&q=70",
-    "https://images.unsplash.com/photo-1501183638710-841dd1904471?auto=format&fit=crop&w=1200&q=70",
-    "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1200&q=70",
-  ];
-
-  const verifications: StudentResidenceCardDTO["verification"][] = [
-    "VERIFIED",
-    "UNVERIFIED",
-    "PENDING",
-  ];
-
-  const availability: Availability =
-    i % 4 === 0
-      ? { type: "Immediate" }
-      : {
-          type: "Date",
-          date: new Date(
-            Date.now() + (i + 10) * 24 * 60 * 60 * 1000,
-          ).toISOString(),
-        };
-
-  const person = seeded(people, i);
-  const campusName = seeded(campuses, i);
-  const commuteBucket = seeded(commutes, i);
-  const areaLabel = seeded(areas, i);
-
-  return {
-    id: `fake-${i}`,
-    thumbnailUrl: seeded(thumbs, i),
-    priceMonthly: 650 + (i % 10) * 75,
-    availability,
-    campusName,
-    areaLabel,
-    commuteBucket,
-    identity: {
-      ...person,
-      avatarUrl: null,
-    },
-    verification: seeded(verifications, i),
-    beds: 1 + (i % 3),
-    baths: 1 + (i % 2),
-  };
-}
-
-function buildFakePage(offset: number, size: number) {
-  return Array.from({ length: size }, (_, k) => makeFakeCrib(offset + k));
-}
-
-/** ----- Card ----- */
-export function ResidenceCard({ data }: { data: StudentResidenceCardDTO }) {
+export function ResidenceCard({ data }: { data: ResidenceCardDTO }) {
   const navigate = useNavigate();
 
   const isVerified = data.verification === "VERIFIED";
@@ -189,7 +88,15 @@ export function ResidenceCard({ data }: { data: StudentResidenceCardDTO }) {
       : data.campusName;
   }, [data.campusName, data.areaLabel]);
 
-  const commuteLabel = formatCommute(data.commuteBucket);
+  const commuteLabel = useMemo(
+    () => commuteText(data.distance, (data as any).commuteBucket ?? null),
+    [data.distance, (data as any).commuteBucket],
+  );
+
+  const showWalk = useMemo(
+    () => isWalk(data.distance, (data as any).commuteBucket ?? null),
+    [data.distance, (data as any).commuteBucket],
+  );
 
   return (
     <Card
@@ -237,15 +144,27 @@ export function ResidenceCard({ data }: { data: StudentResidenceCardDTO }) {
             <div className="shrink-0 text-xs font-medium text-gray-600">
               <span className="inline-flex items-center gap-1 rounded-full bg-gray-50 px-2 py-1 ring-1 ring-inset ring-gray-200">
                 <Clock size={12} />
-                Available {formatAvailability(data.availability)}
+                Available {formatAvailability((data as any).availability)}
               </span>
             </div>
           </div>
+
+          {/* Distance row */}
           <div className="flex items-center gap-1 text-sm font-medium text-gray-800">
-            <span>{data.beds} Bed</span>
-            <span className="text-gray-400">•</span>
-            <span>{data.baths} Bath</span>
+            {commuteLabel ? (
+              <span className="flex items-center gap-1">
+                {showWalk ? (
+                  <Footprints size={16} className="text-gray-500" />
+                ) : (
+                  <Car size={16} className="text-gray-500" />
+                )}
+                {commuteLabel}
+              </span>
+            ) : (
+              <span className="text-gray-500">Commute not provided</span>
+            )}
           </div>
+
           <div className="pt-1">
             <span
               className={[
@@ -254,8 +173,8 @@ export function ResidenceCard({ data }: { data: StudentResidenceCardDTO }) {
               ].join(" ")}
               title={
                 isVerified
-                  ? "This student completed verification."
-                  : "This student has not completed verification yet."
+                  ? "This user completed verification."
+                  : "This user has not completed verification yet."
               }
             >
               {isVerified ? (
@@ -263,7 +182,7 @@ export function ResidenceCard({ data }: { data: StudentResidenceCardDTO }) {
               ) : (
                 <AlertCircle size={12} />
               )}
-              {data.verification === "VERIFIED" ? "Student" : "User"}
+              {isVerified ? "Verified" : "Unverified"}
             </span>
           </div>
         </div>
@@ -272,47 +191,87 @@ export function ResidenceCard({ data }: { data: StudentResidenceCardDTO }) {
   );
 }
 
-/** ----- Page ----- */
+/** ---------- Page ---------- */
+
+type PageResponse<T> = {
+  content: T[];
+  number: number; // current page index
+  size: number;
+  totalElements: number;
+  totalPages: number;
+  first: boolean;
+  last: boolean;
+  numberOfElements: number;
+  empty: boolean;
+};
+
 export default function CribsPage() {
   const [openSearch, setOpenSearch] = useState(false);
 
-  // Fake “infinite” list state
-  const [items, setItems] = useState<StudentResidenceCardDTO[]>([]);
-  const [status, setStatus] = useState<"loading" | "ready" | "empty" | "error">(
-    "loading",
-  );
-
+  const [items, setItems] = useState<ResidenceCardDTO[]>([]);
   const [page, setPage] = useState(0);
   const pageSize = 10;
 
   const { ref, inView } = useInView({ threshold: 0 });
 
-  // initial load
+  /**
+   * IMPORTANT:
+   * Your generated hook signature may differ depending on your OpenAPI generator.
+   * Most common patterns are one of these:
+   *
+   * 1) useGetAppCribs({ page, size })
+   * 2) useGetAppCribs({ query: { page, size } })
+   * 3) useGetAppCribs({ page, size }, { enabled: true })
+   *
+   * Adjust the call below to match your generated client.
+   */
+  const {
+    data,
+    isLoading: isLoadingCribs,
+    error,
+    isFetching,
+  } = useGetAppCribs(
+    // ✅ try this first:
+    { page, size: pageSize } as any,
+  );
+  console.log("API response", { data, error });
+  const pageData = data?.data as unknown as
+    | PageResponse<ResidenceCardDTO>
+    | undefined;
+
+  // When a page arrives, append it (or replace if it's page 0)
   useEffect(() => {
-    setStatus("loading");
-    const t = setTimeout(() => {
-      const first = buildFakePage(0, pageSize * 2); // load a bit more initially
-      setItems(first);
-      setStatus(first.length ? "ready" : "empty");
-      setPage(1);
-    }, 450);
+    if (!pageData) return;
 
-    return () => clearTimeout(t);
-  }, []);
+    setItems((prev) => {
+      if (pageData.number === 0) return pageData.content ?? [];
+      // append while preventing duplicates (just in case)
+      const seen = new Set(prev.map((x) => x.id));
+      const merged = [...prev];
+      for (const c of pageData.content ?? []) {
+        if (!seen.has(c.id)) merged.push(c);
+      }
+      return merged;
+    });
+  }, [pageData?.number, pageData?.content]);
 
-  // load more when sentinel enters view
+  // Infinite scroll: when sentinel is visible, move to next page (if not last)
   useEffect(() => {
     if (!inView) return;
-    if (status !== "ready") return;
+    if (isLoadingCribs || isFetching) return;
+    if (!pageData) return;
+    if (pageData.last) return;
 
-    const t = setTimeout(() => {
-      const next = buildFakePage(page * pageSize * 2, pageSize);
-      setItems((prev) => [...prev, ...next]);
-      setPage((p) => p + 1);
-    }, 250);
+    setPage((p) => p + 1);
+  }, [inView, isLoadingCribs, isFetching, pageData?.last]);
 
-    return () => clearTimeout(t);
-  }, [inView, page, status]);
+  // Decide UI status
+  const status: "loading" | "ready" | "empty" | "error" = useMemo(() => {
+    if (error) return "error";
+    if (isLoadingCribs && items.length === 0) return "loading";
+    if (!isLoadingCribs && items.length === 0) return "empty";
+    return "ready";
+  }, [error, isLoadingCribs, items.length]);
 
   return (
     <div className="flex flex-col gap-4">
@@ -374,7 +333,14 @@ export default function CribsPage() {
             </div>
 
             {/* infinite scroll sentinel */}
-            <div ref={ref} className="h-10" />
+            {!pageData?.last && <div ref={ref} className="h-10" />}
+
+            {/* optional small loader when fetching next page */}
+            {isFetching && (
+              <div className="w-full flex justify-center py-3 text-sm text-black/60">
+                Loading more...
+              </div>
+            )}
           </>
         )}
       </div>

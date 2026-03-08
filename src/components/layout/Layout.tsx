@@ -20,6 +20,7 @@ const Layout = () => {
             <ScrollRestorationBlocker />
             <Outlet />
           </div>
+
           <FeedbackButton
             bottomOffset={75}
             onSubmit={async (payload) => {
@@ -30,6 +31,7 @@ const Layout = () => {
               });
             }}
           />
+
           <div className="sticky left-0 bottom-0 w-full z-40">
             <Footer />
           </div>

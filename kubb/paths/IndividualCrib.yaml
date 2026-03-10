@@ -1,5 +1,4 @@
 get:
-
   summary: get individual crib
   operationId: getIndividualCrib
   parameters:

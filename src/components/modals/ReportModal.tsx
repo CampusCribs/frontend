@@ -2,8 +2,9 @@ import { X } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export type ReportReason =
-  | "HARASSMENT_HATE"
-  | "SPAM_SCAM"
+  | "HARASSMENT"
+  | "SPAM"
+  | "SCAM"
   | "INAPPROPRIATE"
   | "IMPERSONATION"
   | "OTHER";
@@ -21,8 +22,9 @@ type Props = {
 };
 
 const REASONS: { id: ReportReason; label: string; hint?: string }[] = [
-  { id: "HARASSMENT_HATE", label: "Harassment or hate" },
-  { id: "SPAM_SCAM", label: "Spam or scam" },
+  { id: "HARASSMENT", label: "Harassment or hate" },
+  { id: "SPAM", label: "Spam " },
+  { id: "SCAM", label: "Scam or fraud" },
   { id: "INAPPROPRIATE", label: "Inappropriate content" },
   { id: "IMPERSONATION", label: "Impersonation" },
   { id: "OTHER", label: "Other" },

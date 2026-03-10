@@ -14,7 +14,7 @@ import { useState } from "react";
 
 const Home = () => {
   const navigate = useNavigate();
-  const { data: curatedData } = useGetAppCribsInfinite();
+  const { data: curatedData } = useGetAppCribsInfinite({ page: 0, size: 4 });
   const [idea, setIdea] = useState("");
   const [category, setCategory] = useState<
     "Feature" | "Bug" | "Safety" | "Design" | "Other"
@@ -188,7 +188,7 @@ const Home = () => {
                 {/* Cards grid (use your ResidenceCard or a lightweight preview) */}
                 <div className="mt-3 grid gap-4 grid-cols-2">
                   {/* If you can reuse ResidenceCard here, pass placeholder props */}
-                  {curatedData?.pages[0]?.data.items.map((crib) => (
+                  {curatedData?.pages[0]?.data.content.map((crib) => (
                     <>
                       <ResidenceCard key={crib.id} data={crib} />
                       <ResidenceCard key={crib.id} data={crib} />

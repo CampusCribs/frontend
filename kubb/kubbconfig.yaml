@@ -20,3 +20,12 @@ paths:
 
   /app/profile/{username}:
     $ref: ./paths/profile.yaml
+
+  /app/chats:
+    $ref: ./paths/chats/Chats.yaml
+
+  /app/chats/{username}:
+    $ref: ./paths/chats/IndividualChat.yaml
+
+  /app/chats/{username}/settings:
+    $ref: ./paths/chats/ChatSettings.yaml

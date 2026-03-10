@@ -126,24 +126,7 @@ components:
       - $ref: "./Pagination.yaml#/components/schemas/Page"
       - type: object
         properties:
-          items:
+          content:
             type: array
             items:
               $ref: "#/components/schemas/ResidenceCardDTO"
-      example:
-        items:
-        - id: abc123
-          thumbnailUrl: https://images.unsplash.com/photo-1560185007-c5ca9d2c014d?auto=format&fit=crop&w=1400&q=80
-          locationLabel: "Clifton · Cincinnati, OH"
-          priceMonthly: 875
-          availability:
-            type: IMMEDIATE
-          role: LANDLORD
-          verification: VERIFIED
-          identity:
-            companyName: Queen City Property Group
-            universityName: University of Cincinnati
-        page: 0
-        size: 10
-        totalElements: 42
-        totalPages: 5

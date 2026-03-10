@@ -1,0 +1,41 @@
+components:
+  schemas:
+    ChatDTO:
+      type: object
+      required:
+      - username
+      - name
+      - avatarUrl
+      - lastMessage
+      - lastMessageAt
+      properties:
+        username:
+          type: string
+          example: chrisf
+        name:
+          type: string
+          example: Chris Farah
+        avatarUrl:
+          type: string
+          format: uri
+          example: https://example.com/avatars/chris.jpg
+        lastMessage:
+          type: string
+          example: See you at 7
+        lastMessageAt:
+          type: string
+          format: date-time
+          example: 2026-03-09T14:30:00Z
+        verification:
+          type: string
+          enum: [ UNVERIFIED, VERIFIED ]
+          example: VERIFIED
+    ChatsResponse:
+      allOf:
+      - $ref: "./Pagination.yaml#/components/schemas/Page"
+      - type: object
+        properties:
+          content:
+            type: array
+            items:
+              $ref: "#/components/schemas/ChatDTO"

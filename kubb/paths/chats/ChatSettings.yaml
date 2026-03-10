@@ -1,0 +1,21 @@
+get:
+  summary: List of chats for the user
+
+  parameters:
+  - name: search
+    in: query
+    required: false
+    description: Optional search string to filter chats by username, name, or last message
+    schema:
+      type: string
+      example: chris
+  responses:
+    "200":
+      description: OK
+      content:
+        application/json:
+          schema:
+            $ref: ../../components/schemas/Chats.yaml#/components/schemas/ChatsResponse
+
+    "400":
+      $ref: ../../components/responses/ErrorResponse.yaml#/components/responses/BadRequest

@@ -1,31 +1,65 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router";
+import React, { useMemo, useState } from "react";
+import { useNavigate, useParams } from "react-router";
 import { ArrowLeftIcon, MoreHorizontal } from "lucide-react";
+import { useIndividualChat } from "@/gen";
 
-type IndividualChatProps = {
-  // top bar
-  name?: string;
-  avatarUrl?: string;
-};
-
-const IndividualChat = ({
-  name = "Johnny Edwards",
-  avatarUrl = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS3krGAS5w7YyUrBn7Y55sqCFh13aR2La_dYQ&s",
-}: IndividualChatProps) => {
+const IndividualChat = () => {
   const navigate = useNavigate();
-
+  const { username = "" } = useParams<{ username: string }>();
   const [message, setMessage] = useState("");
-
   const [open, setOpen] = useState(false);
+
+  const { data, isLoading, isError } = useIndividualChat(username);
+
+  // axios/tanstack wrapper
+  const chat = data?.data;
+  const otherUser = chat?.otherUser;
+
+  const messages = useMemo(() => {
+    return chat?.messages?.content ?? [];
+  }, [chat]);
 
   const handleSend = () => {
     if (!message.trim()) return;
-    // TODO: sendmessage
+    // TODO: send message mutation here
     setMessage("");
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex justify-center">
+        <div className="w-full max-w-[600px] h-[100dvh] bg-white flex items-center justify-center text-sm text-gray-500">
+          Loading chat...
+        </div>
+      </div>
+    );
+  }
+
+  if (isError || !otherUser) {
+    return (
+      <div className="flex justify-center">
+        <div className="w-full max-w-[600px] h-[100dvh] bg-white flex flex-col items-center justify-center px-6 text-center">
+          <div className="text-lg font-semibold text-slate-900">
+            Could not load chat
+          </div>
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="mt-4 rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium hover:bg-slate-50"
+          >
+            Go back
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const avatarUrl = otherUser.avatarUrl;
+  const name = otherUser.name;
+  const profileUsername = otherUser.username;
+
   return (
-    <div className="flex justify-center ">
+    <div className="flex justify-center">
       <div className="w-full max-w-[600px] shadow-xl h-[100dvh] flex flex-col bg-white">
         {/* Top bar */}
         <div className="sticky top-0 z-30 bg-white border-b border-gray-200">
@@ -41,7 +75,7 @@ const IndividualChat = ({
 
             <div
               className="flex items-center gap-2 min-w-0 cursor-pointer"
-              onClick={() => navigate("/profile/johnnyedwards")}
+              onClick={() => navigate(`/profile/${profileUsername}`)}
             >
               <div className="w-9 h-9 rounded-full overflow-hidden flex-shrink-0 bg-gray-200">
                 <img
@@ -50,27 +84,27 @@ const IndividualChat = ({
                   className="w-full h-full object-cover"
                 />
               </div>
+
               <div className="min-w-0 text-center">
                 <div className="font-semibold leading-tight truncate">
                   {name}
                 </div>
                 <div className="text-xs text-gray-500 leading-tight truncate">
-                  Chat about listing
+                  Chat
                 </div>
               </div>
             </div>
 
-            <button
-              type="button"
-              className="rounded-xl px-2 py-2 hover:bg-gray-100 transition"
-              aria-label="Menu"
-              onClick={() => {
-                // TODO: open menu (report, block, etc.)
-                setOpen(!open);
-                console.log("Open menu");
-              }}
-            >
-              <MoreHorizontal size={20} />
+            <div className="relative">
+              <button
+                type="button"
+                className="rounded-xl px-2 py-2 hover:bg-gray-100 transition"
+                aria-label="Menu"
+                onClick={() => setOpen((prev) => !prev)}
+              >
+                <MoreHorizontal size={20} />
+              </button>
+
               {open && (
                 <ChatMenu
                   setOpen={setOpen}
@@ -80,31 +114,47 @@ const IndividualChat = ({
                   onDelete={() => console.log("delete")}
                 />
               )}
-            </button>
+            </div>
           </div>
         </div>
 
         {/* Messages */}
         <div className="flex-1 overflow-y-auto px-3 py-3">
           <div className="flex w-full items-center justify-center text-sm font-light text-gray-500 mb-3">
-            Today
+            Messages
           </div>
-          <MeChat>
-            Hey I saw this listing and I wanted to reach out and ask if it is
-            still available during the times posted? please let me know!
-          </MeChat>
-          {/* Example messages */}
-          <OtherChat avatarUrl={avatarUrl} time="10:53 PM">
-            Hello! Yes it’s still available. Would you like to schedule a tour?
-          </OtherChat>
 
-          {/* Spacer so last message doesn't hide behind composer */}
+          {messages.length === 0 ? (
+            <div className="flex h-full items-center justify-center text-sm text-gray-500">
+              No messages yet
+            </div>
+          ) : (
+            messages.map((msg, index) => {
+              const isMe = msg.username !== otherUser.username;
+
+              return isMe ? (
+                <MeChat
+                  key={`${msg.sentAt}-${index}`}
+                  message={msg.message}
+                  time={formatTime(msg.sentAt)}
+                />
+              ) : (
+                <OtherChat
+                  key={`${msg.sentAt}-${index}`}
+                  avatarUrl={avatarUrl}
+                  time={formatTime(msg.sentAt)}
+                >
+                  {msg.message}
+                </OtherChat>
+              );
+            })
+          )}
+
           <div className="h-2" />
         </div>
 
-        {/* Composer area */}
+        {/* Composer */}
         <div className="border-t border-gray-200 bg-white px-3 pt-2 pb-3">
-          {/* Input row */}
           <div className="flex items-center gap-2">
             <input
               type="text"
@@ -130,13 +180,29 @@ const IndividualChat = ({
   );
 };
 
+/* ---------- helpers ---------- */
+
+function formatTime(sentAt?: string) {
+  if (!sentAt) return "";
+
+  const date = new Date(sentAt);
+
+  return date.toLocaleTimeString([], {
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
 /* ---------- Message bubbles ---------- */
 
-const MeChat = ({ children }: { children: React.ReactNode }) => {
+const MeChat = ({ message, time }: { message: string; time: string }) => {
   return (
     <div className="flex justify-end mb-2">
       <div className="bg-blue-600 text-white px-4 py-2 max-w-[80%] sm:max-w-md rounded-2xl">
-        {children}
+        <div className="text-sm">{message}</div>
+        <div className="flex justify-end text-xs text-blue-100 font-light mt-1">
+          {time}
+        </div>
       </div>
     </div>
   );
@@ -168,29 +234,6 @@ const OtherChat = ({
         </div>
       </div>
     </div>
-  );
-};
-
-/* ---------- Lead pills ---------- */
-
-const LeadPill = ({
-  icon,
-  label,
-  onClick,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  onClick: () => void;
-}) => {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="flex items-center gap-1.5 whitespace-nowrap rounded-full border border-gray-200 bg-white px-3 py-2 text-sm hover:bg-gray-50 transition"
-    >
-      {icon}
-      <span className="font-medium">{label}</span>
-    </button>
   );
 };
 

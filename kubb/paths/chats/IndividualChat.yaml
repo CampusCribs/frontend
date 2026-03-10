@@ -1,0 +1,19 @@
+get:
+  summary: List of chats for the user
+  operationId: individualChat
+  parameters:
+  - in: path
+    name: username
+    required: true
+    schema:
+      type: string
+  responses:
+    "200":
+      description: OK
+      content:
+        application/json:
+          schema:
+            $ref: ../../components/schemas/IndividualChat.yaml#/components/schemas/ChatResponseDTO
+
+    "400":
+      $ref: ../../components/responses/ErrorResponse.yaml#/components/responses/BadRequest

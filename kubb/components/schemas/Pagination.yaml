@@ -1,41 +1,86 @@
 components:
   schemas:
+    SortObject:
+      type: object
+      required: [ empty, sorted, unsorted ]
+      properties:
+        empty:
+          type: boolean
+        sorted:
+          type: boolean
+        unsorted:
+          type: boolean
+
+    PageableObject:
+      type: object
+      required: [ pageNumber, pageSize, sort, offset, paged, unpaged ]
+      properties:
+        pageNumber:
+          type: integer
+          format: int32
+          example: 0
+        pageSize:
+          type: integer
+          format: int32
+          example: 20
+        sort:
+          $ref: '#/components/schemas/SortObject'
+        offset:
+          type: integer
+          format: int64
+          example: 0
+        paged:
+          type: boolean
+        unpaged:
+          type: boolean
+
     Page:
       type: object
-      required: [ content, page, size, totalElements, totalPages ]
+      required:
+      - content
+      - pageable
+      - last
+      - totalPages
+      - totalElements
+      - size
+      - number
+      - sort
+      - first
+      - numberOfElements
+      - empty
       properties:
         content:
           type: array
-          items: {} # left open; specialized via allOf
-          example: [] # works as a generic default
+          items: {}
+          example: []
 
-        page:
-          type: integer
-          format: int32
-          minimum: 0
-          example: 0
-
-        size:
-          type: integer
-          format: int32
-          minimum: 1
-          example: 10
-
-        totalElements:
-          type: integer
-          format: int64
-          minimum: 0
-          example: 42
-
+        pageable:
+          $ref: '#/components/schemas/PageableObject'
+        last:
+          type: boolean
         totalPages:
           type: integer
           format: int32
-          minimum: 0
-          example: 5
-
-      example:
-        content: []
-        page: 0
-        size: 10
-        totalElements: 42
-        totalPages: 5
+          example: 4
+        totalElements:
+          type: integer
+          format: int64
+          example: 80
+        size:
+          type: integer
+          format: int32
+          example: 20
+        number:
+          type: integer
+          format: int32
+          example: 0
+        sort:
+          $ref: '#/components/schemas/SortObject'
+        first:
+          type: boolean
+        numberOfElements:
+          type: integer
+          format: int32
+          example: 20
+        empty:
+          type: boolean

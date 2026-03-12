@@ -56,3 +56,19 @@ components:
           $ref: "#/components/schemas/ChatUserDTO"
         messages:
           $ref: "#/components/schemas/ChatMessagesPage"
+
+    PostMessageRequestDTO:
+      type: object
+      required:
+      - message
+      properties:
+        message:
+          type: string
+
+    ChatSettingsRequest:
+      type: string
+      enum:
+      - MUTE
+      - DELETE
+      - REPORT
+      - BLOCK

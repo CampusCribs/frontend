@@ -1,21 +1,22 @@
-get:
-  summary: List of chats for the user
-
+post:
+  summary: Update chat settings for a user
+  operationId: postChatSettings
   parameters:
-  - name: search
-    in: query
-    required: false
-    description: Optional search string to filter chats by username, name, or last message
+  - in: path
+    name: username
+    required: true
     schema:
       type: string
-      example: chris
+
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: ../../components/schemas/IndividualChat.yaml#/components/schemas/ChatSettingsRequest
+
   responses:
     "200":
-      description: OK
-      content:
-        application/json:
-          schema:
-            $ref: ../../components/schemas/Chats.yaml#/components/schemas/ChatsResponse
-
+      description: Chat settings updated successfully
     "400":
       $ref: ../../components/responses/ErrorResponse.yaml#/components/responses/BadRequest

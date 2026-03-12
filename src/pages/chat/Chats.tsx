@@ -6,6 +6,7 @@ import { useNavigate } from "react-router";
 function Chats() {
   const [searchTerm, setSearchTerm] = useState("");
   const { data: chats } = useListChats({ search: searchTerm });
+
   return (
     <div className="w-full ">
       <div className=" flex items-center justify-center border-2 rounded-2xl py-1 px-3 m-3">

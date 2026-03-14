@@ -1,0 +1,111 @@
+components:
+  schemas:
+    PostDraftCommuteBucket:
+      type: string
+      enum: [ WALK_5, WALK_10, WALK_15, WALK_20, DRIVE ]
+      example: WALK_10
+
+    CreatePostDraftRequest:
+      type: object
+      required:
+      - title
+      - description
+      - pricePerMonth
+      - commuteBucket
+      properties:
+        title:
+          type: string
+          example: Sunny 2BR near campus
+        description:
+          type: string
+          example: Spacious room in a furnished apartment with lots of natural light.
+        pricePerMonth:
+          type: integer
+          format: int32
+          minimum: 0
+          example: 1200
+        commuteBucket:
+          $ref: "#/components/schemas/PostDraftCommuteBucket"
+
+    UpdatePostDraftRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          example: Sunny 2BR near campus
+        description:
+          type: string
+          example: Spacious room in a furnished apartment with lots of natural light.
+        pricePerMonth:
+          type: integer
+          format: int32
+          minimum: 0
+          example: 1200
+        commuteBucket:
+          $ref: "#/components/schemas/PostDraftCommuteBucket"
+        tags:
+          type: array
+          items:
+            type: string
+          example: [ Furnished, Walkable, Parking ]
+        mediaIds:
+          type: array
+          items:
+            type: string
+          example: [ media_123, media_456 ]
+
+    PostDraftDetails:
+      type: object
+      required:
+      - title
+      - description
+      - pricePerMonth
+      - commuteBucket
+      properties:
+        title:
+          type: string
+          example: Sunny 2BR near campus
+        description:
+          type: string
+          example: Spacious room in a furnished apartment with lots of natural light.
+        pricePerMonth:
+          type: integer
+          format: int32
+          minimum: 0
+          example: 1200
+        commuteBucket:
+          $ref: "#/components/schemas/PostDraftCommuteBucket"
+
+    PostDraftResponse:
+      type: object
+      required:
+      - draftId
+      - status
+      - expiresAt
+      - details
+      - tags
+      - mediaIds
+      properties:
+        draftId:
+          type: string
+          example: draft_123
+        status:
+          type: string
+          enum: [ DRAFT_CREATED, DETAILS_SAVED, DRAFT_UPDATED ]
+          example: DETAILS_SAVED
+        expiresAt:
+          type: string
+          format: date-time
+          example: "2026-03-20T18:00:00.000Z"
+        details:
+          $ref: "#/components/schemas/PostDraftDetails"
+        tags:
+          type: array
+          items:
+            type: string
+          example: [ Furnished, Walkable, Parking ]
+        mediaIds:
+          type: array
+          items:
+            type: string
+          example: [ media_123, media_456 ]

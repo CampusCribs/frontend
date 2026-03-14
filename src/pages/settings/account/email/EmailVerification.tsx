@@ -5,7 +5,7 @@ import {
   InputOTPSlot,
 } from "@/components/ui/input-otp";
 import { useNotify } from "@/components/ui/Notify";
-import { useGetUsersEmail, usePatchUsersEmail, usePutUsersEmail } from "@/gen";
+// import { useGetUsersEmail, usePatchUsersEmail, usePutUsersEmail } from "@/gen";
 import useAuthenticatedClientConfig from "@/hooks/use-authenticated-client-config";
 import { Label } from "@radix-ui/react-label";
 import { ArrowLeftIcon } from "lucide-react";
@@ -25,67 +25,67 @@ const EmailVerification = () => {
     formState: { errors: errorsVerify },
   } = useForm();
 
-  const { mutateAsync: patchUsersEmail } = usePatchUsersEmail({
-    ...config,
-    mutation: {
-      onSuccess: async (response) => {
-        await notify({
-          title: "New Verification Sent",
-          message:
-            "We have sent you a new verification email. Be sure to check your junk!",
+  // const { mutateAsync: patchUsersEmail } = usePatchUsersEmail({
+  //   ...config,
+  //   mutation: {
+  //     onSuccess: async (response) => {
+  //       await notify({
+  //         title: "New Verification Sent",
+  //         message:
+  //           "We have sent you a new verification email. Be sure to check your junk!",
 
-          buttonText: "Close",
-        });
-      },
-      onError: async (error) => {
-        await notify({
-          title: error.response?.data.title || "Error",
-          message:
-            error.response?.data.message ||
-            "Failed to update profile. Please try again later or reach out to support",
-          buttonText: "Close",
-        });
-      },
-    },
-  });
-  const { data: emailStatusResponse } = useGetUsersEmail({ ...config });
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (emailStatusResponse?.data.emailStatus !== "PENDING") {
-        navigate("/settings/account/email");
-      }
-    }, 1000);
+  //         buttonText: "Close",
+  //       });
+  //     },
+  //     onError: async (error) => {
+  //       await notify({
+  //         title: error.response?.data.title || "Error",
+  //         message:
+  //           error.response?.data.message ||
+  //           "Failed to update profile. Please try again later or reach out to support",
+  //         buttonText: "Close",
+  //       });
+  //     },
+  //   },
+  // });
+  // const { data: emailStatusResponse } = useGetUsersEmail({ ...config });
+  // useEffect(() => {
+  //   const timer = setTimeout(() => {
+  //     if (emailStatusResponse?.data.emailStatus !== "PENDING") {
+  //       navigate("/settings/account/email");
+  //     }
+  //   }, 1000);
 
-    return () => clearTimeout(timer);
-  }, [emailStatusResponse, navigate]);
-  const { mutateAsync: putUsersEmail } = usePutUsersEmail({
-    ...config,
-    mutation: {
-      onSuccess: async (response) => {
-        await notify({
-          title: "Profile Updated 🎉",
-          message: "Your profile has been successfully updated.",
+  //   return () => clearTimeout(timer);
+  // }, [emailStatusResponse, navigate]);
+  // const { mutateAsync: putUsersEmail } = usePutUsersEmail({
+  //   ...config,
+  //   mutation: {
+  //     onSuccess: async (response) => {
+  //       await notify({
+  //         title: "Profile Updated 🎉",
+  //         message: "Your profile has been successfully updated.",
 
-          buttonText: "Close",
-        });
-        navigate("/settings/account");
-      },
-      onError: async (error) => {
-        await notify({
-          title: error.response?.data.title || "Error",
-          message:
-            error.response?.data.message ||
-            "Failed to update profile. Please try again later or reach out to support",
-          buttonText: "Close",
-        });
-      },
-    },
-  });
+  //         buttonText: "Close",
+  //       });
+  //       navigate("/settings/account");
+  //     },
+  //     onError: async (error) => {
+  //       await notify({
+  //         title: error.response?.data.title || "Error",
+  //         message:
+  //           error.response?.data.message ||
+  //           "Failed to update profile. Please try again later or reach out to support",
+  //         buttonText: "Close",
+  //       });
+  //     },
+  //   },
+  // });
   const onSubmitVerify = async (data) => {
-    await putUsersEmail({ data: { verificationCode: data.code } });
+    // await putUsersEmail({ data: { verificationCode: data.code } });
   };
   const onResendEmail = async () => {
-    await patchUsersEmail();
+    // await patchUsersEmail();
   };
   return (
     <div className="fixed inset-0 z-40 bg-white">

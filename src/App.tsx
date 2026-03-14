@@ -2,25 +2,34 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router";
 import Layout from "@/components/layout/Layout";
 
 import CribsPage from "@/pages/cribs/CribsPage";
-import ProfileUsernamePage from "@/pages/profile/username/ProfileUsernamePage";
+
 import ProtectedRoute from "@/components/route/ProtectedRoute";
 import ReverseProtectedRoute from "@/components/route/ReverseProtectedRoute";
 import LoginPage from "@/pages/login/LoginPage";
-import ProfilePage from "@/pages/profile/ProfilePage";
-import SupportPage from "./pages/support/SupportPage";
-import Post from "@/pages/profile/post/Post";
+import SupportPage from "./pages/settings/support/SupportPage";
+import Post from "@/pages/post/Post";
 import IndividualPage from "./pages/cribs/individual/IndividualPage";
 import SettingsPage from "./pages/settings/SettingsPage";
-import General from "./pages/settings/general/General";
-import Notifications from "./pages/settings/notifications/Notifications";
+import Privacy from "./pages/settings/privacy/Privacy";
 import Account from "./pages/settings/account/Account";
-import EditProfile from "./pages/profile/edit/EditProfile";
-import { AnalyticsProvider } from "./components/analytics/AnalyticsProvider";
 
+import { AnalyticsProvider } from "./components/analytics/AnalyticsProvider";
 import About from "./pages/about/About";
-import { EmailChangeFlow } from "./pages/settings/account/EmailChangeFlow";
+// import { EmailChangeFlow } from "./pages/settings/account/EmailChangeFlow";
 import EmailInitiate from "./pages/settings/account/email/EmailInitiate";
 import EmailVerification from "./pages/settings/account/email/EmailVerification";
+import Chats from "./pages/chat/Chats";
+
+import Home from "./pages/home/Home";
+import Map from "./pages/map/Map";
+import IndividualChat from "./pages/chat/IndividualChat";
+import Onboarding from "./pages/onboarding/Onboarding";
+import ProfilePage from "./pages/profile/ProfilePage";
+import NotificationsSettingsPage from "./pages/settings/notifications/Notifications";
+import ProfileSettingsPage from "./pages/settings/profile/Profile";
+import NotificationsInboxPage from "./pages/notifications/Notifications";
+import ProfileUsernamePage from "./pages/profile/username/ProfileUsernamePage";
+
 // import Partners from "./pages/partners/Partners";
 
 function App() {
@@ -30,48 +39,56 @@ function App() {
       <BrowserRouter>
         <AnalyticsProvider>
           <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/onboarding" element={<Onboarding />} />
             <Route element={<Layout />}>
-              <Route path="/" element={<CribsPage />} />
-              <Route path="/cribs/:cribId" element={<IndividualPage />} />
+              <Route path="/cribs" element={<CribsPage />} />
+              <Route path="/cribs/:postId" element={<IndividualPage />} />
+              {/* <Route path="/map" element={<Map />} /> */}
+
+              <Route
+                path="/notifications"
+                element={<NotificationsInboxPage />}
+              />
+              <Route path="/chats" element={<Chats />} />
+              {/* <Route element={<ProtectedRoute />}> */}
+              <Route path="/settings" element={<SettingsPage />} />
+              <Route path="/settings/privacy" element={<Privacy />} />
+              <Route path="/settings/account" element={<Account />} />
+              <Route path="/settings/support" element={<SupportPage />} />
+              <Route
+                path="/settings/profile"
+                element={<ProfileSettingsPage />}
+              />
+              <Route
+                path="/settings/notifications"
+                element={<NotificationsSettingsPage />}
+              />
+              <Route
+                path="/settings/account/email"
+                element={<EmailInitiate />}
+              />
+              <Route
+                path="/settings/account/email-verification"
+                element={<EmailVerification />}
+              />
+              <Route path="/profile" element={<ProfilePage />} />
               <Route
                 path="/profile/:username"
                 element={<ProfileUsernamePage />}
               />
-              <Route path="/support" element={<SupportPage />} />
-
-              <Route element={<ProtectedRoute />}>
-                <Route path="/settings" element={<SettingsPage />} />
-                <Route path="/settings/general" element={<General />} />
-                <Route path="/settings/account" element={<Account />} />
-                <Route
-                  path="/settings/account/email"
-                  element={<EmailInitiate />}
-                />
-                <Route
-                  path="/settings/account/email-verification"
-                  element={<EmailVerification />}
-                />
-                <Route
-                  path="/settings/notifications"
-                  element={<Notifications />}
-                />
-                <Route path="/profile" element={<ProfilePage />}>
-                  <Route path=":username" element={<ProfileUsernamePage />} />
-                </Route>
-                <Route path="/profile/post" element={<Post />} />
-                <Route path="/profile/edit" element={<EditProfile />} />
-              </Route>
-
+              <Route path="/post" element={<Post />} />
+              {/* </Route> */}
               <Route element={<ReverseProtectedRoute />}>
                 <Route path="/login" element={<LoginPage />} />
               </Route>
             </Route>
-
+            <Route path="/chats/:username" element={<IndividualChat />} />
             {/* <Route path="/about" element={<About />} /> */}
             {/* <Route path="/partners" element={<Partners />} /> */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
-          <Routes></Routes>
         </AnalyticsProvider>
       </BrowserRouter>
     </div>

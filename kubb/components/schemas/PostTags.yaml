@@ -1,0 +1,23 @@
+components:
+  schemas:
+    PostTagOption:
+      type: object
+      required:
+      - id
+      - name
+      - tagCategoryId
+      properties:
+        id:
+          type: string
+          example: tag_123
+        name:
+          type: string
+          example: Furnished
+        tagCategoryId:
+          type: string
+          example: category_1
+
+    PostTagsResponse:
+      type: array
+      items:
+        $ref: "#/components/schemas/PostTagOption"

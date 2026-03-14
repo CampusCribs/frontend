@@ -1,0 +1,139 @@
+components:
+  schemas:
+    IndividualPost:
+      type: object
+      required:
+      - postId
+      - userId
+      - userThumbnailUrl
+      - firstName
+      - lastName
+      - username
+      - institutionName
+      - title
+      - description
+      - price
+      - roommates
+      - termStartDate
+      - termEndDate
+      - tags
+      - mediaIds
+      - campusLocation
+      - commuteBucket
+      properties:
+        postId:
+          type: string
+          example: post_123
+
+        userId:
+          type: string
+          example: user_abc
+
+        userThumbnailUrl:
+          type: string
+          description: URL for the user's avatar/thumbnail (empty string allowed).
+          example: ""
+          default: ""
+
+        firstName:
+          type: string
+          example: Johnny
+
+        lastName:
+          type: string
+          example: Edwards
+
+        username:
+          type: string
+          example: johnnyedwards
+
+        institutionName:
+          type: string
+          example: University of California, Berkeley
+
+        title:
+          type: string
+          example: Sunny Private Room on Short Vine
+
+        description:
+          type: string
+          example: >-
+            Private room in a 3BR. Walk to campus, in-unit laundry, furnished common area. Looking for someone clean + respectful. Close to restaurants and a bus stop.
+
+        price:
+          type: integer
+          format: int32
+          minimum: 0
+          example: 850
+
+        roommates:
+          type: integer
+          format: int32
+          minimum: 0
+          example: 2
+
+        termStartDate:
+          type: string
+          format: date-time
+          example: "2026-05-10T00:00:00.000Z"
+
+        termEndDate:
+          type: string
+          format: date-time
+          example: "2026-08-15T00:00:00.000Z"
+
+        tags:
+          type: array
+          items:
+            $ref: "#/components/schemas/PostTag"
+          example:
+          - name: Private bedroom
+          - name: In-unit laundry
+
+        mediaIds:
+          type: array
+          items:
+            type: string
+          example: [ "m1", "m2", "m3" ]
+
+        commuteBucket:
+          $ref: "#/components/schemas/CommuteBucket"
+
+        campusLocation:
+          $ref: "#/components/schemas/GeoLocation"
+
+        location:
+          $ref: "#/components/schemas/GeoLocation"
+
+    PostTag:
+      type: object
+      required: [ name ]
+      properties:
+        name:
+          type: string
+          example: Private bedroom
+
+    CommuteBucket:
+      type: string
+      enum: [ WALK_5, WALK_10, WALK_15, WALK_20, DRIVE ]
+      example: WALK_10
+
+    GeoLocation:
+      type: object
+      required: [ lat, lng, label ]
+      properties:
+        lat:
+          type: number
+          format: double
+          minimum: -90
+          maximum: 90
+          example: 39.1279
+        lng:
+          type: number
+          format: double
+          minimum: -180
+          maximum: 180
+          example: -84.5146
+        label:
+          type: string
+          example: Near Short Vine

@@ -18,7 +18,7 @@ export default function About() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-50 via-white to-white text-slate-900">
+    <div className="min-h-screen  from-slate-50 via-white to-white text-slate-900 w-full">
       {/* Header */}
       <header className="flex justify-between items-center p-4 sticky top-0 bg-white/90 backdrop-blur border-b border-slate-200 z-10">
         <div
@@ -58,7 +58,7 @@ export default function About() {
 
       {/* Hero */}
       <section className="relative overflow-hidden">
-        <div className="mx-auto max-w-6xl px-4 py-16 md:py-24 grid md:grid-cols-2 gap-12 items-center">
+        <div className="mx-auto max-w-6xl px-4 py-16 md:py-24 grid grid-cols-2 gap-12 items-center">
           <div>
             <div className="inline-flex items-center gap-2 text-sm font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-3 py-1">
               <GraduationCap className="h-4 w-4" aria-hidden />

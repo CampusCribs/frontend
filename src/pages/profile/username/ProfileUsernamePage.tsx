@@ -1,171 +1,278 @@
-import { useGetPublicProfileByUsername } from "@/gen";
-import { buildImageURL, buildThumbnailURL } from "@/lib/image-resolver";
-import { ArrowLeftIcon, ArrowRight, CircleUserRound } from "lucide-react";
+import { useState } from "react";
+import { type ProfileResponse, useGetProfileByUsername } from "@/gen";
+import {
+  CircleUserRound,
+  Send,
+  Tag,
+  CheckCircle2,
+  AlertCircle,
+  ArrowLeft,
+  MessageCircle,
+} from "lucide-react";
 import { useNavigate, useParams } from "react-router";
-import { LoadingProfilePage } from "../loading/LoadingComponents";
-import Error from "@/pages/error/Error";
+import ShareModal from "@/components/modals/ShareModal";
 
-const ProfileUsernamePage = () => {
+type ProfilePost = NonNullable<ProfileResponse["post"]>;
+
+export default function ProfileUsernamePage() {
   const navigate = useNavigate();
-  const { username } = useParams();
-  const {
-    data: profile,
-    error: profile_error,
-    isLoading: profile_isLoading,
-  } = useGetPublicProfileByUsername(username || "");
+  const { username = "" } = useParams<{ username: string }>();
+  const [openShare, setOpenShare] = useState(false);
+  const { data, isLoading, isError } = useGetProfileByUsername(username, {
+    query: {
+      enabled: !!username,
+    },
+  });
 
-  const thumbnailUrl =
-    profile?.data.userProfile?.thumbnailMediaId != null
-      ? buildThumbnailURL(
-          profile?.data?.userProfile?.id || "",
-          profile?.data?.userProfile?.thumbnailMediaId || ""
-        )
-      : null;
+  const profileData = data?.data;
+  const profile = profileData?.profile;
+  const post = profileData?.post;
+  const isVerified = profile?.verificationStatus === "VERIFIED";
+  const verificationClasses = isVerified
+    ? "bg-emerald-50 text-emerald-700 ring-emerald-200"
+    : "bg-gray-100 text-gray-600 ring-gray-200";
 
-  const postThumbnailUrl = buildImageURL(
-    profile?.data?.userProfile?.id || "",
-    profile?.data?.postProfile?.postId || "",
-    profile?.data?.postProfile?.mediaId || ""
-  );
-  function formatPhoneNumber(phoneNumber: string | undefined): string {
-    if (!phoneNumber) return "";
-
-    // strip all non-digits
-    const cleaned = phoneNumber.replace(/\D/g, "");
-
-    // handle 10-digit US numbers
-    if (cleaned.length === 10) {
-      const area = cleaned.slice(0, 3);
-      const middle = cleaned.slice(3, 6);
-      const last = cleaned.slice(6);
-      return `(${area}) ${middle}-${last}`;
-    }
-
-    // handle 11-digit with leading "1"
-    if (cleaned.length === 11 && cleaned.startsWith("1")) {
-      const area = cleaned.slice(1, 4);
-      const middle = cleaned.slice(4, 7);
-      const last = cleaned.slice(7);
-      return `+1 (${area}) ${middle}-${last}`;
-    }
-
-    // fallback: just return original string
-    return phoneNumber;
+  if (isLoading) {
+    return (
+      <div className="min-h-dvh w-full items-center bg-white px-4 py-10 text-center text-sm text-slate-600">
+        Loading profile...
+      </div>
+    );
   }
 
-  if (profile_isLoading) {
-    return <LoadingProfilePage />;
+  if (isError || !profile) {
+    return (
+      <div className="min-h-dvh w-full items-center bg-white px-4 py-10 text-center">
+        <div className="text-sm font-semibold text-slate-900">
+          Unable to load profile
+        </div>
+        <div className="mt-1 text-sm text-slate-600">
+          Please try again in a moment.
+        </div>
+      </div>
+    );
   }
-  if (profile_error) {
-    return <Error />;
-  }
+
   return (
-    <div className="flex flex-col w-full">
-      <div className="px-3 pt-3">
-        <div
-          onClick={() => window.history.back()}
-          className="cursor-pointer inline-flex items-center"
-        >
-          <ArrowLeftIcon size={32} />
-          <span className="ml-2">Back</span>
+    <div className="min-h-dvh w-full bg-white">
+      <div className="sticky top-0 z-40 border-b border-slate-100 bg-white/95 backdrop-blur">
+        <div className="mx-auto flex h-12 w-full max-w-[520px] items-center justify-between px-3">
+          <button
+            type="button"
+            className="-mr-1 rounded-full p-1.5 transition hover:bg-slate-100"
+            onClick={() => navigate(-1)}
+            aria-label="Back"
+          >
+            <ArrowLeft size={20} />
+          </button>
         </div>
       </div>
-      <div className="flex p-3 w-full">
-        <div className="flex rounded-full w-24 h-24 overflow-hidden">
-          {profile && !profile.data.userProfile?.thumbnailMediaId && (
-            <div className="flex justify-center items-center w-full">
-              <CircleUserRound size={80} />
+
+      <div className="mx-auto w-full max-w-[520px]">
+        <div className="px-4 pb-5 pt-5">
+          <div className="flex items-start gap-4">
+            <div className="flex h-[72px] w-[72px] shrink-0 items-center justify-center overflow-hidden rounded-full border border-slate-200 bg-slate-50">
+              {profile.avatarUrl ? (
+                <img
+                  src={profile.avatarUrl}
+                  alt="Profile"
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <CircleUserRound size={48} className="text-slate-400" />
+              )}
             </div>
-          )}
-          {profile && profile.data.userProfile?.thumbnailMediaId && (
-            <img
-              src={thumbnailUrl || ""}
-              alt="Profile"
-              className="object-cover w-full h-full "
-            />
-          )}
-        </div>
-        <div className="flex flex-col w-3/4">
-          <div className="text-lg font-medium px-4">
-            {profile &&
-              profile.data.userProfile?.firstName +
-                " " +
-                profile.data.userProfile?.lastName}
-          </div>
-          <div className="px-5 font-light text-md">
-            {profile && "@" + username}
-          </div>
-          <div className="text-wrap flex text-sm w-full mt-1 px-4">
-            {profile?.data?.userProfile?.institutionName && (
-              <div className="text-sm font-medium">
-                {profile.data.userProfile.institutionName}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-      {profile && (
-        <>
-          <div>
-            <div className="px-5 pb-5 text-wrap wrap-break-word">
-              {profile && profile.data.userProfile?.bio}
-            </div>
-            <div className="px-5 pb-5 underline">
-              <div>
-                <a
-                  href={`mailto:${profile && profile.data.userProfile?.email}`}
-                >
-                  {profile && profile.data.userProfile?.email}
-                </a>
-              </div>
-              <div>
-                <a href={`tel:${profile && profile.data.userProfile?.phone}`}>
-                  {profile &&
-                    formatPhoneNumber(profile.data.userProfile?.phone)}
-                </a>
-              </div>
-            </div>
-          </div>
-          <div className=" mx-5 mb-10 rounded-xl border">
-            <div className="relative h-[500px] rounded-xl overflow-hidden bg-neutral-800">
-              {/* Placeholder image for the post */}
-              <img
-                src={postThumbnailUrl}
-                alt="post"
-                className=" w-full h-full object-contain"
-              />
-              <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-white to-transparent" />
-            </div>
-            <div className=" gap-y-2 flex justify-between ">
-              <div className=" px-8 gap-y-2 my-3 flex flex-col  w-3/4">
-                <div className="line-clamp-2">
-                  title: {profile && profile.data.postProfile?.title}
-                </div>
-                <div>
-                  roomates: {profile && profile.data.postProfile?.roommates}
-                </div>
-                <div>price: {profile && profile.data.postProfile?.price}</div>
-                <div className=" flex flex-row justify-between ">
-                  <div className="line-clamp-2 ">
-                    description:{" "}
-                    {profile && profile.data.postProfile?.description}
+
+            <div className="min-w-0 flex-1">
+              <div className="space-y-0.5">
+                <div className="flex justify-between">
+                  <div className="text-[15px] font-semibold leading-tight text-slate-900">
+                    {profile.name}
+                  </div>
+                  <div>
+                    <span
+                      className={[
+                        "inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium ring-1 ring-inset",
+                        verificationClasses,
+                      ].join(" ")}
+                      title={
+                        isVerified
+                          ? "This student completed verification."
+                          : "This student has not completed verification yet."
+                      }
+                    >
+                      {isVerified ? (
+                        <CheckCircle2 size={12} />
+                      ) : (
+                        <AlertCircle size={12} />
+                      )}
+                      {isVerified ? "Student" : "User"}
+                    </span>
                   </div>
                 </div>
+                <div className="truncate text-xs text-slate-500">
+                  @{profile.username} · {profile.market}
+                </div>
               </div>
-              <div
-                className="flex w-1/6 bg-black justify-center items-center cursor-pointer"
-                onClick={() =>
-                  navigate(`/cribs/${profile.data.postProfile?.postId}`)
-                }
-              >
-                <ArrowRight color="white" size={40} />
+
+              <div className="mt-2.5 text-sm leading-snug text-slate-700">
+                {profile.bio}
               </div>
             </div>
           </div>
-        </>
+
+          <div className="mt-4 flex gap-2">
+            <button
+              type="button"
+              className="inline-flex flex-1 items-center justify-center rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-900 transition hover:bg-slate-50"
+              onClick={() => navigate(`/chats/${profile.username}`)}
+            >
+              <MessageCircle size={16} className="mr-2" />
+              Message
+            </button>
+            <button
+              type="button"
+              className="inline-flex flex-1 items-center justify-center rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
+              onClick={() => setOpenShare(true)}
+            >
+              <Send size={16} className="mr-2" />
+              Share Profile
+            </button>
+          </div>
+        </div>
+
+        <div className="border-t border-slate-100" />
+        <div className="w-full border-b">
+          <div className="flex">
+            <button className="relative flex-1 py-3 text-sm font-medium">
+              <span className="text-black">Cribs</span>
+              <div className="absolute bottom-0 left-0 right-0 h-[2px] rounded-full bg-black" />
+            </button>
+          </div>
+        </div>
+
+        {post ? (
+          <div className="mt-2">
+            <ProfilePostCard
+              post={post}
+              user={{
+                username: profile.username,
+                avatarUrl: profile.avatarUrl,
+              }}
+              onViewListing={() => navigate(`/cribs/${post.id}`)}
+              onShare={() => setOpenShare(true)}
+            />
+          </div>
+        ) : (
+          <div className="px-4 py-10 text-center">
+            <div className="text-sm font-semibold text-slate-900">
+              No post yet
+            </div>
+            <div className="mt-1 text-sm text-slate-600">
+              Create a listing to show on the map and in search.
+            </div>
+            <button
+              type="button"
+              className="mt-4 rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
+              onClick={() => console.log("create post")}
+            >
+              Create post
+            </button>
+          </div>
+        )}
+      </div>
+
+      {openShare && (
+        <ShareModal
+          open={openShare}
+          onClose={() => setOpenShare(false)}
+          title={`Check out ${profile.name}'s crib on CampusCribs`}
+          url={window.location.href}
+        />
       )}
     </div>
   );
-};
+}
 
-export default ProfileUsernamePage;
+function ProfilePostCard({
+  post,
+  user,
+  onViewListing,
+  onShare,
+}: {
+  post: ProfilePost;
+  user: { username: string; avatarUrl?: string };
+  onViewListing: () => void;
+  onShare: () => void;
+}) {
+  return (
+    <div className="pb-10">
+      <div className="w-full bg-black">
+        <img
+          src={post.imageUrl}
+          alt={post.title}
+          className="aspect-[4/3] w-full object-cover"
+        />
+      </div>
+
+      <div className="flex flex-row-reverse items-center gap-4 px-4 pt-3">
+        <button
+          title="Share"
+          type="button"
+          className="inline-flex items-center gap-2 text-sm font-semibold text-slate-700 transition hover:text-slate-900"
+          onClick={onShare}
+        >
+          <Send size={18} />
+        </button>
+      </div>
+
+      <div className="px-4 pt-3">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <div className="text-base font-semibold leading-tight text-slate-900">
+              {post.title}
+            </div>
+
+            <div className="mt-1 text-[12px] text-slate-500">
+              @{user.username}
+              {post.type === "CRIB" ? (
+                <>
+                  {" "}
+                  · ${post.price}/mo · {post.roommates} roommates
+                </>
+              ) : null}
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-2 text-sm leading-relaxed text-slate-700">
+          {post.description}
+        </div>
+
+        <div className="mt-2 flex items-start gap-2">
+          <span className="mt-[2px] shrink-0 text-slate-400">
+            <Tag size={20} />
+          </span>
+          <div className="text-slate-600">
+            {post.tags.map((t, i) => (
+              <span key={`${t.name}-${i}`}>
+                {t.name}
+                {i < post.tags.length - 1 && (
+                  <span className="text-slate-400"> · </span>
+                )}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        <button
+          type="button"
+          className="mt-4 w-full rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
+          onClick={onViewListing}
+        >
+          View listing
+        </button>
+      </div>
+    </div>
+  );
+}

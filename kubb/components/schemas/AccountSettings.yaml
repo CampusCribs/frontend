@@ -1,0 +1,54 @@
+components:
+  schemas:
+    AccountSettingsPageData:
+      type: object
+      required:
+      - email
+      - phoneDisplay
+      properties:
+        email:
+          type: string
+          format: email
+          example: you@example.com
+
+        phoneDisplay:
+          type: string
+          example: +1 (555) 555-5555
+
+    UpdateAccountSettingsRequest:
+      type: object
+      required:
+      - email
+      - phoneDisplay
+      - currentPassword
+      properties:
+        email:
+          type: string
+          format: email
+          example: you@example.com
+
+        phoneDisplay:
+          type: string
+          example: +1 (555) 555-5555
+
+        currentPassword:
+          type: string
+          example: current-password
+
+        newPassword:
+          type: string
+          nullable: true
+          example: new-password-123
+
+        confirmNewPassword:
+          type: string
+          nullable: true
+          example: new-password-123
+
+    AccountSettingsResponse:
+      type: object
+      required:
+      - account
+      properties:
+        account:
+          $ref: "#/components/schemas/AccountSettingsPageData"

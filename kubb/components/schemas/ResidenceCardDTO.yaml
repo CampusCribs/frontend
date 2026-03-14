@@ -1,0 +1,132 @@
+components:
+  schemas:
+
+    # type used in residence card
+    AvailabilityImmediate:
+      type: object
+      required: [ type ]
+      properties:
+        type:
+          type: string
+          enum: [ IMMEDIATE ]
+          example: IMMEDIATE
+      example:
+        type: IMMEDIATE
+
+    # type used in residence card
+    AvailabilityDate:
+      type: object
+      required: [ type, date ]
+      properties:
+        type:
+          type: string
+          enum: [ DATE ]
+          example: DATE
+        date:
+          type: string
+          format: date
+          description: ISO-8601 date (e.g., 2026-08-01)
+          example: "2026-08-01"
+      example:
+        type: DATE
+        date: "2026-08-01"
+
+    # residence card dto used in profile and search results (student-facing)
+    ResidenceCardDTO:
+      type: object
+      description: Fields required to render the ResidenceCard component for student search/profile.
+      required:
+      - id
+      - thumbnailUrl
+      - priceMonthly
+      - availability
+      - distance
+      - campusName
+      - user
+      - verification
+      properties:
+        id:
+          type: string
+          example: abc123
+
+        thumbnailUrl:
+          type: string
+          format: uri
+          example: https://images.unsplash.com/photo-1560185007-c5ca9d2c014d?auto=format&fit=crop&w=1400&q=80
+
+        priceMonthly:
+          type: integer
+          format: int32
+          minimum: 0
+          example: 875
+
+        availability:
+          description: Availability for the listing (either immediate or a specific date).
+          oneOf:
+          - $ref: "#/components/schemas/AvailabilityImmediate"
+          - $ref: "#/components/schemas/AvailabilityDate"
+          discriminator:
+            propertyName: type
+            mapping:
+              IMMEDIATE: "#/components/schemas/AvailabilityImmediate"
+              DATE: "#/components/schemas/AvailabilityDate"
+          example:
+            type: IMMEDIATE
+
+        campusName:
+          type: string
+          description: Campus/market label used for student search context.
+          example: "University of Cincinnati"
+
+        areaLabel:
+          type: string
+          nullable: true
+          description: Optional neighborhood/area label shown near campus.
+          example: "Clifton"
+
+        commuteBucket:
+          type: string
+          nullable: true
+          description: Optional bucketed commute label for UI (e.g., 5/10/15/20/w drive).
+          enum: [ WALK_5, WALK_10, WALK_15, WALK_20, DRIVE ]
+          example: WALK_10
+
+        distance:
+          type: integer
+          format: int32
+          minimum: 0
+          description: Commute estimate in minutes (used for display, user-estimated).
+          example: 10
+
+        verification:
+          type: string
+          description: Verification status of the poster.
+          enum: [ VERIFIED, UNVERIFIED, PENDING ]
+          example: VERIFIED
+
+        user:
+          type: object
+          description: Minimal user info displayed on the card.
+          required: [ username, fullName ]
+          properties:
+            username:
+              type: string
+              example: "queen_city_props"
+            fullName:
+              type: string
+              example: "Queen City Property Group"
+            avatarUrl:
+              type: string
+              format: uri
+              nullable: true
+              example: https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=256&q=80
+
+    PageResidenceCardDTO:
+      allOf:
+      - $ref: "./Pagination.yaml#/components/schemas/Page"
+      - type: object
+        properties:
+          content:
+            type: array
+            items:
+              $ref: "#/components/schemas/ResidenceCardDTO"

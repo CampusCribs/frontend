@@ -19,10 +19,17 @@ const IndividualSlider = (props: {
   postId: string;
 }) => {
   const [imgIndex, setImgIndex] = useState(0);
-  const imgs = buildImageURLs(props.userId || "", props.postId, props.images);
-  const dragX = useMotionValue(0);
-  const imglength = props.images.length;
+  // const imgs = buildImageURLs(props.userId || "", props.postId, props.images);
+  const imgs = [
+    "https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=1400&q=80",
+    "https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=1400&q=80",
+    "https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=1400&q=80",
+    "https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=1400&q=80",
+  ];
 
+  const dragX = useMotionValue(0);
+  // const imglength = props.images.length;
+  const imglength = imgs.length;
   useEffect(() => {
     const intervalRef = setInterval(() => {
       const x = dragX.get();

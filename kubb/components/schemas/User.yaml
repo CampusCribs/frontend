@@ -1,0 +1,46 @@
+components:
+  schemas:
+    User:
+      type: object
+      required:
+      - id
+      - firstName
+      - lastName
+      - username
+      - createdAt
+      - role
+      - verificationStatus
+      properties:
+        id:
+          type: string
+          format: uuid
+        firstName:
+          type: string
+        lastName:
+          type: string
+        username:
+          type: string
+        newsletterConsent:
+          type: boolean
+        bio:
+          type: string
+        thumbnailMediaId:
+          type: string
+          format: uuid
+        createdAt:
+          type: string
+          format: string
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+        role:
+          type: string
+          description: Who posted the listing.
+          enum: [ STUDENT, LANDLORD ]
+
+        verificationStatus:
+          type: string
+          description: Verification status of the poster.
+          enum: [ VERIFIED, UNVERIFIED ]

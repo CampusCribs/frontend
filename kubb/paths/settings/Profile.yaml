@@ -1,0 +1,33 @@
+get:
+  summary: Get profile settings page data
+  operationId: getProfileSettings
+  responses:
+    "200":
+      description: OK
+      content:
+        application/json:
+          schema:
+            $ref: ../../components/schemas/ProfileSettings.yaml#/components/schemas/ProfileSettingsResponse
+
+    "400":
+      $ref: ../../components/responses/ErrorResponse.yaml#/components/responses/BadRequest
+
+post:
+  summary: Update profile settings
+  operationId: postProfileSettings
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: ../../components/schemas/ProfileSettings.yaml#/components/schemas/UpdateProfileSettingsRequest
+  responses:
+    "200":
+      description: Profile settings updated
+      content:
+        application/json:
+          schema:
+            $ref: ../../components/schemas/ProfileSettings.yaml#/components/schemas/ProfileSettingsResponse
+
+    "400":
+      $ref: ../../components/responses/ErrorResponse.yaml#/components/responses/BadRequest

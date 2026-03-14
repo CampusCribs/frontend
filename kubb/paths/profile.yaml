@@ -1,0 +1,19 @@
+get:
+  summary: Get profile by username
+  operationId: getProfileByUsername
+  parameters:
+  - in: path
+    name: username
+    required: true
+    schema:
+      type: string
+  responses:
+    "200":
+      description: OK
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Profile.yaml#/components/schemas/ProfileResponse
+
+    "400":
+      $ref: ../components/responses/ErrorResponse.yaml#/components/responses/BadRequest

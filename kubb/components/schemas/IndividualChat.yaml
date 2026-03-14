@@ -1,0 +1,74 @@
+components:
+  schemas:
+    ChatUserDTO:
+      type: object
+      required:
+      - username
+      - name
+      - avatarUrl
+      properties:
+        username:
+          type: string
+          example: johnnyedwards
+        name:
+          type: string
+          example: Johnny Edwards
+        avatarUrl:
+          type: string
+          format: uri
+          example: https://example.com/avatars/johnny.jpg
+
+    ChatMessageDTO:
+      type: object
+      required:
+      - message
+      - username
+      - sentAt
+      properties:
+        message:
+          type: string
+          example: Hey, is the room still available?
+        username:
+          type: string
+          example: johnnyedwards
+        sentAt:
+          type: string
+          format: date-time
+          example: 2026-03-10T15:45:00Z
+
+    ChatMessagesPage:
+      allOf:
+      - $ref: "./Pagination.yaml#/components/schemas/Page"
+      - type: object
+        properties:
+          content:
+            type: array
+            items:
+              $ref: "#/components/schemas/ChatMessageDTO"
+
+    ChatResponseDTO:
+      type: object
+      required:
+      - otherUser
+      - messages
+      properties:
+        otherUser:
+          $ref: "#/components/schemas/ChatUserDTO"
+        messages:
+          $ref: "#/components/schemas/ChatMessagesPage"
+
+    PostMessageRequestDTO:
+      type: object
+      required:
+      - message
+      properties:
+        message:
+          type: string
+
+    ChatSettingsRequest:
+      type: string
+      enum:
+      - MUTE
+      - DELETE
+      - REPORT
+      - BLOCK

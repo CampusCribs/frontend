@@ -65,7 +65,10 @@ export const userProfileSchema = z.object({
     .min(10, "Phone number must be at least 10 characters")
     .max(15, "Phone number must be less than 15 characters")
     .regex(/^\+?[0-9\s\-()]+$/, "Phone number must be a valid format"),
-  thumbnailMediaId: z.string().uuid("Invalid media ID format"),
+  thumbnailMediaId: z
+    .string()
+    .uuid("Invalid media ID format")
+    .or(z.literal("")),
 });
 
 export type UserProfileSchema = z.infer<typeof userProfileSchema>;

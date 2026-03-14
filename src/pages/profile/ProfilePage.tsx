@@ -1,284 +1,315 @@
-import { Button } from "@/components/ui/button";
-import {
-  GetUsersProfile200,
-  useDeletePosts,
-  useGetUsersMe,
-  useGetUsersProfile,
-} from "@/gen";
-import useAuthenticatedClientConfig from "@/hooks/use-authenticated-client-config";
-import {
-  buildDraftImageURL,
-  buildImageURL,
-  buildThumbnailURL,
-} from "@/lib/image-resolver";
-import { ArrowRight, CirclePlus, CircleUserRound, X } from "lucide-react";
 import { useState } from "react";
+import { type ProfileResponse, useGetProfileByUsername } from "@/gen";
+import {
+  CircleUserRound,
+  Settings,
+  Send,
+  Tag,
+  Heart,
+  CheckCircle2,
+  AlertCircle,
+  ArrowLeft,
+  MessageCircle,
+  Edit,
+  User,
+} from "lucide-react";
 import { useNavigate } from "react-router";
-import { LoadingProfilePage } from "./loading/LoadingComponents";
-import Error from "../error/Error";
-import { useNotify } from "@/components/ui/Notify";
+import ShareModal from "@/components/modals/ShareModal";
 
-const ProfilePage = () => {
+type ProfilePost = NonNullable<ProfileResponse["post"]>;
+
+export default function ProfilePage() {
   const navigate = useNavigate();
-
-  const config = useAuthenticatedClientConfig();
-
-  const { data, isLoading, isError, error } = useGetUsersMe({ ...config });
-
-  const {
-    data: profile_draft,
-    isLoading: profile_draftLoading,
-    isError: profile_draftError,
-  } = useGetUsersProfile({ ...config });
-
-  const Thumbnail = buildThumbnailURL(
-    data?.data.id || "",
-    data?.data.thumbnailMediaId || ""
-  );
-
-  function formatPhoneNumber(phoneNumber: string | undefined): string {
-    if (!phoneNumber) return "";
-
-    // strip all non-digits
-    const cleaned = phoneNumber.replace(/\D/g, "");
-
-    // handle 10-digit US numbers
-    if (cleaned.length === 10) {
-      const area = cleaned.slice(0, 3);
-      const middle = cleaned.slice(3, 6);
-      const last = cleaned.slice(6);
-      return `(${area}) ${middle}-${last}`;
-    }
-
-    // handle 11-digit with leading "1"
-    if (cleaned.length === 11 && cleaned.startsWith("1")) {
-      const area = cleaned.slice(1, 4);
-      const middle = cleaned.slice(4, 7);
-      const last = cleaned.slice(7);
-      return `+1 (${area}) ${middle}-${last}`;
-    }
-
-    // fallback: just return original string
-    return phoneNumber;
-  }
-  if (isLoading || profile_draftLoading) {
-    return <LoadingProfilePage />;
-  }
-  if (isError) {
-    return <Error />;
-  }
-  return (
-    <div className="flex flex-col w-full">
-      {data && (
-        <>
-          <div className="flex px-3 pt-3 w-full">
-            <div className="flex rounded-full w-24 h-24 overflow-hidden">
-              {data && !data.data.thumbnailMediaId && (
-                <div className="flex justify-center items-center w-full">
-                  <CircleUserRound size={80} />
-                </div>
-              )}
-              {data && data.data.thumbnailMediaId && (
-                <img
-                  src={Thumbnail}
-                  alt="Profile"
-                  className="object-cover w-full h-full "
-                />
-              )}
-            </div>
-            <div className="flex flex-col w-3/4">
-              <div className="text-lg font-medium px-4">
-                {data?.data.firstName} {data?.data.lastName}
-              </div>
-              <div className="px-5 font-light text-md">
-                @{data?.data.username}
-              </div>
-              <div className="text-wrap flex text-sm w-full mt-1 px-4">
-                {profile_draft?.data?.userProfile?.institutionName && (
-                  <div className="text-sm font-medium">
-                    {profile_draft.data.userProfile.institutionName}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-          <div className="text-wrap flex text-sm w-full  px-5">
-            <button
-              className="mt-2 cursor-pointer w-full border p-2 bg-neutral-700 text-white shadow-lg rounded-xl"
-              onClick={() => navigate("/settings/account")}
-            >
-              edit profile
-            </button>
-          </div>
-          <div>
-            {isError && <div>{error?.message}</div>}
-            <div className="p-5 ">
-              {data?.data.bio ??
-                "Please enter a bio to finish setting up your profile!"}
-            </div>
-            <div className="px-5 pb-5 underline">
-              <div> {data?.data.email ?? "N/A"}</div>
-              <div>
-                {data?.data.phone
-                  ? formatPhoneNumber(data.data.phone)
-                  : "please set your phone number"}
-              </div>
-            </div>
-          </div>
-        </>
-      )}
-      <div className="w-full">
-        {profile_draft?.data?.postProfile && (
-          <Post
-            profile={profile_draft.data}
-            isPost={profile_draft.data.postProfile.post}
-          />
-        )}
-        {!profile_draft?.data?.postProfile?.title && (
-          <div className="w-full  h-full flex justify-center items-center mt-10">
-            <Button onClick={() => navigate("post")} className="cursor-pointer">
-              <CirclePlus /> Create a new post!
-            </Button>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
-
-const Post = ({
-  profile,
-  isPost,
-}: {
-  profile?: GetUsersProfile200;
-  isPost: boolean;
-}) => {
-  const navigate = useNavigate();
-  const [isDeleting, setIsDeleting] = useState(false);
-  const config = useAuthenticatedClientConfig();
-  const { mutateAsync: deletePost } = useDeletePosts({
-    ...config,
+  const username = "user";
+  const [openShare, setOpenShare] = useState(false);
+  const { data, isLoading, isError } = useGetProfileByUsername(username, {
+    query: {
+      enabled: !!username,
+    },
   });
 
-  const notify = useNotify();
+  const profileData = data?.data;
+  const profile = profileData?.profile;
+  const post = profileData?.post;
+  const isVerified = profile?.verificationStatus === "VERIFIED";
+  const verificationClasses = isVerified
+    ? "bg-emerald-50 text-emerald-700 ring-emerald-200"
+    : "bg-gray-100 text-gray-600 ring-gray-200";
 
-  const imageUrl = isPost
-    ? buildImageURL(
-        profile?.userProfile?.id || "",
-        profile?.postProfile?.postId || "",
-        profile?.postProfile?.mediaId || ""
-      )
-    : buildDraftImageURL(
-        profile?.userProfile?.id || "",
-        profile?.postProfile?.postId || "",
-        profile?.postProfile?.mediaId || ""
-      );
+  if (isLoading) {
+    return (
+      <div className="min-h-dvh w-full bg-white px-4 py-10 text-center text-sm text-slate-600">
+        Loading profile...
+      </div>
+    );
+  }
 
-  const handleConfirmDelete = async () => {
-    try {
-      await deletePost().then(async () => {
-        setIsDeleting(false);
-        await notify({
-          title: "Post Deleted",
-          message: "Your post has been deleted successfully.",
-          buttonText: "Close",
-        });
+  if (isError || !profile) {
+    return (
+      <div className="min-h-dvh w-full bg-white px-4 py-10 text-center">
+        <div className="text-sm font-semibold text-slate-900">
+          Unable to load profile
+        </div>
+        <div className="mt-1 text-sm text-slate-600">
+          Please try again in a moment.
+        </div>
+      </div>
+    );
+  }
 
-        window.location.reload();
-      });
-    } catch (error) {
-      console.error("Error deleting post:", error);
-      setIsDeleting(false);
-      await notify({
-        title: "Error",
-        message: "Failed to delete post. Please try again later.",
-        buttonText: "Close",
-      });
-    }
-  };
   return (
-    <div className=" mx-5 mb-10 rounded-xl border-1 border-black ">
-      <div className="relative h-[500px] rounded-xl overflow-hidden bg-neutral-800">
-        <img
-          src={imageUrl}
-          alt="post"
-          className=" w-full h-full object-contain"
-        />
-        <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-white to-transparent" />
-        {isPost && (
-          <div
-            className="absolute top-0 right-0 p-4 text-white"
-            onClick={() => setIsDeleting(true)}
+    <div className="min-h-dvh w-full bg-white">
+      <div className="sticky top-0 z-40 border-b border-slate-100 bg-white/95 backdrop-blur">
+        <div className="mx-auto flex h-12 w-full max-w-[520px] items-center justify-between px-3">
+          <button
+            type="button"
+            className="-mr-1 rounded-full p-1.5 transition hover:bg-slate-100"
+            onClick={() => navigate(-1)}
+            aria-label="Back"
           >
-            <X size={50} />
+            <ArrowLeft size={20} />
+          </button>
+
+          <button
+            type="button"
+            className="-mr-1 rounded-full p-1.5 transition hover:bg-slate-100"
+            onClick={() => navigate("/settings")}
+            aria-label="Settings"
+          >
+            <Settings size={20} />
+          </button>
+        </div>
+      </div>
+
+      <div className="mx-auto w-full max-w-[520px]">
+        <div className="px-4 pb-5 pt-5">
+          <div className="flex items-start gap-4">
+            <div className="flex h-[72px] w-[72px] shrink-0 items-center justify-center overflow-hidden rounded-full border border-slate-200 bg-slate-50">
+              {profile.avatarUrl ? (
+                <img
+                  src={profile.avatarUrl}
+                  alt="Profile"
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <CircleUserRound size={48} className="text-slate-400" />
+              )}
+            </div>
+
+            <div className="min-w-0 flex-1">
+              <div className="space-y-0.5">
+                <div className="flex justify-between">
+                  <div className="text-[15px] font-semibold leading-tight text-slate-900">
+                    {profile.name}
+                  </div>
+                  <div>
+                    <span
+                      className={[
+                        "inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium ring-1 ring-inset",
+                        verificationClasses,
+                      ].join(" ")}
+                      title={
+                        isVerified
+                          ? "This student completed verification."
+                          : "This student has not completed verification yet."
+                      }
+                    >
+                      {isVerified ? (
+                        <CheckCircle2 size={12} />
+                      ) : (
+                        <AlertCircle size={12} />
+                      )}
+                      {isVerified ? "Student" : "User"}
+                    </span>
+                  </div>
+                </div>
+                <div className="truncate text-xs text-slate-500">
+                  @{profile.username} · {profile.market}
+                </div>
+              </div>
+
+              <div className="mt-2.5 text-sm leading-snug text-slate-700">
+                {profile.bio}
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-4 flex gap-2">
+            <button
+              type="button"
+              className="inline-flex flex-1 items-center justify-center rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-900 transition hover:bg-slate-50"
+              onClick={() => navigate(`/settings/profile`)}
+            >
+              <User size={16} className="mr-2" />
+              Edit Profile
+            </button>
+            <button
+              type="button"
+              className="inline-flex flex-1 items-center justify-center rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
+              onClick={() => navigate(`/post/edit`)}
+            >
+              <Edit size={16} className="mr-2" />
+              Edit Post
+            </button>
+          </div>
+        </div>
+
+        <div className="border-t border-slate-100" />
+        <div className="w-full border-b">
+          <div className="flex">
+            <button className="relative flex-1 py-3 text-sm font-medium">
+              <span className="text-black">Cribs</span>
+              <div className="absolute bottom-0 left-0 right-0 h-[2px] rounded-full bg-black" />
+            </button>
+          </div>
+        </div>
+
+        {post ? (
+          <div className="mt-2">
+            <ProfilePostCard
+              post={post}
+              user={{
+                username: profile.username,
+                avatarUrl: profile.avatarUrl,
+              }}
+              onViewListing={() => navigate(`/cribs/${post.id}`)}
+              onShare={() => console.log("share")}
+              onSave={() => console.log("save")}
+            />
+          </div>
+        ) : (
+          <div className="px-4 py-10 text-center">
+            <div className="text-sm font-semibold text-slate-900">
+              No post yet
+            </div>
+            <div className="mt-1 text-sm text-slate-600">
+              Create a listing to show on the map and in search.
+            </div>
+            <button
+              type="button"
+              className="mt-4 rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
+              onClick={() => console.log("create post")}
+            >
+              Create post
+            </button>
           </div>
         )}
       </div>
-      {!isPost && (
-        <div className="flex  p-3 items-center ">
-          <div>Please wait for post to be verified </div>
-          <Button
-            className=" ml-auto cursor-pointer"
-            onClick={() => navigate("post")}
-          >
-            Edit Post
-          </Button>
-        </div>
-      )}
-      {isDeleting && (
-        <>
-          <div className="fixed inset-0 bg-black opacity-50 z-50 flex items-center justify-center" />
-          <div className="fixed inset-0 flex items-center justify-center z-50">
-            <div className="bg-white p-6 rounded-lg shadow-xl w-80 text-center space-y-4">
-              <h2 className="text-lg font-semibold">Delete Post</h2>
-              <p>Are you sure you want to delete this post?</p>
-              <div className="flex justify-between mt-4">
-                <button
-                  onClick={() => setIsDeleting(false)} // cancel
-                  className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleConfirmDelete} // your delete logic
-                  className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          </div>
-        </>
-      )}
 
-      {isPost && (
-        <div className=" gap-y-2 flex justify-between ">
-          <div className=" px-8 gap-y-2 my-3 flex flex-col w-3/4 ">
-            <div className="line-clamp-2">
-              title: {profile && profile.postProfile?.title}
-            </div>
-            <div>roomates: {profile && profile.postProfile?.roommates}</div>
-            <div>price: {profile && profile.postProfile?.price}</div>
-            <div className=" flex flex-row justify-between ">
-              <div className="line-clamp-2">
-                description: {profile && profile.postProfile?.description}
-              </div>
-            </div>
-          </div>
-          <div
-            className="flex w-1/6 bg-black justify-center items-center cursor-pointer"
-            onClick={() => {
-              if (isPost) {
-                navigate(`/cribs/${profile?.postProfile?.postId}`);
-              }
-            }}
-          >
-            <ArrowRight color="white" size={40} />
-          </div>
-        </div>
+      {openShare && (
+        <ShareModal
+          open={openShare}
+          onClose={() => setOpenShare(false)}
+          title={`Check out ${profile.name}'s crib on CampusCribs`}
+          url={window.location.href}
+        />
       )}
     </div>
   );
-};
+}
 
-export default ProfilePage;
+function ProfilePostCard({
+  post,
+  user,
+  onViewListing,
+  onShare,
+  onSave,
+}: {
+  post: ProfilePost;
+  user: { username: string; avatarUrl?: string };
+  onViewListing: () => void;
+  onShare: () => void;
+  onSave: () => void;
+}) {
+  const [saved, setSaved] = useState(false);
+
+  return (
+    <div className="pb-10">
+      <div className="w-full bg-black">
+        <img
+          src={post.imageUrl}
+          alt={post.title}
+          className="aspect-[4/3] w-full object-cover"
+        />
+      </div>
+
+      <div className="flex flex-row-reverse items-center gap-4 px-4 pt-3">
+        <button
+          title="Share"
+          type="button"
+          className="inline-flex items-center gap-2 text-sm font-semibold text-slate-700 transition hover:text-slate-900"
+          onClick={onShare}
+        >
+          <Send size={18} />
+        </button>
+
+        <button
+          title="save"
+          type="button"
+          className="inline-flex items-center gap-2 text-sm font-semibold transition"
+          onClick={() => {
+            setSaved((s) => !s);
+            onSave();
+          }}
+        >
+          <Heart
+            className={
+              saved
+                ? "fill-red-500 text-red-500"
+                : "text-slate-700 hover:text-slate-900"
+            }
+            size={18}
+          />
+        </button>
+      </div>
+
+      <div className="px-4 pt-3">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <div className="text-base font-semibold leading-tight text-slate-900">
+              {post.title}
+            </div>
+
+            <div className="mt-1 text-[12px] text-slate-500">
+              @{user.username}
+              {post.type === "CRIB" ? (
+                <>
+                  {" "}
+                  · ${post.price}/mo · {post.roommates} roommates
+                </>
+              ) : null}
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-2 text-sm leading-relaxed text-slate-700">
+          {post.description}
+        </div>
+
+        <div className="mt-2 flex items-start gap-2">
+          <span className="mt-[2px] shrink-0 text-slate-400">
+            <Tag size={20} />
+          </span>
+          <div className="text-slate-600">
+            {post.tags.map((t, i) => (
+              <span key={`${t.name}-${i}`}>
+                {t.name}
+                {i < post.tags.length - 1 && (
+                  <span className="text-slate-400"> · </span>
+                )}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        <button
+          type="button"
+          className="mt-4 w-full rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
+          onClick={onViewListing}
+        >
+          View listing
+        </button>
+      </div>
+    </div>
+  );
+}

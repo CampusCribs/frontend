@@ -1,348 +1,474 @@
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import {
-  CircleX,
-  Dot,
-  ListFilter,
-  MapPin,
-  SearchX,
-  ShieldOff,
-} from "lucide-react";
-import { useEffect, useState } from "react";
-import TagSelector from "./TagSelector";
-import { useInView } from "react-intersection-observer";
-import TagCarousel from "./TagCarousel";
-import { useNavigate } from "react-router";
-import { useGetPublicCuratedInfinite, useGetPublicTags } from "@/gen";
-import { buildImageURL } from "@/lib/image-resolver";
-
-import Lottie from "lottie-react";
+import { ReminderModal } from "@/components/modals/ReminderModal";
 import house from "@/components/ui/houseanimation.json";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { useGetAppCribs } from "@/gen";
+import type { ResidenceCardDTO } from "@/gen/types/ResidenceCardDTO";
+import Lottie from "lottie-react";
+import {
+  AlertCircle,
+  Car,
+  CheckCircle2,
+  CircleX,
+  Clock,
+  Footprints,
+  MapPin,
+  Search,
+  SearchX,
+} from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { useInView } from "react-intersection-observer";
+import { useNavigate } from "react-router";
+import GuidedSearch from "./GuidedSearch";
 
-const CribsPage = () => {
-  //variables to store the selected tags and the state of the tag selector and find the intersection of the tags
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [openTag, setOpenTag] = useState(false);
-  const [verification, setVerification] = useState<
-    "ANY" | "VERIFIED" | "UNVERIFIED"
-  >("ANY");
-  const [roommatesMin, setRoommatesMin] = useState<number | null>(0);
-  const [roommatesMax, setRoommatesMax] = useState<number | null>(10);
-  const [start, setStart] = useState<string | null>(new Date().toISOString());
-  const [end, setEnd] = useState<string | null>(null);
-  // local controlled inputs for price (to avoid half-updates)
-  const [minPrice, setMinPrice] = useState<number | null>(0);
-  const [maxPrice, setMaxPrice] = useState<number | null>(null);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { ref, inView } = useInView();
-  const [openWelcome, setOpenWelcome] = useState<boolean>(false);
+import type { GetAppCribsQueryParamsCommuteBucketEnum } from "@/gen";
+import {
+  type AppliedCribSearch,
+  getReminderSummaryLines,
+} from "./search-reminder";
 
-  const setPriceRange = (min: number | null, max: number | null) => {
-    setMaxPrice(max);
-    setMinPrice(min);
-  };
+function formatAvailability(a: any): string {
+  if (!a || !a.type) return "Unknown";
+  if (a.type === "IMMEDIATE") return "now";
+  if (a.type === "DATE" && a.date) return a.date;
+  return "Unknown";
+}
 
-  const setRoommatesRange = (min: number | null, max: number | null) => {
-    setRoommatesMax(max);
-    setRoommatesMin(min);
-  };
-
-  const setDateRange = (min: string | null, max: string | null) => {
-    setStart(min);
-    setEnd(max);
-  };
-
-  useEffect(() => {
-    const firstVisit = localStorage.getItem("firstVisit");
-    setOpenWelcome(firstVisit === null);
-  }, []);
-
-  function omitNullish<T extends Record<string, any>>(obj: T) {
-    return Object.fromEntries(
-      Object.entries(obj).filter(([_, v]) => {
-        if (v === null || v === undefined) return false;
-        if (typeof v === "string" && v.trim() === "") return false;
-        if (Array.isArray(v) && v.length === 0) return false;
-        return true; // keep 0 and false
-      })
-    ) as Partial<T>;
+function commuteText(
+  distance?: number,
+  commuteBucket?: string | null,
+): string | null {
+  if (commuteBucket) {
+    switch (commuteBucket) {
+      case "WALK_5":
+        return "5 min walk to campus";
+      case "WALK_10":
+        return "10 min walk to campus";
+      case "WALK_15":
+        return "15 min walk to campus";
+      case "WALK_20":
+        return "20 min walk to campus";
+      case "DRIVE":
+        return "Short drive to campus";
+      default:
+        break;
+    }
   }
 
-  const params = omitNullish({
-    page: 0,
-    size: 10,
-    sort: ["createdAt,desc"],
-    tag: selectedTags, // [] will be dropped
-    roommatesMin,
-    roommatesMax,
-    minPrice,
-    maxPrice,
-    startDate: start, // "" or null gets dropped
-    endDate: end,
-    verification,
-  });
+  if (
+    typeof distance === "number" &&
+    Number.isFinite(distance) &&
+    distance > 0
+  ) {
+    if (distance <= 20) return `${distance} min walk to campus`;
+    return `${distance} min drive to campus`;
+  }
 
-  const {
-    data: curated,
-    error: curated_error,
-    isLoading: curated_isLoading,
-  } = useGetPublicCuratedInfinite(params);
+  return null;
+}
 
-  const {
-    data: tags,
-    error: tags_error,
-    isLoading: tags_isLoading,
-  } = useGetPublicTags({});
+function isWalk(distance?: number, commuteBucket?: string | null): boolean {
+  if (commuteBucket) return commuteBucket.startsWith("WALK_");
+  if (typeof distance === "number") return distance <= 20;
+  return true;
+}
 
-  const handleTagClick = (tag: string) => {
-    setSelectedTags((prevTags) =>
-      prevTags.includes(tag)
-        ? prevTags.filter((t) => t !== tag)
-        : [...prevTags, tag]
-    );
-  };
-
-  useEffect(() => {
-    if (inView) {
-      // call the generated function
-    }
-  }, [inView]);
-
-  return (
-    <div className="flex flex-col gap-4">
-      <div className="flex flex-col w-full  ">
-        <div className="flex flex-row justify-between gap-2 w-full p-2 h-12 overflow-hidden items-center">
-          <TagCarousel
-            tags={selectedTags}
-            setTags={(tag) => handleTagClick(tag)}
-            fetched_tags={tags?.data || []}
-            tag_error={tags_error}
-            tag_isLoading={tags_isLoading}
-          />
-
-          <div
-            className="flex flex-row rounded-full bg-white shadow-md p-2 gap-2 items-center justify-center border-neutral-200 border"
-            onClick={() => setOpenTag(!openTag)}
-          >
-            <ListFilter />
-          </div>
-        </div>
-        <div className="flex flex-col">
-          <div className="flex flex-row justify-between gap-2 w-full p-2 h-12">
-            <div className="text-xl font-black">Today's Picks</div>
-            <div className="flex flex-row gap-2 items-center text-blue-400">
-              <div>
-                <MapPin width={16} height={16} />
-              </div>
-              <div className="text-lg font-bold">Cincinnati</div>
-            </div>
-          </div>
-          <div className="w-full ">
-            {curated_isLoading && (
-              <div className="flex w-full h-[400px] justify-center items-center ">
-                <div className="flex flex-col items-center justify-center">
-                  <Lottie
-                    animationData={house}
-                    loop
-                    autoplay
-                    style={{ width: 200, height: 200 }}
-                  />
-                  <div>loading...</div>
-                </div>
-              </div>
-            )}
-            {curated_error?.response?.status && curated_error && (
-              <div className="flex w-full h-[400px] justify-center items-center ">
-                <div className="flex flex-col">
-                  <div className="flex justify-center mb-4">
-                    <CircleX size={82} />
-                  </div>
-                  <div>An Error Occured</div>
-                </div>
-              </div>
-            )}
-            {curated?.pages[0].status === 202 && (
-              <div className="flex w-full h-[400px] justify-center items-center ">
-                <div className="flex flex-col">
-                  <div className="flex justify-center mb-4">
-                    <SearchX size={82} />
-                  </div>
-                  <div>No residences found</div>
-                </div>
-              </div>
-            )}
-            <div className="grid grid-cols-2 gap-1 w-full p-2">
-              {curated &&
-                curated.pages.map((item) =>
-                  item.data.content?.map((residence) => (
-                    <ResidenceCard
-                      key={residence.id}
-                      userId={residence.userId || ""}
-                      thumbnail={residence.mediaId || ""}
-                      id={residence.id || ""}
-                      price={residence.price || 0}
-                      location="CUF"
-                      name={residence.name || ""}
-                      iconKey={residence.iconKey || ""}
-                      ableToUse={residence.ableToUse || false}
-                    />
-                  ))
-                )}
-            </div>
-          </div>
-          <div />
-          <div ref={ref} />
-        </div>
-        <TagSelector
-          fetched_tags={tags?.data || []}
-          tag_error={tags_error}
-          tag_isLoading={tags_isLoading}
-          tags={selectedTags}
-          open={openTag}
-          closeTag={() => setOpenTag(!openTag)}
-          clearTags={() => setSelectedTags([])}
-          setTags={(tag: string) => {
-            handleTagClick(tag);
-          }}
-          maxPrice={maxPrice}
-          minPrice={minPrice}
-          roommatesMax={roommatesMax}
-          roommatesMin={roommatesMin}
-          startDate={start}
-          endDate={end}
-          verification={verification}
-          setVerification={setVerification}
-          setDateRange={setDateRange}
-          setRoommatesRange={setRoommatesRange}
-          setPriceRange={setPriceRange}
-        />
-      </div>
-      {openWelcome && <Welcome setOpenWelcome={setOpenWelcome} />}
-    </div>
-  );
-};
-
-const ResidenceCard = ({
-  userId,
-  thumbnail,
-  id,
-  price,
-  location,
-  name,
-  iconKey,
-  ableToUse,
-}: {
-  userId: string;
-  thumbnail: string;
-  id: string;
-  price: number;
-  location: string;
-  name: string;
-  iconKey: string;
-  ableToUse: boolean;
-}) => {
+export function ResidenceCard({ data }: { data: ResidenceCardDTO }) {
   const navigate = useNavigate();
-  thumbnail = buildImageURL(userId, id, thumbnail);
+
+  const isVerified = data.verification === "VERIFIED";
+  const verificationClasses = isVerified
+    ? "bg-emerald-50 text-emerald-700 ring-emerald-200"
+    : "bg-gray-100 text-gray-600 ring-gray-200";
+
+  const locationLabel = useMemo(() => {
+    return data.areaLabel?.trim()
+      ? `${data.campusName} · ${data.areaLabel.trim()}`
+      : data.campusName;
+  }, [data.areaLabel, data.campusName]);
+
+  const commuteLabel = useMemo(
+    () => commuteText(data.distance, (data as any).commuteBucket ?? null),
+    [data.distance, (data as any).commuteBucket],
+  );
+
+  const showWalk = useMemo(
+    () => isWalk(data.distance, (data as any).commuteBucket ?? null),
+    [data.distance, (data as any).commuteBucket],
+  );
 
   return (
     <Card
-      className="rounded-none  shadow-md m-0 w-full border-none cursor-pointer p-1"
-      onClick={() => navigate(`/cribs/${id}`)}
-      key={id}
+      onClick={() => navigate(`/cribs/${data.id}`)}
+      className="cursor-pointer overflow-hidden rounded-xl border bg-white shadow-sm transition hover:shadow-md"
     >
-      <CardContent className="p-0 m-0 w-full border-none aspect-[4/3] ">
+      <CardContent className="relative p-0">
         <img
-          src={thumbnail}
+          src={data.thumbnailUrl}
           alt="Residence"
-          className="object-cover aspect-[4/3] w-full h-full"
+          className="h-44 w-full object-cover"
+          loading="lazy"
         />
-      </CardContent>
-      <CardFooter className="p-0 m-0 w-full px-4 py-2">
-        <div className="flex justify-between  w-full ">
-          <div className="flex items-center">
-            <div className="flex ">
-              <div className="text-md font-bold">${price}</div>
-            </div>
-            <div className="flex justify-center  items-center">
-              <Dot width={24} height={24} />
-            </div>
-            <div className="flex w-full ">
-              <div className="text-md font-bold">{location}</div>
-            </div>
-          </div>
-          <div className="flex  items-center justify-center mr-5 w-full">
-            {ableToUse && iconKey != "" ? (
-              <div className="relative group">
-                <div className="absolute left-1/2 bottom-full translate-x-[-50%] mb-2 flex-col items-center group-hover:flex hidden ">
-                  <div className=" z-20 p-2 bg-white text-center rounded shadow text-sm">
-                    Student at the {name}
-                  </div>
-                </div>
 
-                <img
-                  title="UC Logo"
-                  className="w-10"
-                  src={import.meta.env.VITE_SCHOOL_LOGO + iconKey}
-                />
-              </div>
-            ) : !ableToUse && iconKey != "" ? (
-              <div className="relative group">
-                <div className="absolute left-1/2 bottom-full translate-x-[-50%] mb-2 flex-col items-center group-hover:flex hidden ">
-                  <div className=" z-20 p-2 bg-white text-center rounded shadow text-sm">
-                    Student at the {name}
-                  </div>
-                </div>
-                <div className="flex justify-center items-center w-full">
-                  <p className=" font-semibold text-lg italic ">UC</p>
-                </div>
+        <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+
+        <div className="absolute bottom-3 left-3 right-3">
+          <div className="min-w-0">
+            <div className="flex items-center gap-1 truncate text-sm font-semibold text-white">
+              <MapPin size={14} />
+              <span className="truncate">{locationLabel}</span>
+            </div>
+
+            {commuteLabel ? (
+              <div className="mt-0.5 truncate text-xs font-medium text-white/90">
+                {commuteLabel}
               </div>
             ) : (
-              <div className="relative group">
-                <div className="absolute left-1/2 bottom-full translate-x-[-50%] mb-2 flex-col items-center group-hover:flex hidden ">
-                  <div className=" z-20 p-2 bg-white text-center rounded shadow text-sm">
-                    Not verified
-                  </div>
-                </div>
-                <ShieldOff />
+              <div className="mt-0.5 text-xs font-medium text-white/90">
+                Tap to view details
               </div>
             )}
+          </div>
+        </div>
+      </CardContent>
+
+      <CardFooter className="px-3 py-3">
+        <div className="w-full space-y-2">
+          <div className="flex flex-wrap items-start justify-between gap-2">
+            <div className="text-base font-semibold leading-tight text-gray-900">
+              ${data.priceMonthly}{" "}
+              <span className="text-xs font-medium text-gray-500">/ mo</span>
+            </div>
+
+            <div className="shrink-0 text-xs font-medium text-gray-600">
+              <span className="inline-flex items-center gap-1 rounded-full bg-gray-50 px-2 py-1 ring-1 ring-inset ring-gray-200">
+                <Clock size={12} />
+                Available {formatAvailability((data as any).availability)}
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1 text-sm font-medium text-gray-800">
+            {commuteLabel ? (
+              <span className="flex items-center gap-1">
+                {showWalk ? (
+                  <Footprints size={16} className="text-gray-500" />
+                ) : (
+                  <Car size={16} className="text-gray-500" />
+                )}
+                {commuteLabel}
+              </span>
+            ) : (
+              <span className="text-gray-500">Commute not provided</span>
+            )}
+          </div>
+
+          <div className="pt-1">
+            <span
+              className={[
+                "inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium ring-1 ring-inset",
+                verificationClasses,
+              ].join(" ")}
+              title={
+                isVerified
+                  ? "This user completed verification."
+                  : "This user has not completed verification yet."
+              }
+            >
+              {isVerified ? (
+                <CheckCircle2 size={12} />
+              ) : (
+                <AlertCircle size={12} />
+              )}
+              {isVerified ? "Verified" : "Unverified"}
+            </span>
           </div>
         </div>
       </CardFooter>
     </Card>
   );
+}
+
+type PageResponse<T> = {
+  content: T[];
+  number: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+  first: boolean;
+  last: boolean;
+  numberOfElements: number;
+  empty: boolean;
 };
 
-const Welcome = ({
-  setOpenWelcome,
-}: {
-  setOpenWelcome: (open: boolean) => void;
-}) => {
-  return (
-    <>
-      <div className="fixed inset-0 opacity-50 bg-black flex items-center justify-center z-50" />
-      <div className="fixed inset-0 flex items-center justify-center z-50">
-        <div className=" bg-white z-50 rounded-2xl py-10 p-6  shadow-lg text-center mx-10">
-          <h2 className="text-2xl font-bold mb-4">Welcome to Campus Cribs!</h2>
-          <p className="mb-4">Find subleases from fellow students</p>
-          <p className="mb-6">
-            {" "}
-            Discover affordable subleases from fellow students, post your own
-            listing, and connect with a trusted community right here at UC.
-            CampusCribs makes it simple, secure, and student-friendly to find
-            your next home near campus.
-          </p>
-          <button
-            className="bg-blue-500 text-white px-4 py-2 rounded cursor-pointer hover:bg-blue-600 transition-colors"
-            onClick={() => {
-              localStorage.setItem("firstVisit", "false");
-              setOpenWelcome(false);
-            }}
-          >
-            Start Exploring
-          </button>
-        </div>
-      </div>
-    </>
-  );
+const defaultAppliedSearch: AppliedCribSearch = {
+  campus: "",
+  locationQuery: "",
+  minPrice: 500,
+  maxPrice: 1500,
+  listingType: "sublease",
+  roomType: "any",
+  leaseTerm: "any",
+  moveInWindow: "any",
+  beginDate: "",
+  endDate: "",
+  commuteBucket: "",
+  roommates: 0,
+  tagIds: [],
+  tagNames: [],
+  filterKeys: [],
 };
-export default CribsPage;
+
+export default function CribsPage() {
+  const [openSearch, setOpenSearch] = useState(false);
+  const [openReminder, setOpenReminder] = useState(false);
+  const [reminderCreated, setReminderCreated] = useState(false);
+  const [appliedSearch, setAppliedSearch] =
+    useState<AppliedCribSearch>(defaultAppliedSearch);
+  const [items, setItems] = useState<ResidenceCardDTO[]>([]);
+  const [page, setPage] = useState(0);
+  const pageSize = 10;
+
+  const { ref, inView } = useInView({ threshold: 0 });
+
+  const cribParams = useMemo(
+    () => {
+      const params: Record<string, unknown> = {
+        page,
+        size: pageSize,
+        minPrice: appliedSearch.minPrice,
+        maxPrice: appliedSearch.maxPrice,
+      };
+
+      if (appliedSearch.campus) params.campus = appliedSearch.campus;
+      if (appliedSearch.locationQuery) {
+        params.locationQuery = appliedSearch.locationQuery;
+      }
+      if (appliedSearch.listingType !== "sublease") {
+        params.listingType = appliedSearch.listingType;
+      }
+      if (appliedSearch.roomType !== "any") {
+        params.roomType = appliedSearch.roomType;
+      }
+      if (appliedSearch.leaseTerm !== "any") {
+        params.leaseTerm = appliedSearch.leaseTerm;
+      }
+      if (appliedSearch.moveInWindow !== "any") {
+        params.moveInWindow = appliedSearch.moveInWindow;
+      }
+      if (appliedSearch.beginDate) params.beginDate = appliedSearch.beginDate;
+      if (appliedSearch.endDate) params.endDate = appliedSearch.endDate;
+      if (appliedSearch.commuteBucket) {
+        params.commuteBucket =
+          appliedSearch.commuteBucket as GetAppCribsQueryParamsCommuteBucketEnum;
+      }
+      if (appliedSearch.roommates > 0) {
+        params.roommates = appliedSearch.roommates;
+      }
+      if (appliedSearch.tagIds.length > 0) {
+        params.tagIds = appliedSearch.tagIds;
+      }
+      if (appliedSearch.filterKeys.length > 0) {
+        params.filterKeys = appliedSearch.filterKeys;
+      }
+
+      return params;
+    },
+    [appliedSearch, page],
+  );
+
+  const {
+    data,
+    isLoading: isLoadingCribs,
+    error,
+    isFetching,
+  } = useGetAppCribs(cribParams);
+
+  const pageData = data?.data as PageResponse<ResidenceCardDTO> | undefined;
+
+  useEffect(() => {
+    if (!pageData) return;
+
+    setItems((prev) => {
+      if (pageData.number === 0) return pageData.content ?? [];
+
+      const seen = new Set(prev.map((x) => x.id));
+      const merged = [...prev];
+      for (const crib of pageData.content ?? []) {
+        if (!seen.has(crib.id)) merged.push(crib);
+      }
+      return merged;
+    });
+  }, [pageData?.content, pageData?.number]);
+
+  useEffect(() => {
+    if (!inView) return;
+    if (isLoadingCribs || isFetching) return;
+    if (!pageData || pageData.last) return;
+
+    setPage((current) => current + 1);
+  }, [inView, isFetching, isLoadingCribs, pageData]);
+
+  const status: "loading" | "ready" | "empty" | "error" = useMemo(() => {
+    if (error) return "error";
+    if (isLoadingCribs && items.length === 0) return "loading";
+    if (!isLoadingCribs && items.length === 0) return "empty";
+    return "ready";
+  }, [error, isLoadingCribs, items.length]);
+
+  const reminderSummary = useMemo(
+    () => getReminderSummaryLines(appliedSearch),
+    [appliedSearch],
+  );
+
+  return (
+    <div className="flex flex-col gap-1">
+      <div className="flex w-full items-center justify-center p-3">
+        <button
+          type="button"
+          className="w-full max-w-md rounded-[24px] border border-neutral-200 bg-white px-4 py-3 shadow-sm transition hover:shadow-md"
+          onClick={() => setOpenSearch(!openSearch)}
+        >
+          <div className="flex items-center gap-3">
+            <div className="rounded-xl bg-neutral-100 p-2.5 text-neutral-700">
+              <Search className="h-4.5 w-4.5" />
+            </div>
+            <div className="text-lg font-semibold text-neutral-900">Search</div>
+          </div>
+        </button>
+      </div>
+
+      <div className="w-full">
+        {status === "loading" && (
+          <div className="flex h-[400px] w-full items-center justify-center">
+            <div className="flex flex-col items-center justify-center">
+              <Lottie
+                animationData={house}
+                loop
+                autoplay
+                style={{ width: 200, height: 200 }}
+              />
+              <div className="text-black/70">loading...</div>
+            </div>
+          </div>
+        )}
+
+        {status === "error" && (
+          <div className="flex h-[400px] w-full items-center justify-center">
+            <div className="flex flex-col items-center">
+              <div className="mb-4 flex justify-center">
+                <CircleX size={82} />
+              </div>
+              <div className="text-black/70">An error occurred</div>
+            </div>
+          </div>
+        )}
+
+        {status === "empty" && (
+          <div className="flex h-[400px] w-full items-center justify-center">
+            <div className="flex max-w-sm flex-col items-center px-5 text-center">
+              <div className="mb-4 flex justify-center">
+                <SearchX size={82} />
+              </div>
+              <div className="text-black/70">No residences found</div>
+              <div className="mt-2 text-sm text-black/55">
+                We can notify you when a crib matches these current filters.
+              </div>
+              <div className="mt-4 w-full rounded-2xl border border-neutral-200 bg-white p-4 text-left">
+                <div className="text-sm font-semibold text-neutral-900">
+                  Current filters
+                </div>
+                <div className="mt-3 space-y-2">
+                  {reminderSummary.map((line) => (
+                    <div key={line} className="text-sm text-neutral-600">
+                      {line}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setOpenReminder(true)}
+                className="mt-4 rounded-2xl bg-neutral-900 px-4 py-3 text-sm font-semibold text-white"
+              >
+                Set reminder
+              </button>
+            </div>
+          </div>
+        )}
+
+        {status === "ready" && (
+          <>
+            <div className="grid w-full grid-cols-2 gap-1 p-2">
+              {items.map((crib) => (
+                <ResidenceCard key={crib.id} data={crib} />
+              ))}
+            </div>
+
+            {!pageData?.last && <div ref={ref} className="h-10" />}
+
+            {isFetching && (
+              <div className="flex w-full justify-center py-3 text-sm text-black/60">
+                Loading more...
+              </div>
+            )}
+
+            {pageData?.last && items.length > 0 && (
+              <div className="px-3 pb-6 pt-2">
+                <div className="rounded-[28px] border border-neutral-200 bg-white p-4 shadow-sm">
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <div className="text-sm font-semibold text-neutral-900">
+                        You reached the end of current matches
+                      </div>
+                      <div className="mt-1 text-sm text-neutral-500">
+                        We can notify you when new cribs match these filters.
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setOpenReminder(true)}
+                      className="rounded-full bg-neutral-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-neutral-800"
+                    >
+                      Set notification
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+
+      {reminderCreated && (
+        <div className="px-3">
+          <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
+            Reminder created for your current crib filters.
+          </div>
+        </div>
+      )}
+
+      {openSearch && (
+        <GuidedSearch
+          setOpenSearch={setOpenSearch}
+          onApply={(filters) => {
+            setReminderCreated(false);
+            setAppliedSearch(filters);
+            setItems([]);
+            setPage(0);
+          }}
+        />
+      )}
+
+      <ReminderModal
+        open={openReminder}
+        onClose={() => setOpenReminder(false)}
+        filters={appliedSearch}
+        onSubmit={(filters) => {
+          console.log("create reminder:", filters);
+          setReminderCreated(true);
+        }}
+      />
+    </div>
+  );
+}

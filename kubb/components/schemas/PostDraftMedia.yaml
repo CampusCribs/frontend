@@ -1,0 +1,63 @@
+components:
+  schemas:
+    DraftMediaUploadRequest:
+      type: object
+      required:
+      - fileName
+      - contentType
+      properties:
+        fileName:
+          type: string
+          example: living-room.jpg
+        contentType:
+          type: string
+          example: image/jpeg
+
+    DraftMediaUploadResponse:
+      type: object
+      required:
+      - mediaId
+      - uploadUrl
+      properties:
+        mediaId:
+          type: string
+          example: media_123
+        uploadUrl:
+          type: string
+          format: uri
+          example: https://minio.example.com/presigned-upload-url
+
+    DraftMediaItem:
+      type: object
+      required:
+      - mediaId
+      - fileName
+      - uploaded
+      properties:
+        mediaId:
+          type: string
+          example: media_123
+        fileName:
+          type: string
+          example: living-room.jpg
+        uploaded:
+          type: boolean
+          example: true
+
+    DraftMediaListResponse:
+      type: array
+      items:
+        $ref: "#/components/schemas/DraftMediaItem"
+
+    DraftMediaConfirmResponse:
+      type: object
+      required:
+      - mediaId
+      - uploaded
+      properties:
+        mediaId:
+          type: string
+          example: media_123
+        uploaded:
+          type: boolean
+          example: true

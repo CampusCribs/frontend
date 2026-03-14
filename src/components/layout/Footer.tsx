@@ -1,129 +1,78 @@
-import {
-  CircleUserRound,
-  Ghost,
-  Info,
-  LogIn,
-  LogOut,
-  Menu,
-  Settings,
-} from "lucide-react";
-import { AnimatePresence } from "motion/react";
-import { useState } from "react";
-import * as motion from "motion/react-client";
+import { House, MessageSquare, PlusSquare } from "lucide-react";
 import { useNavigate } from "react-router";
-import HatHouse from "../ui/HouseHat";
-import useEasyAuth from "@/hooks/use-easy-auth";
-import useLogin from "@/hooks/use-login";
-import useLogout from "@/hooks/use-logout";
 
 const Footer = () => {
-  const [open, setOpen] = useState(false);
+  const pathname = useActiveNav();
   const navigate = useNavigate();
-  const { user } = useEasyAuth();
-  const { login } = useLogin();
-  const { logout } = useLogout();
   return (
-    <>
-      {open && (
+    <div className="w-full bg-white shadow-xl border border-gray-600/10 flex pt-2 ">
+      <div
+        className="mx-auto flex flex-col items-center"
+        onClick={() => navigate("/cribs")}
+      >
+        <House
+          size={32}
+          className={pathname === "cribs" ? "" : "text-gray-500"}
+        />
         <div
-          className="fixed inset-0 bg-black opacity-30 z-50"
-          onClick={() => setOpen(false)}
-        ></div>
-      )}
-      <div className="relative w-10 z-50 ">
-        {/* Menu Button - Always Visible */}
-        <div
-          className="bg-black rounded-full w-20 shadow-2xl h-20 flex items-center justify-center  mb-5 ml-5"
-          onClick={() => setOpen(!open)}
+          className={`text-xs ${pathname === "cribs" ? "text-black" : "text-gray-500"}`}
         >
-          <Menu color="white" size={40} />
+          Cribs
         </div>
-
-        {/* Overlay & Animated Menu */}
-        <AnimatePresence>
-          {open && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0, x: -50, y: 50 }}
-              animate={{
-                opacity: 1,
-                scale: 1,
-                x: 20,
-                y: 0,
-                transition: { duration: 0.1 },
-              }}
-              exit={{ opacity: 0, scale: 0, x: -30, y: 80 }}
-              key="box"
-              className="absolute bottom-0 left-0 bg-black p-5 rounded-xl rounded-bl-none flex items-center text-white justify-center text-left flex-col shadow-lg z-50"
-              onClick={() => setOpen(false)}
-            >
-              <div>
-                <div
-                  className="flex flex-row mx-4 my-4  text-left "
-                  onClick={() => navigate("/")}
-                >
-                  <div className="mr-2 cursor-pointer">
-                    <HatHouse />
-                  </div>
-                  <div className="cursor-pointer">Cribs</div>
-                </div>
-                <div
-                  className="flex flex-row mx-4 my-4  text-left "
-                  onClick={() => navigate("/profile")}
-                >
-                  <div className="mr-2 cursor-pointer">
-                    <CircleUserRound />
-                  </div>
-                  <div className="cursor-pointer">Profile</div>
-                </div>
-                {user?.access_token && (
-                  <div
-                    className="flex flex-row mx-4 my-4  text-left "
-                    onClick={() => navigate("/settings")}
-                  >
-                    <div className="mr-2 cursor-pointer">
-                      <Settings />
-                    </div>
-                    <div className="cursor-pointer">Settings</div>
-                  </div>
-                )}
-                <div
-                  className="flex flex-row mx-4 my-4  text-left "
-                  onClick={() => navigate("/support")}
-                >
-                  <div className="mr-2 cursor-pointer">
-                    <Info />
-                  </div>
-                  <div className="cursor-pointer">Support</div>
-                </div>
-                {user?.access_token ? null : (
-                  <div
-                    className="flex flex-row mx-4 my-4  text-left "
-                    onClick={login}
-                  >
-                    <div className="mr-2 cursor-pointer">
-                      <LogIn />
-                    </div>
-                    <div className="cursor-pointer">Login</div>
-                  </div>
-                )}
-                {user?.access_token ? (
-                  <div
-                    className="flex flex-row mx-4 my-4  text-left "
-                    onClick={logout}
-                  >
-                    <div className="mr-2 cursor-pointer">
-                      <LogOut />
-                    </div>
-                    <div className="cursor-pointer">Logout</div>
-                  </div>
-                ) : null}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </div>
-    </>
+
+      <div
+        className=" mx-auto flex flex-col items-center"
+        onClick={() => navigate("/post")}
+      >
+        <PlusSquare
+          size={32}
+          className={pathname === "post" ? "" : "text-gray-500"}
+        />
+        <div
+          className={`text-xs ${pathname === "post" ? "text-black" : "text-gray-500"}`}
+        >
+          Post
+        </div>
+      </div>
+      <div
+        className=" mx-auto flex flex-col items-center"
+        onClick={() => navigate("/chats")}
+      >
+        <MessageSquare
+          size={32}
+          className={pathname === "chats" ? "" : "text-gray-500"}
+        />
+        <div
+          className={`text-xs ${pathname === "chats" ? "text-black" : "text-gray-500"}`}
+        >
+          Chats
+        </div>
+      </div>
+
+      <div
+        className="mx-auto flex flex-col items-center"
+        onClick={() => navigate("/profile")}
+      >
+        <img
+          alt="selfie"
+          className={`${pathname === "profile" ? "ring-2 ring-black/85" : ""} w-9 h-9 rounded-full`}
+          src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS3krGAS5w7YyUrBn7Y55sqCFh13aR2La_dYQ&s"
+        />
+
+        <div
+          className={`text-xs ${pathname === "profile" ? "text-black" : "text-gray-500"}`}
+        >
+          Profile
+        </div>
+      </div>
+    </div>
   );
 };
-
+const useActiveNav = () => {
+  const pathname =
+    typeof window !== "undefined" ? window.location.pathname : "";
+  const activeNav = pathname.split("/")[1];
+  return activeNav;
+};
 export default Footer;

@@ -1,0 +1,103 @@
+get:
+  summary: List curated cribs
+  parameters:
+  - $ref: ../components/params/Parameters.yaml#/components/parameters/PageParam
+  - $ref: ../components/params/Parameters.yaml#/components/parameters/SizeParam
+  - $ref: ../components/params/Parameters.yaml#/components/parameters/SortParam
+  - name: campus
+    in: query
+    required: false
+    schema:
+      type: string
+  - name: locationQuery
+    in: query
+    required: false
+    schema:
+      type: string
+  - name: minPrice
+    in: query
+    required: false
+    schema:
+      type: integer
+      format: int32
+      minimum: 0
+  - name: maxPrice
+    in: query
+    required: false
+    schema:
+      type: integer
+      format: int32
+      minimum: 0
+  - name: listingType
+    in: query
+    required: false
+    schema:
+      type: string
+  - name: roomType
+    in: query
+    required: false
+    schema:
+      type: string
+  - name: leaseTerm
+    in: query
+    required: false
+    schema:
+      type: string
+  - name: moveInWindow
+    in: query
+    required: false
+    schema:
+      type: string
+  - name: beginDate
+    in: query
+    required: false
+    schema:
+      type: string
+      format: date
+  - name: endDate
+    in: query
+    required: false
+    schema:
+      type: string
+      format: date
+  - name: commuteBucket
+    in: query
+    required: false
+    schema:
+      type: string
+      enum: [ WALK_5, WALK_10, WALK_15, WALK_20, DRIVE ]
+  - name: roommates
+    in: query
+    required: false
+    schema:
+      type: integer
+      format: int32
+      minimum: 0
+  - name: tagIds
+    in: query
+    required: false
+    style: form
+    explode: true
+    schema:
+      type: array
+      items:
+        type: string
+  - name: filterKeys
+    in: query
+    required: false
+    style: form
+    explode: true
+    schema:
+      type: array
+      items:
+        type: string
+  responses:
+    "200":
+      description: OK
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/ResidenceCardDTO.yaml#/components/schemas/PageResidenceCardDTO
+
+    "400":
+      $ref: ../components/responses/ErrorResponse.yaml#/components/responses/BadRequest

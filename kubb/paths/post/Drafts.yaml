@@ -1,0 +1,18 @@
+post:
+  summary: Create a post draft from step one details
+  operationId: createPostDraft
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: ../../components/schemas/PostDraft.yaml#/components/schemas/CreatePostDraftRequest
+  responses:
+    "200":
+      description: Draft created
+      content:
+        application/json:
+          schema:
+            $ref: ../../components/schemas/PostDraft.yaml#/components/schemas/PostDraftResponse
+    "400":
+      $ref: ../../components/responses/ErrorResponse.yaml#/components/responses/BadRequest

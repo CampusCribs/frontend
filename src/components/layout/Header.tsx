@@ -1,20 +1,20 @@
-import { Bell, CircleUserRound, Search } from "lucide-react";
+import { Bell, SquarePlus } from "lucide-react";
 import { useNavigate } from "react-router";
-import HeaderSearch from "./HeaderSearch";
-import { useState } from "react";
-import HatHouseBlack from "../ui/HatHouseBlack";
+
 import useEasyAuth from "@/hooks/use-easy-auth";
 import useAuthenticatedClientConfig from "@/hooks/use-authenticated-client-config";
-import { useHasUnreadNotifications } from "@/gen";
+// import { useHasUnreadNotifications } from "@/gen";
+import HatHouseBlack from "../ui/HatHouseBlack";
+
 const Header = () => {
   const navigate = useNavigate();
-  const [open, setOpen] = useState(false);
   const { user } = useEasyAuth();
   const config = useAuthenticatedClientConfig();
-  const { data } = useHasUnreadNotifications({ ...config });
+  // const { data } = useHasUnreadNotifications({ ...config });
+
   return (
-    <div className="flex justify-between items-center p-4">
-      <div className="flex items-center gap-2">
+    <div className="flex justify-between items-center px-4 py-2 shadow z-40">
+      <div className="flex items-center gap-2 my-2">
         <div
           className="flex items-center text-2xl font-bold cursor-pointer"
           onClick={() => navigate("/")}
@@ -45,14 +45,7 @@ const Header = () => {
             )}
           </div>
         )}
-        <div className="cursor-pointer" onClick={() => navigate("/profile")}>
-          <CircleUserRound />
-        </div>
-        <div className="cursor-pointer" onClick={() => setOpen(!open)}>
-          <Search />
-        </div>
       </div>
-      <HeaderSearch open={open} close={() => setOpen(!open)} />
     </div>
   );
 };

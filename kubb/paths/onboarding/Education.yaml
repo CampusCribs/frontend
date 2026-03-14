@@ -1,0 +1,31 @@
+get:
+  summary: Get onboarding education options and university state
+  operationId: getOnboardingEducation
+  responses:
+    "200":
+      description: OK
+      content:
+        application/json:
+          schema:
+            $ref: ../../components/schemas/OnboardingEducation.yaml#/components/schemas/OnboardingEducationPageData
+    "400":
+      $ref: ../../components/responses/ErrorResponse.yaml#/components/responses/BadRequest
+
+post:
+  summary: Save onboarding education details
+  operationId: postOnboardingEducation
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: ../../components/schemas/OnboardingEducation.yaml#/components/schemas/UpdateOnboardingEducationRequest
+  responses:
+    "200":
+      description: Saved
+      content:
+        application/json:
+          schema:
+            $ref: ../../components/schemas/OnboardingEducation.yaml#/components/schemas/OnboardingEducationResponse
+    "400":
+      $ref: ../../components/responses/ErrorResponse.yaml#/components/responses/BadRequest

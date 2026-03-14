@@ -1,0 +1,12 @@
+get:
+  summary: Get available post tags
+  operationId: getPostTags
+  responses:
+    "200":
+      description: OK
+      content:
+        application/json:
+          schema:
+            $ref: ../../components/schemas/PostTags.yaml#/components/schemas/PostTagsResponse
+    "400":
+      $ref: ../../components/responses/ErrorResponse.yaml#/components/responses/BadRequest

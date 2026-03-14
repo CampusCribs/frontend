@@ -1,131 +1,215 @@
-import { ArrowLeftIcon, CircleUserRound } from "lucide-react";
+import {
+  ArrowLeftIcon,
+  Calendar,
+  CircleUserRound,
+  DollarSign,
+  Flag,
+  Send,
+  Tag,
+  Users,
+} from "lucide-react";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router";
+import ShareModal from "@/components/modals/ShareModal";
+import {
+  ReportModal,
+  type ReportValues,
+} from "@/components/modals/ReportModal";
+import { useGetIndividualCrib, usePostIndividualCribReport } from "@/gen";
+import useAuthenticatedClientConfig from "@/hooks/use-authenticated-client-config";
 import IndividualSlider from "./IndividualSlider";
-import { useNavigate } from "react-router";
-import { useGetPublicCribPostid } from "@/gen";
-import { buildThumbnailURL } from "@/lib/image-resolver";
-import Error from "@/pages/error/Error";
-import IndividualLoading from "./IndividualLoading";
+import { LocationInfoCard } from "./LocationInfoCard";
+
+function formatDateISO(iso: string) {
+  return new Date(iso).toISOString().split("T")[0];
+}
+
 const IndividualPage = () => {
   const navigate = useNavigate();
-  //fetch images from server and pass them to the slider prop
-  const id = window.location.pathname.split("/").pop() || "";
-  const {
-    data: post,
-    error: post_error,
-    isLoading: post_isLoading,
-  } = useGetPublicCribPostid(id);
+  const { postId } = useParams<{ postId: string }>();
+  const config = useAuthenticatedClientConfig();
+  const [openShare, setOpenShare] = useState(false);
+  const [openReport, setOpenReport] = useState(false);
+  const { data: postData } = useGetIndividualCrib(postId || "", {
+    client: config,
+  });
+  const { mutateAsync: reportCrib } = usePostIndividualCribReport({
+    client: config,
+  });
 
-  const thumbnailUrl = buildThumbnailURL(
-    post?.data?.userId || "",
-    post?.data?.userThumbnailId || ""
-  );
-  if (post_isLoading) {
-    return <IndividualLoading />;
+  useEffect(() => {
+    localStorage.setItem("headerText", "Crib Details");
+  }, []);
+
+  async function handleReport(values: ReportValues) {
+    if (!postId) return;
+
+    try {
+      await reportCrib({
+        id: postId,
+        data: {
+          type: values.reason,
+          description: values.details ?? null,
+        },
+      });
+    } catch (error) {
+      console.error(error);
+    }
   }
-  if (post_error) {
-    return <Error />;
-  }
+
   return (
     <div className="mb-6">
       <div className="px-3 pt-3">
         <div
           onClick={() => window.history.back()}
-          className="cursor-pointer inline-flex items-center"
+          className="inline-flex cursor-pointer items-center"
         >
           <ArrowLeftIcon size={32} />
           <span className="ml-2">Back</span>
         </div>
       </div>
+
       <div>
         <IndividualSlider
-          images={post?.data?.mediaIds || []}
-          userId={post?.data?.userId || ""}
-          postId={post?.data?.id || ""}
+          images={postData?.data.mediaIds || []}
+          userId={postData?.data.userId || ""}
+          postId={postData?.data.postId || ""}
         />
       </div>
 
-      {post && (
-        <>
-          <div className="flex ">
-            {post && !post.data.userThumbnailId && (
-              <div className="flex justify-center items-center ml-5">
-                <CircleUserRound size={70} />
-              </div>
-            )}
-            {post && post.data.userThumbnailId && (
-              <div>
-                <img
-                  alt="profile"
-                  src={thumbnailUrl}
-                  className="rounded-full h-24 m-5 w-24 object-cover shadow-2xl border"
-                />
-              </div>
-            )}
+      <div className="my-1 flex w-full flex-row items-center gap-4">
+        <button
+          type="button"
+          className="ml-4"
+          onClick={() => setOpenShare(true)}
+          aria-label="Share crib"
+        >
+          <Send size={25} />
+        </button>
 
-            <div className="flex flex-col w-3/4">
-              <div className="text-lg font-medium px-4">
-                {post?.data.firstName} {post?.data.lastName}
-              </div>
-              <div className="px-5 font-light text-md">
-                @{post?.data.username}
-              </div>
-              <div className="text-wrap flex text-sm w-full mt-1 px-4 border-b pb-3">
-                {post?.data?.institutionName && (
-                  <div className="text-sm font-medium">
-                    {post.data.institutionName}
-                  </div>
+        <button
+          type="button"
+          className="ml-auto mr-5 rotate-3"
+          onClick={() => setOpenReport(!openReport)}
+          aria-label="Report crib"
+        >
+          <Flag size={25} className="cursor-pointer" />
+        </button>
+      </div>
+
+      <div className="px-5 pt-4">
+        <div
+          className="flex flex-row items-center gap-4"
+          onClick={() => navigate("/profile/123")}
+        >
+          <div className="grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-full border bg-slate-100 shadow-sm">
+            {postData?.data.userThumbnailUrl ? (
+              <img
+                src={postData.data.userThumbnailUrl}
+                alt="profile"
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <CircleUserRound size={40} className="text-slate-500" />
+            )}
+          </div>
+
+          <div className="flex min-w-0 flex-col">
+            <h1 className="truncate text-lg font-semibold leading-tight text-slate-900">
+              {postData?.data.firstName} {postData?.data.lastName}
+            </h1>
+            <p className="text-sm leading-tight text-slate-600">
+              @{postData?.data.username}
+            </p>
+            <p className="mt-1 truncate text-xs text-slate-500">
+              {postData?.data.institutionName}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="px-5 pt-4">
+        <div className="text-2xl font-semibold text-slate-900">
+          {postData?.data.title}
+        </div>
+        <div className="mt-2 break-words text-base leading-relaxed text-slate-700">
+          {postData?.data.description}
+        </div>
+      </div>
+
+      <div className="my-10 px-5 text-md">
+        <div className="flex items-baseline gap-2">
+          <DollarSign size={18} className="shrink-0 text-slate-400" />
+          <span className="text-slate-900">${postData?.data.price} / month</span>
+        </div>
+
+        <div className="mt-1 flex items-baseline gap-2">
+          <Users size={18} className="shrink-0 text-slate-400" />
+          <span className="text-slate-900">
+            {postData?.data.roommates} roommates
+          </span>
+        </div>
+
+        <div className="mt-1 flex items-baseline gap-2">
+          <Calendar size={18} className="shrink-0 text-slate-400" />
+          <span className="text-slate-900">
+            {postData?.data.termStartDate &&
+              formatDateISO(postData.data.termStartDate)}{" "}
+            to{" "}
+            {postData?.data.termEndDate && formatDateISO(postData.data.termEndDate)}
+          </span>
+        </div>
+
+        <div className="mt-2 flex items-start gap-2">
+          <Tag size={18} className="mt-[2px] shrink-0 text-slate-400" />
+          <div className="text-slate-600">
+            {postData?.data.tags.map((tag, index) => (
+              <span key={`${tag.name}-${index}`}>
+                {tag.name}
+                {index < postData.data.tags.length - 1 && (
+                  <span className="text-slate-400"> · </span>
                 )}
-              </div>
-            </div>
+              </span>
+            ))}
           </div>
-          <div>
-            <div className="text-3xl font-semibold p-4">{post.data.title}</div>
-            <div className="text-lg px-6 text-wrap wrap-break-word">
-              {post.data.description}
-            </div>
-            <div className="text-lg px-8 py-3 flex">
-              <div className="font-semibold flex mr-1">Price: </div>{" "}
-              {post.data.price}
-            </div>
-            <div className="text-lg pb-3 px-8 flex">
-              <div className="font-semibold mr-1">Roommates:</div>
-              {post.data.roommates}
-            </div>
-            <div className="text-lg px-8 flex mb-3">
-              <div className="mr-1 font-semibold">Lease from:</div>{" "}
-              {post.data.termStartDate &&
-                new Date(post.data.termStartDate)
-                  .toISOString()
-                  .split("T")[0]}{" "}
-              to{" "}
-              {post.data.termEndDate &&
-                new Date(post.data.termEndDate).toISOString().split("T")[0]}
-            </div>
-            <div className="text-lg px-8 flex">
-              <div className="mr-1 font-semibold">Tags:</div>
-            </div>
-            <div className="flex justify-center border rounded-xl mx-8 my-2 py-2">
-              <div className="flex max-w-[400px] flex-wrap p-4 justify-center">
-                {post.data.tags?.map((item, index) => (
-                  <div
-                    key={index}
-                    className="flex p-2 bg-black text-white m-1 rounded-full shadow-xl"
-                  >
-                    {item.name}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-          <div className="flex flex-row-reverse px-8 py-2">
-            <button
-              className="bg-blue-500 rounded-full p-3 px-4 shadow-xl text-white underline cursor-pointer "
-              onClick={() => navigate(`/profile/${post.data.username}`)}
-            >
-              Contact
-            </button>
-          </div>
-        </>
+        </div>
+      </div>
+
+      {postData?.data.campusLocation?.label && (
+        <LocationInfoCard
+          label={postData.data.campusLocation.label}
+          lat={postData.data.campusLocation.lat}
+          lng={postData.data.campusLocation.lng}
+          commuteBucket={postData.data.commuteBucket}
+        />
+      )}
+
+      <div className="flex flex-row-reverse px-5 pt-5">
+        <button
+          className="my-2 cursor-pointer rounded-full bg-black px-5 py-3 font-semibold text-white shadow-lg active:scale-[0.99]"
+          onClick={() => navigate(`/chats/${postData?.data.username}`)}
+        >
+          Chat
+        </button>
+      </div>
+
+      {openReport && (
+        <ReportModal
+          open={openReport}
+          onClose={() => setOpenReport(false)}
+          onSubmit={(values) => {
+            void handleReport(values);
+          }}
+        />
+      )}
+
+      {openShare && (
+        <ShareModal
+          open={openShare}
+          onClose={() => setOpenShare(false)}
+          title={`Check out ${postData?.data.firstName}'s crib on CampusCribs`}
+          url={window.location.href}
+        />
       )}
     </div>
   );

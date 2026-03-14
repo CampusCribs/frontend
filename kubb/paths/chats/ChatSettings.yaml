@@ -1,0 +1,22 @@
+post:
+  summary: Update chat settings for a user
+  operationId: postChatSettings
+  parameters:
+  - in: path
+    name: username
+    required: true
+    schema:
+      type: string
+
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: ../../components/schemas/IndividualChat.yaml#/components/schemas/ChatSettingsRequest
+
+  responses:
+    "200":
+      description: Chat settings updated successfully
+    "400":
+      $ref: ../../components/responses/ErrorResponse.yaml#/components/responses/BadRequest

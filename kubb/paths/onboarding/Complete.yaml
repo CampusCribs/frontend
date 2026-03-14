@@ -1,0 +1,18 @@
+post:
+  summary: Complete onboarding
+  operationId: postOnboardingComplete
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: ../../components/schemas/OnboardingEducation.yaml#/components/schemas/CompleteOnboardingRequest
+  responses:
+    "200":
+      description: Onboarding completed
+      content:
+        application/json:
+          schema:
+            $ref: ../../components/schemas/OnboardingEducation.yaml#/components/schemas/CompleteOnboardingResponse
+    "400":
+      $ref: ../../components/responses/ErrorResponse.yaml#/components/responses/BadRequest

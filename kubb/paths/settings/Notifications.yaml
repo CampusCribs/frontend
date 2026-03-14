@@ -1,0 +1,31 @@
+get:
+  summary: Get notification settings page data
+  operationId: getNotificationSettings
+  responses:
+    "200":
+      description: OK
+      content:
+        application/json:
+          schema:
+            $ref: ../../components/schemas/NotificationSettings.yaml#/components/schemas/NotificationSettingsResponse
+    "400":
+      $ref: ../../components/responses/ErrorResponse.yaml#/components/responses/BadRequest
+
+post:
+  summary: Update notification settings
+  operationId: postNotificationSettings
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: ../../components/schemas/NotificationSettings.yaml#/components/schemas/UpdateNotificationSettingsRequest
+  responses:
+    "200":
+      description: Notification settings updated
+      content:
+        application/json:
+          schema:
+            $ref: ../../components/schemas/NotificationSettings.yaml#/components/schemas/NotificationSettingsResponse
+    "400":
+      $ref: ../../components/responses/ErrorResponse.yaml#/components/responses/BadRequest

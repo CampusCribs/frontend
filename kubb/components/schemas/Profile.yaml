@@ -1,0 +1,120 @@
+components:
+  schemas:
+    Profile:
+      type: object
+      required:
+      - name
+      - username
+      - market
+      - bio
+      - email
+      - avatarUrl
+      - phone
+      - verificationStatus
+      properties:
+        name:
+          type: string
+          example: John Doe
+
+        username:
+          type: string
+          example: johndoe
+
+        market:
+          type: string
+          example: New York University
+
+        bio:
+          type: string
+          example: Student at NYU. Love exploring the city and finding cool places to live!
+
+        email:
+          type: string
+          format: email
+          example: john@campuscribs.com
+
+        avatarUrl:
+          type: string
+          format: uri
+          example: https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS3krGAS5w7YyUrBn7Y55sqCFh13aR2La_dYQ&s
+
+        phone:
+          type: string
+          example: 123-456-7890
+
+        verificationStatus:
+          type: string
+          enum: [ VERIFIED, UNVERIFIED ]
+          example: VERIFIED
+
+    PostTag:
+      type: object
+      required:
+      - name
+      properties:
+        name:
+          type: string
+          example: Furnished
+
+    Post:
+      type: object
+      required:
+      - id
+      - type
+      - title
+      - description
+      - imageUrl
+      - price
+      - roommates
+      - tags
+      properties:
+        id:
+          type: string
+          example: post_123
+
+        type:
+          type: string
+          enum: [ CRIB ]
+          example: CRIB
+
+        title:
+          type: string
+          example: Sunny East Village Room Near Campus
+
+        description:
+          type: string
+          example: Private bedroom in a clean three-bedroom apartment with in-unit laundry, lots of natural light, and a short walk to campus.
+
+        imageUrl:
+          type: string
+          format: uri
+          example: https://images.unsplash.com/photo-1505693416388-ac5ce068fe85
+
+        price:
+          type: number
+          format: float
+          example: 1450
+
+        roommates:
+          type: integer
+          example: 2
+
+        tags:
+          type: array
+          items:
+            $ref: "#/components/schemas/PostTag"
+
+    ProfileResponse:
+      type: object
+      required:
+      - profile
+      - post
+      properties:
+        profile:
+          $ref: "#/components/schemas/Profile"
+
+        post:
+          nullable: true
+          allOf:
+          - $ref: "#/components/schemas/Post"
+          description: Null when the user has not created a post yet.

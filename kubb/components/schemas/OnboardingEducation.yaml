@@ -1,0 +1,170 @@
+components:
+  schemas:
+    UniversityOption:
+      type: object
+      required:
+      - id
+      - name
+      properties:
+        id:
+          type: string
+          example: ucla
+        name:
+          type: string
+          example: University of California, Los Angeles
+
+    OnboardingEducationPageData:
+      type: object
+      required:
+      - majors
+      - universities
+      - canSelectUniversity
+      - selectedMajor
+      - verificationStatus
+      properties:
+        majors:
+          type: array
+          items:
+            type: string
+          example: [ Computer Science, Biology, Business ]
+        universities:
+          type: array
+          items:
+            $ref: "#/components/schemas/UniversityOption"
+        selectedUniversity:
+          nullable: true
+          allOf:
+          - $ref: "#/components/schemas/UniversityOption"
+        canSelectUniversity:
+          type: boolean
+          example: false
+        selectedMajor:
+          type: string
+          nullable: true
+          example: Computer Science
+        verificationStatus:
+          type: string
+          enum: [ VERIFIED, UNVERIFIED ]
+          example: VERIFIED
+
+    UpdateOnboardingEducationRequest:
+      type: object
+      required:
+      - major
+      properties:
+        major:
+          type: string
+          example: Computer Science
+        universityId:
+          type: string
+          nullable: true
+          example: ucla
+
+    OnboardingEducationResponse:
+      type: object
+      required:
+      - major
+      - verificationStatus
+      properties:
+        major:
+          type: string
+          example: Computer Science
+        university:
+          nullable: true
+          allOf:
+          - $ref: "#/components/schemas/UniversityOption"
+        verificationStatus:
+          type: string
+          enum: [ VERIFIED, UNVERIFIED ]
+          example: VERIFIED
+
+    SendOnboardingPhoneCodeRequest:
+      type: object
+      required:
+      - phoneNumber
+      properties:
+        phoneNumber:
+          type: string
+          example: "+15555555555"
+
+    SendOnboardingPhoneCodeResponse:
+      type: object
+      required:
+      - status
+      properties:
+        status:
+          type: string
+          enum: [ CODE_SENT ]
+          example: CODE_SENT
+
+    VerifyOnboardingPhoneCodeRequest:
+      type: object
+      required:
+      - phoneNumber
+      - code
+      properties:
+        phoneNumber:
+          type: string
+          example: "+15555555555"
+        code:
+          type: string
+          example: "123456"
+
+    VerifyOnboardingPhoneCodeResponse:
+      type: object
+      required:
+      - status
+      properties:
+        status:
+          type: string
+          enum: [ VERIFIED ]
+          example: VERIFIED
+
+    CompleteOnboardingRequest:
+      type: object
+      required:
+      - fullName
+      - username
+      - birthday
+      - major
+      - goal
+      - heardFrom
+      properties:
+        fullName:
+          type: string
+          example: Jane Doe
+        username:
+          type: string
+          example: janedoe
+        birthday:
+          type: string
+          format: date
+          example: "2003-05-22"
+        major:
+          type: string
+          example: Computer Science
+        universityId:
+          type: string
+          nullable: true
+          example: ucla
+        goal:
+          type: string
+          enum: [ FIND_LEASE, POST_LISTING ]
+          example: FIND_LEASE
+        heardFrom:
+          type: string
+          enum: [ TIKTOK, INSTAGRAM, GOOGLE, FRIEND, FLYER, CAMPUS, OTHER ]
+          example: INSTAGRAM
+        heardFromOther:
+          type: string
+          nullable: true
+          example: Student club fair
+
+    CompleteOnboardingResponse:
+      type: object
+      required:
+      - completed
+      properties:
+        completed:
+          type: boolean
+          example: true

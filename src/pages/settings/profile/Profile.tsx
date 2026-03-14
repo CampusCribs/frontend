@@ -11,6 +11,7 @@ import { useNavigate } from "react-router";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
+import { useGetProfileSettings, usePostProfileSettings } from "@/gen";
 import { userProfileSchema, UserProfileSchema } from "@/lib/schema/schema";
 import { useThumbnailUpload } from "@/lib/uploadThumbnail";
 import { buildThumbnailURL } from "@/lib/image-resolver";
@@ -21,26 +22,8 @@ export default function ProfileSettingsPage() {
   const config = useAuthenticatedClientConfig();
   const notify = useNotify();
   const navigate = useNavigate();
-
-  // ✅ Re-enable when wired
-  // const { data: userData } = useGetUsersMe({ ...config });
-
-  // TEMP: if you don't have the hook wired yet, set userData to undefined:
-  const userData = undefined as
-    | {
-        data: {
-          id: string;
-          bio?: string | null;
-          phone?: string | null;
-          firstName?: string | null;
-          lastName?: string | null;
-          username?: string | null;
-          email?: string | null;
-          thumbnailMediaId?: string | null;
-        };
-      }
-    | undefined;
-
+  const { data, isLoading, isError } = useGetProfileSettings({});
+  const { mutateAsync: saveProfileSettings } = usePostProfileSettings({});
   const { upload } = useThumbnailUpload();
 
   const {
@@ -49,11 +32,13 @@ export default function ProfileSettingsPage() {
     handleSubmit,
     setValue,
     watch,
+    setError,
     formState: { errors, isSubmitting, isDirty },
   } = useForm<UserProfileSchema>({
     resolver: zodResolver(userProfileSchema),
     defaultValues: {
       bio: "",
+      phone: "",
       firstName: "",
       lastName: "",
       username: "",
@@ -64,18 +49,19 @@ export default function ProfileSettingsPage() {
   });
 
   useEffect(() => {
-    if (!userData?.data) return;
+    const profile = data?.data.profile;
+    if (!profile) return;
 
     reset({
-      bio: userData.data.bio || "",
-      phone: userData.data.phone || "",
-      firstName: userData.data.firstName || "",
-      lastName: userData.data.lastName || "",
-      username: userData.data.username || "",
-      email: userData.data.email || "",
-      thumbnailMediaId: userData.data.thumbnailMediaId || "",
+      bio: profile.bio || "",
+      phone: profile.phone || "",
+      firstName: profile.firstName || "",
+      lastName: profile.lastName || "",
+      username: profile.username || "",
+      email: profile.email || "",
+      thumbnailMediaId: profile.thumbnailMediaId || "",
     });
-  }, [userData, reset]);
+  }, [data, reset]);
 
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
 
@@ -90,19 +76,78 @@ export default function ProfileSettingsPage() {
     };
   }, [previewUrl]);
 
+  const profile = data?.data.profile;
   const currentThumbUrl =
-    userData?.data?.id && userData?.data?.thumbnailMediaId
-      ? buildThumbnailURL(userData.data.id, userData.data.thumbnailMediaId)
+    profile?.id && profile?.thumbnailMediaId
+      ? buildThumbnailURL(profile.id, profile.thumbnailMediaId)
       : null;
 
-  const onSubmit = async (data: UserProfileSchema) => {
-    // TODO wire API: updateProfile({ data })
-    await notify({
-      title: "Saved",
-      message: "Your profile changes are ready to be sent to the backend.",
-      buttonText: "Close",
-    });
-    navigate("/profile");
+  const onSubmit = async (formData: UserProfileSchema) => {
+    try {
+      const response = await saveProfileSettings({
+        data: {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          username: formData.username,
+          bio: formData.bio,
+          email: formData.email,
+          phone: formData.phone,
+          thumbnailMediaId: formData.thumbnailMediaId || null,
+        },
+      });
+
+      const savedProfile = response.data.profile;
+      reset({
+        bio: savedProfile.bio || "",
+        phone: savedProfile.phone || "",
+        firstName: savedProfile.firstName || "",
+        lastName: savedProfile.lastName || "",
+        username: savedProfile.username || "",
+        email: savedProfile.email || "",
+        thumbnailMediaId: savedProfile.thumbnailMediaId || "",
+      });
+      setThumbnailFile(null);
+
+      await notify({
+        title: "Saved",
+        message: "Your profile changes have been updated.",
+        buttonText: "Close",
+      });
+      navigate("/profile");
+    } catch (error: any) {
+      const fieldErrors = error?.response?.data?.errors;
+
+      if (Array.isArray(fieldErrors)) {
+        fieldErrors.forEach(
+          (fieldError: { field?: string; message?: string }) => {
+            if (!fieldError.field || !fieldError.message) return;
+
+            if (
+              fieldError.field === "bio" ||
+              fieldError.field === "phone" ||
+              fieldError.field === "firstName" ||
+              fieldError.field === "lastName" ||
+              fieldError.field === "username" ||
+              fieldError.field === "email" ||
+              fieldError.field === "thumbnailMediaId"
+            ) {
+              setError(fieldError.field, {
+                type: "server",
+                message: fieldError.message,
+              });
+            }
+          },
+        );
+      }
+
+      await notify({
+        title: "Unable to save",
+        message:
+          error?.response?.data?.detail ||
+          "Please check your inputs and try again.",
+        buttonText: "Close",
+      });
+    }
   };
 
   const clearThumbnail = () => {
@@ -116,13 +161,12 @@ export default function ProfileSettingsPage() {
   const bio = watch("bio");
 
   return (
-    <div className="min-h-[100dvh] w-full mx-auto px-4 pt-6 pb-6 flex flex-col bg-white">
-      {/* Header (match Account / onboarding-ish) */}
-      <div className="flex items-center gap-3 mb-6">
+    <div className="min-h-[100dvh] w-full mx-auto flex flex-col bg-white px-4 pb-6 pt-6">
+      <div className="mb-6 flex items-center gap-3">
         <button
           type="button"
           onClick={() => navigate(-1)}
-          className="h-10 w-10 rounded-full grid place-items-center hover:bg-black/5 transition"
+          className="grid h-10 w-10 place-items-center rounded-full transition hover:bg-black/5"
           aria-label="Back"
           title="Back"
         >
@@ -135,11 +179,19 @@ export default function ProfileSettingsPage() {
         </div>
       </div>
 
+      {isLoading && (
+        <div className="mb-4 text-sm text-black/55">Loading profile...</div>
+      )}
+      {isError && (
+        <div className="mb-4 text-sm text-red-600">
+          Unable to load profile settings.
+        </div>
+      )}
+
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="flex-1 flex flex-col gap-8"
+        className="flex flex-1 flex-col gap-8"
       >
-        {/* Identity */}
         <section className="flex flex-col gap-4">
           <FieldLabel label="First name" />
           <RoundedInput
@@ -179,7 +231,6 @@ export default function ProfileSettingsPage() {
           />
           {errors.bio && <FieldError>{errors.bio.message}</FieldError>}
 
-          {/* Tiny live preview (optional, feels onboarding-y but not required) */}
           {(firstName || lastName || username || bio) && (
             <div className="rounded-2xl border border-black/10 bg-black/[0.02] px-4 py-4">
               <div className="text-sm font-semibold text-black/80">Preview</div>
@@ -195,12 +246,10 @@ export default function ProfileSettingsPage() {
           )}
         </section>
 
-        {/* Thumbnail */}
         <section className="flex flex-col gap-3">
           <FieldLabel label="Profile thumbnail" />
 
-          {/* file input styled like onboarding fields */}
-          <div className="w-full rounded-2xl border border-black/10 bg-white px-4 py-4 flex items-center gap-3">
+          <div className="flex w-full items-center gap-3 rounded-2xl border border-black/10 bg-white px-4 py-4">
             <div className="text-black/60">
               <ImageIcon size={18} />
             </div>
@@ -251,14 +300,14 @@ export default function ProfileSettingsPage() {
                 <img
                   src={previewUrl ?? currentThumbUrl ?? ""}
                   alt="profile thumbnail"
-                  className="w-full aspect-square object-cover border border-black/10 rounded-2xl shadow-sm"
+                  className="aspect-square w-full rounded-2xl border border-black/10 object-cover shadow-sm"
                 />
 
-                {previewUrl && (
+                {(previewUrl || currentThumbUrl) && (
                   <button
                     type="button"
                     onClick={clearThumbnail}
-                    className="absolute top-2 right-2 inline-flex items-center justify-center h-9 w-9 rounded-full bg-neutral-900 text-white hover:bg-neutral-800 transition"
+                    className="absolute right-2 top-2 inline-flex h-9 w-9 items-center justify-center rounded-full bg-neutral-900 text-white transition hover:bg-neutral-800"
                     aria-label="Remove thumbnail"
                     title="Remove"
                   >
@@ -267,7 +316,7 @@ export default function ProfileSettingsPage() {
                 )}
               </div>
             ) : (
-              <div className="w-full aspect-square border border-black/10 rounded-2xl flex items-center justify-center text-sm text-black/50">
+              <div className="flex aspect-square w-full items-center justify-center rounded-2xl border border-black/10 text-sm text-black/50">
                 No thumbnail
               </div>
             )}
@@ -276,20 +325,19 @@ export default function ProfileSettingsPage() {
           <p className="text-xs text-black/50">Tip: square photos look best.</p>
         </section>
 
-        {/* Bottom actions (match account page single CTA) */}
         <div className="mt-auto flex flex-col gap-3">
           <button
             type="button"
             onClick={() => reset()}
-            className="w-full rounded-2xl px-4 py-3 text-sm font-semibold text-black/70 border border-black/10 hover:bg-black/[0.03] transition"
+            className="w-full rounded-2xl border border-black/10 px-4 py-3 text-sm font-semibold text-black/70 transition hover:bg-black/[0.03]"
           >
             Reset
           </button>
 
           <button
             type="submit"
-            disabled={isSubmitting || !isDirty}
-            className="w-full rounded-2xl px-4 py-3 text-sm font-semibold text-white bg-neutral-900 disabled:opacity-40"
+            disabled={isSubmitting || !isDirty || isLoading}
+            className="w-full rounded-2xl bg-neutral-900 px-4 py-3 text-sm font-semibold text-white disabled:opacity-40"
           >
             {isSubmitting ? "Saving..." : "Save changes"}
           </button>
@@ -299,14 +347,12 @@ export default function ProfileSettingsPage() {
   );
 }
 
-/* ---------------- small UI primitives (match onboarding/account) ---------------- */
-
 function FieldLabel({ label }: { label: string }) {
   return <div className="text-sm font-semibold text-black/75">{label}</div>;
 }
 
 function FieldError({ children }: { children: React.ReactNode }) {
-  return <p className="text-sm text-red-600 -mt-2">{children}</p>;
+  return <p className="-mt-2 text-sm text-red-600">{children}</p>;
 }
 
 type RoundedInputProps = React.InputHTMLAttributes<HTMLInputElement> & {
@@ -316,13 +362,13 @@ type RoundedInputProps = React.InputHTMLAttributes<HTMLInputElement> & {
 const RoundedInput = React.forwardRef<HTMLInputElement, RoundedInputProps>(
   ({ icon, className, ...props }, ref) => {
     return (
-      <div className="w-full rounded-2xl border border-black/10 bg-white px-4 py-4 flex items-center gap-3">
+      <div className="flex w-full items-center gap-3 rounded-2xl border border-black/10 bg-white px-4 py-4">
         <div className="text-black/60">{icon}</div>
         <input
           ref={ref}
           {...props}
           className={[
-            "w-full text-sm text-left text-black/80 font-[Inter] outline-none bg-transparent",
+            "w-full bg-transparent text-left font-[Inter] text-sm text-black/80 outline-none",
             className ?? "",
           ].join(" ")}
         />
@@ -342,13 +388,13 @@ const RoundedTextarea = React.forwardRef<
   RoundedTextareaProps
 >(({ icon, className, ...props }, ref) => {
   return (
-    <div className="w-full rounded-2xl border border-black/10 bg-white px-4 py-4 flex items-start gap-3">
-      <div className="text-black/60 mt-[2px]">{icon}</div>
+    <div className="flex w-full items-start gap-3 rounded-2xl border border-black/10 bg-white px-4 py-4">
+      <div className="mt-[2px] text-black/60">{icon}</div>
       <textarea
         ref={ref}
         {...props}
         className={[
-          "w-full text-sm text-left text-black/80 font-[Inter] outline-none bg-transparent resize-none min-h-[112px]",
+          "min-h-[112px] w-full resize-none bg-transparent text-left font-[Inter] text-sm text-black/80 outline-none",
           className ?? "",
         ].join(" ")}
       />

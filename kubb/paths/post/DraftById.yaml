@@ -1,0 +1,43 @@
+get:
+  summary: Get post draft step one details
+  operationId: getPostDraft
+  parameters:
+  - in: path
+    name: draftId
+    required: true
+    schema:
+      type: string
+  responses:
+    "200":
+      description: OK
+      content:
+        application/json:
+          schema:
+            $ref: ../../components/schemas/PostDraft.yaml#/components/schemas/PostDraftResponse
+    "400":
+      $ref: ../../components/responses/ErrorResponse.yaml#/components/responses/BadRequest
+
+patch:
+  summary: Update a post draft with later-step data
+  operationId: updatePostDraft
+  parameters:
+  - in: path
+    name: draftId
+    required: true
+    schema:
+      type: string
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: ../../components/schemas/PostDraft.yaml#/components/schemas/UpdatePostDraftRequest
+  responses:
+    "200":
+      description: Draft updated
+      content:
+        application/json:
+          schema:
+            $ref: ../../components/schemas/PostDraft.yaml#/components/schemas/PostDraftResponse
+    "400":
+      $ref: ../../components/responses/ErrorResponse.yaml#/components/responses/BadRequest

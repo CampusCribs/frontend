@@ -1,0 +1,27 @@
+components:
+  schemas:
+    ReportType:
+      type: string
+      enum: [ HARASSMENT, SPAM, SCAM, INAPPROPRIATE, IMPERSONATION, OTHER ]
+      example: SPAM
+
+    ReportRequest:
+      type: object
+      required:
+      - type
+      properties:
+        type:
+          $ref: "#/components/schemas/ReportType"
+        description:
+          type: string
+          nullable: true
+          example: Reposting the same scam listing with different accounts.
+
+    ReportResponse:
+      type: object
+      required:
+      - submitted
+      properties:
+        submitted:
+          type: boolean
+          example: true

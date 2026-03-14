@@ -1,0 +1,31 @@
+get:
+  summary: Get privacy settings page data
+  operationId: getPrivacySettings
+  responses:
+    "200":
+      description: OK
+      content:
+        application/json:
+          schema:
+            $ref: ../../components/schemas/PrivacySettings.yaml#/components/schemas/PrivacySettingsResponse
+    "400":
+      $ref: ../../components/responses/ErrorResponse.yaml#/components/responses/BadRequest
+
+post:
+  summary: Update privacy settings
+  operationId: postPrivacySettings
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: ../../components/schemas/PrivacySettings.yaml#/components/schemas/UpdatePrivacySettingsRequest
+  responses:
+    "200":
+      description: Privacy settings updated
+      content:
+        application/json:
+          schema:
+            $ref: ../../components/schemas/PrivacySettings.yaml#/components/schemas/PrivacySettingsResponse
+    "400":
+      $ref: ../../components/responses/ErrorResponse.yaml#/components/responses/BadRequest

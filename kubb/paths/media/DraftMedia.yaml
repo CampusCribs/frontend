@@ -1,0 +1,24 @@
+post:
+  summary: Create a media upload target for a post draft
+  operationId: createDraftMediaUpload
+  parameters:
+  - in: path
+    name: draftId
+    required: true
+    schema:
+      type: string
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: ../../components/schemas/MediaUpload.yaml#/components/schemas/CreateDraftMediaUploadRequest
+  responses:
+    "200":
+      description: Upload target created
+      content:
+        application/json:
+          schema:
+            $ref: ../../components/schemas/MediaUpload.yaml#/components/schemas/CreateDraftMediaUploadResponse
+    "400":
+      $ref: ../../components/responses/ErrorResponse.yaml#/components/responses/BadRequest

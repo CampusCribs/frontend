@@ -3,7 +3,7 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import AuthContextProvider from "../auth/AuthContextProvider";
 import { ScrollRestorationBlocker } from "./ScrollRestorationBlocker";
-import { FeedbackButton } from "./Feedback";
+import { FeedbackButton } from "../modals/Feedback";
 
 const Layout = () => {
   return (

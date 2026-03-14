@@ -1,0 +1,42 @@
+components:
+  schemas:
+    NotificationSettingsPageData:
+      type: object
+      required:
+      - webMessages
+      - webContactRequests
+      - webSystem
+      - emailSecurityAlerts
+      - emailProductUpdates
+      - emailMarketing
+      properties:
+        webMessages:
+          type: boolean
+          example: true
+        webContactRequests:
+          type: boolean
+          example: true
+        webSystem:
+          type: boolean
+          example: true
+        emailSecurityAlerts:
+          type: boolean
+          example: true
+        emailProductUpdates:
+          type: boolean
+          example: true
+        emailMarketing:
+          type: boolean
+          example: false
+
+    UpdateNotificationSettingsRequest:
+      allOf:
+      - $ref: "#/components/schemas/NotificationSettingsPageData"
+
+    NotificationSettingsResponse:
+      type: object
+      required:
+      - notifications
+      properties:
+        notifications:
+          $ref: "#/components/schemas/NotificationSettingsPageData"

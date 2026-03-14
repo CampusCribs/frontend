@@ -1,0 +1,62 @@
+components:
+  schemas:
+    PrivacySettingsPageData:
+      type: object
+      required:
+      - hidePostFromUnverified
+      - allowMessagesFromVerifiedOnly
+      - allowContactRequests
+      - blurPhotosUntilVerified
+      - hideExactLocation
+      - showOnlyCampus
+      - hideLastName
+      - hideContactInfo
+      - marketingEmails
+      - marketingSms
+      - personalizedAds
+      properties:
+        hidePostFromUnverified:
+          type: boolean
+          example: false
+        allowMessagesFromVerifiedOnly:
+          type: boolean
+          example: false
+        allowContactRequests:
+          type: boolean
+          example: true
+        blurPhotosUntilVerified:
+          type: boolean
+          example: false
+        hideExactLocation:
+          type: boolean
+          example: true
+        showOnlyCampus:
+          type: boolean
+          example: true
+        hideLastName:
+          type: boolean
+          example: false
+        hideContactInfo:
+          type: boolean
+          example: false
+        marketingEmails:
+          type: boolean
+          example: false
+        marketingSms:
+          type: boolean
+          example: false
+        personalizedAds:
+          type: boolean
+          example: true
+
+    UpdatePrivacySettingsRequest:
+      allOf:
+      - $ref: "#/components/schemas/PrivacySettingsPageData"
+
+    PrivacySettingsResponse:
+      type: object
+      required:
+      - privacy
+      properties:
+        privacy:
+          $ref: "#/components/schemas/PrivacySettingsPageData"

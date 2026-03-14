@@ -1,15 +1,16 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { ArrowLeft, AtSign, Phone, Lock } from "lucide-react";
 import { useNavigate } from "react-router";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useGetAccountSettings, usePostAccountSettings } from "@/gen";
+import { useNotify } from "@/components/ui/Notify";
 
 const schema = z
   .object({
     email: z.string().email("Enter a valid email"),
     phoneDisplay: z.string().optional(),
-
     currentPassword: z.string().min(1, "Current password is required"),
     newPassword: z.string().optional(),
     confirmNewPassword: z.string().optional(),
@@ -47,12 +48,16 @@ type FormValues = z.infer<typeof schema>;
 
 export default function AccountSettingsPage() {
   const navigate = useNavigate();
+  const notify = useNotify();
+
+  const { data, isLoading, isError } = useGetAccountSettings({});
+  const { mutateAsync: saveAccountSettings } = usePostAccountSettings({});
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
       email: "",
-      phoneDisplay: "+1 (555) 555-5555",
+      phoneDisplay: "",
       currentPassword: "",
       newPassword: "",
       confirmNewPassword: "",
@@ -66,25 +71,90 @@ export default function AccountSettingsPage() {
     formState: { errors, isSubmitting, isDirty },
     watch,
     reset,
+    setError,
   } = form;
 
-  const email = watch("email");
+  useEffect(() => {
+    const account = data?.data.account;
+    if (!account) return;
+
+    reset({
+      email: account.email,
+      phoneDisplay: account.phoneDisplay,
+      currentPassword: "",
+      newPassword: "",
+      confirmNewPassword: "",
+    });
+  }, [data, reset]);
+
   const phoneDisplay = watch("phoneDisplay");
 
   const onSubmit = async (values: FormValues) => {
-    // TODO: wire to API
-    await new Promise((r) => setTimeout(r, 400));
-    reset(values);
+    try {
+      const response = await saveAccountSettings({
+        data: {
+          email: values.email,
+          phoneDisplay: values.phoneDisplay || "",
+          currentPassword: values.currentPassword,
+          newPassword: values.newPassword || null,
+          confirmNewPassword: values.confirmNewPassword || null,
+        },
+      });
+
+      reset({
+        email: response.data.account.email,
+        phoneDisplay: response.data.account.phoneDisplay,
+        currentPassword: "",
+        newPassword: "",
+        confirmNewPassword: "",
+      });
+
+      await notify({
+        title: "Saved",
+        message: "Your account settings have been updated.",
+        buttonText: "Close",
+      });
+    } catch (error: any) {
+      const fieldErrors = error?.response?.data?.errors;
+
+      if (Array.isArray(fieldErrors)) {
+        fieldErrors.forEach(
+          (fieldError: { field?: string; message?: string }) => {
+            if (!fieldError.field || !fieldError.message) return;
+
+            if (
+              fieldError.field === "email" ||
+              fieldError.field === "phoneDisplay" ||
+              fieldError.field === "currentPassword" ||
+              fieldError.field === "newPassword" ||
+              fieldError.field === "confirmNewPassword"
+            ) {
+              setError(fieldError.field, {
+                type: "server",
+                message: fieldError.message,
+              });
+            }
+          },
+        );
+      }
+
+      await notify({
+        title: "Unable to save",
+        message:
+          error?.response?.data?.detail ||
+          "Please check your inputs and try again.",
+        buttonText: "Close",
+      });
+    }
   };
 
   return (
-    <div className="min-h-[100dvh] w-full  mx-auto px-4 pt-6 pb-6 flex flex-col bg-white">
-      {/* Header (onboarding-ish) */}
-      <div className="flex items-center gap-3 mb-6">
+    <div className="min-h-[100dvh] w-full mx-auto flex flex-col bg-white px-4 pb-6 pt-6">
+      <div className="mb-6 flex items-center gap-3">
         <button
           type="button"
           onClick={() => navigate(-1)}
-          className="h-10 w-10 rounded-full grid place-items-center hover:bg-black/5 transition"
+          className="grid h-10 w-10 place-items-center rounded-full transition hover:bg-black/5"
           aria-label="Back"
           title="Back"
         >
@@ -97,8 +167,16 @@ export default function AccountSettingsPage() {
         </div>
       </div>
 
+      {isLoading && (
+        <div className="mb-4 text-sm text-black/55">Loading account...</div>
+      )}
+      {isError && (
+        <div className="mb-4 text-sm text-red-600">
+          Unable to load account settings.
+        </div>
+      )}
+
       <form onSubmit={handleSubmit(onSubmit)} className="flex-1">
-        {/* Contact */}
         <section className="mb-8">
           <div className="flex flex-col gap-4">
             <FieldLabel label="Email address" />
@@ -119,7 +197,7 @@ export default function AccountSettingsPage() {
             <FieldLabel label="Phone number" />
             <RoundedReadOnly
               icon={<Phone size={18} />}
-              value={phoneDisplay || "—"}
+              value={phoneDisplay || "Not available"}
             />
             <p className="text-xs text-black/50">
               To change your phone, please contact support
@@ -127,7 +205,6 @@ export default function AccountSettingsPage() {
           </div>
         </section>
 
-        {/* Password */}
         <section className="mb-10">
           <div className="mb-3">
             <h2 className="text-sm font-semibold text-black/80">Password</h2>
@@ -177,11 +254,10 @@ export default function AccountSettingsPage() {
           </div>
         </section>
 
-        {/* Save */}
         <button
           type="submit"
-          disabled={isSubmitting || !isDirty}
-          className="w-full rounded-2xl px-4 py-3 text-sm font-semibold text-white bg-neutral-900 disabled:opacity-40"
+          disabled={isSubmitting || !isDirty || isLoading}
+          className="w-full rounded-2xl bg-neutral-900 px-4 py-3 text-sm font-semibold text-white disabled:opacity-40"
         >
           {isSubmitting ? "Saving..." : "Save changes"}
         </button>
@@ -190,14 +266,12 @@ export default function AccountSettingsPage() {
   );
 }
 
-/* ---------------- small UI primitives (match onboarding) ---------------- */
-
 function FieldLabel({ label }: { label: string }) {
   return <div className="text-sm font-semibold text-black/75">{label}</div>;
 }
 
 function FieldError({ children }: { children: React.ReactNode }) {
-  return <p className="text-sm text-red-600 -mt-2">{children}</p>;
+  return <p className="-mt-2 text-sm text-red-600">{children}</p>;
 }
 
 type RoundedInputProps = React.InputHTMLAttributes<HTMLInputElement> & {
@@ -207,13 +281,13 @@ type RoundedInputProps = React.InputHTMLAttributes<HTMLInputElement> & {
 const RoundedInput = React.forwardRef<HTMLInputElement, RoundedInputProps>(
   ({ icon, className, ...props }, ref) => {
     return (
-      <div className="w-full rounded-2xl border border-black/10 bg-white px-4 py-4 flex items-center gap-3">
+      <div className="flex w-full items-center gap-3 rounded-2xl border border-black/10 bg-white px-4 py-4">
         <div className="text-black/60">{icon}</div>
         <input
           ref={ref}
           {...props}
           className={[
-            "w-full text-sm text-left text-black/80 font-[Inter] outline-none bg-transparent",
+            "w-full bg-transparent text-left font-[Inter] text-sm text-black/80 outline-none",
             className ?? "",
           ].join(" ")}
         />
@@ -231,9 +305,9 @@ function RoundedReadOnly({
   value: string;
 }) {
   return (
-    <div className="w-full rounded-2xl border border-black/10 bg-white px-4 py-4 flex items-center gap-3">
+    <div className="flex w-full items-center gap-3 rounded-2xl border border-black/10 bg-white px-4 py-4">
       <div className="text-black/60">{icon}</div>
-      <div className="w-full text-sm text-left text-black/80 font-[Inter]">
+      <div className="w-full text-left font-[Inter] text-sm text-black/80">
         {value}
       </div>
     </div>

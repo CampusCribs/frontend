@@ -1,0 +1,24 @@
+post:
+  summary: report individual crib
+  operationId: postIndividualCribReport
+  parameters:
+  - in: path
+    name: id
+    required: true
+    schema:
+      type: string
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: ../components/schemas/Report.yaml#/components/schemas/ReportRequest
+  responses:
+    "200":
+      description: OK
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Report.yaml#/components/schemas/ReportResponse
+    "400":
+      $ref: ../components/responses/ErrorResponse.yaml#/components/responses/BadRequest

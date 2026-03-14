@@ -1,0 +1,33 @@
+get:
+  summary: Get account settings page data
+  operationId: getAccountSettings
+  responses:
+    "200":
+      description: OK
+      content:
+        application/json:
+          schema:
+            $ref: ../../components/schemas/AccountSettings.yaml#/components/schemas/AccountSettingsResponse
+
+    "400":
+      $ref: ../../components/responses/ErrorResponse.yaml#/components/responses/BadRequest
+
+post:
+  summary: Update account settings
+  operationId: postAccountSettings
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: ../../components/schemas/AccountSettings.yaml#/components/schemas/UpdateAccountSettingsRequest
+  responses:
+    "200":
+      description: Account settings updated
+      content:
+        application/json:
+          schema:
+            $ref: ../../components/schemas/AccountSettings.yaml#/components/schemas/AccountSettingsResponse
+
+    "400":
+      $ref: ../../components/responses/ErrorResponse.yaml#/components/responses/BadRequest

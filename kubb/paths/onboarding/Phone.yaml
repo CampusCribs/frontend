@@ -1,0 +1,18 @@
+post:
+  summary: Send onboarding phone verification code
+  operationId: postOnboardingPhone
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: ../../components/schemas/OnboardingEducation.yaml#/components/schemas/SendOnboardingPhoneCodeRequest
+  responses:
+    "200":
+      description: Code sent
+      content:
+        application/json:
+          schema:
+            $ref: ../../components/schemas/OnboardingEducation.yaml#/components/schemas/SendOnboardingPhoneCodeResponse
+    "400":
+      $ref: ../../components/responses/ErrorResponse.yaml#/components/responses/BadRequest

@@ -1,30 +1,32 @@
+import { ReminderModal } from "@/components/modals/ReminderModal";
+import house from "@/components/ui/houseanimation.json";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { useGetAppCribs } from "@/gen";
+import type { ResidenceCardDTO } from "@/gen/types/ResidenceCardDTO";
+import Lottie from "lottie-react";
 import {
   AlertCircle,
-  Clock,
-  MapPin,
-  Search,
-  CircleX,
-  SearchX,
-  Footprints,
   Car,
   CheckCircle2,
+  CircleX,
+  Clock,
+  Footprints,
+  MapPin,
+  Search,
+  SearchX,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useInView } from "react-intersection-observer";
 import { useNavigate } from "react-router";
-
-import Lottie from "lottie-react";
-import house from "@/components/ui/houseanimation.json";
 import GuidedSearch from "./GuidedSearch";
 
-import { ResidenceCardDTO } from "@/gen/types/ResidenceCardDTO";
-import { useGetAppCribs } from "@/gen";
-
-/** ---------- helpers ---------- */
+import type { GetAppCribsQueryParamsCommuteBucketEnum } from "@/gen";
+import {
+  type AppliedCribSearch,
+  getReminderSummaryLines,
+} from "./search-reminder";
 
 function formatAvailability(a: any): string {
-  // Matches your OpenAPI discriminator style: { type: "IMMEDIATE" } or { type: "DATE", date: "YYYY-MM-DD" }
   if (!a || !a.type) return "Unknown";
   if (a.type === "IMMEDIATE") return "now";
   if (a.type === "DATE" && a.date) return a.date;
@@ -35,7 +37,6 @@ function commuteText(
   distance?: number,
   commuteBucket?: string | null,
 ): string | null {
-  // Prefer explicit bucket if you have it (nice for UI consistency)
   if (commuteBucket) {
     switch (commuteBucket) {
       case "WALK_5":
@@ -53,7 +54,6 @@ function commuteText(
     }
   }
 
-  // Fall back to distance minutes if provided
   if (
     typeof distance === "number" &&
     Number.isFinite(distance) &&
@@ -72,8 +72,6 @@ function isWalk(distance?: number, commuteBucket?: string | null): boolean {
   return true;
 }
 
-/** ---------- Card ---------- */
-
 export function ResidenceCard({ data }: { data: ResidenceCardDTO }) {
   const navigate = useNavigate();
 
@@ -84,9 +82,9 @@ export function ResidenceCard({ data }: { data: ResidenceCardDTO }) {
 
   const locationLabel = useMemo(() => {
     return data.areaLabel?.trim()
-      ? `${data.campusName} • ${data.areaLabel.trim()}`
+      ? `${data.campusName} · ${data.areaLabel.trim()}`
       : data.campusName;
-  }, [data.campusName, data.areaLabel]);
+  }, [data.areaLabel, data.campusName]);
 
   const commuteLabel = useMemo(
     () => commuteText(data.distance, (data as any).commuteBucket ?? null),
@@ -101,9 +99,9 @@ export function ResidenceCard({ data }: { data: ResidenceCardDTO }) {
   return (
     <Card
       onClick={() => navigate(`/cribs/${data.id}`)}
-      className="cursor-pointer overflow-hidden rounded-xl border bg-white shadow-sm hover:shadow-md transition"
+      className="cursor-pointer overflow-hidden rounded-xl border bg-white shadow-sm transition hover:shadow-md"
     >
-      <CardContent className="p-0 relative">
+      <CardContent className="relative p-0">
         <img
           src={data.thumbnailUrl}
           alt="Residence"
@@ -115,17 +113,17 @@ export function ResidenceCard({ data }: { data: ResidenceCardDTO }) {
 
         <div className="absolute bottom-3 left-3 right-3">
           <div className="min-w-0">
-            <div className="flex items-center gap-1 text-white text-sm font-semibold truncate">
+            <div className="flex items-center gap-1 truncate text-sm font-semibold text-white">
               <MapPin size={14} />
               <span className="truncate">{locationLabel}</span>
             </div>
 
             {commuteLabel ? (
-              <div className="mt-0.5 text-white/90 text-xs font-medium truncate">
+              <div className="mt-0.5 truncate text-xs font-medium text-white/90">
                 {commuteLabel}
               </div>
             ) : (
-              <div className="mt-0.5 text-white/90 text-xs font-medium">
+              <div className="mt-0.5 text-xs font-medium text-white/90">
                 Tap to view details
               </div>
             )}
@@ -136,7 +134,7 @@ export function ResidenceCard({ data }: { data: ResidenceCardDTO }) {
       <CardFooter className="px-3 py-3">
         <div className="w-full space-y-2">
           <div className="flex flex-wrap items-start justify-between gap-2">
-            <div className="text-base font-semibold text-gray-900 leading-tight">
+            <div className="text-base font-semibold leading-tight text-gray-900">
               ${data.priceMonthly}{" "}
               <span className="text-xs font-medium text-gray-500">/ mo</span>
             </div>
@@ -149,7 +147,6 @@ export function ResidenceCard({ data }: { data: ResidenceCardDTO }) {
             </div>
           </div>
 
-          {/* Distance row */}
           <div className="flex items-center gap-1 text-sm font-medium text-gray-800">
             {commuteLabel ? (
               <span className="flex items-center gap-1">
@@ -191,11 +188,9 @@ export function ResidenceCard({ data }: { data: ResidenceCardDTO }) {
   );
 }
 
-/** ---------- Page ---------- */
-
 type PageResponse<T> = {
   content: T[];
-  number: number; // current page index
+  number: number;
   size: number;
   totalElements: number;
   totalPages: number;
@@ -205,67 +200,114 @@ type PageResponse<T> = {
   empty: boolean;
 };
 
+const defaultAppliedSearch: AppliedCribSearch = {
+  campus: "",
+  locationQuery: "",
+  minPrice: 500,
+  maxPrice: 1500,
+  listingType: "sublease",
+  roomType: "any",
+  leaseTerm: "any",
+  moveInWindow: "any",
+  beginDate: "",
+  endDate: "",
+  commuteBucket: "",
+  roommates: 0,
+  tagIds: [],
+  tagNames: [],
+  filterKeys: [],
+};
+
 export default function CribsPage() {
   const [openSearch, setOpenSearch] = useState(false);
-
+  const [openReminder, setOpenReminder] = useState(false);
+  const [reminderCreated, setReminderCreated] = useState(false);
+  const [appliedSearch, setAppliedSearch] =
+    useState<AppliedCribSearch>(defaultAppliedSearch);
   const [items, setItems] = useState<ResidenceCardDTO[]>([]);
   const [page, setPage] = useState(0);
   const pageSize = 10;
 
   const { ref, inView } = useInView({ threshold: 0 });
 
-  /**
-   * IMPORTANT:
-   * Your generated hook signature may differ depending on your OpenAPI generator.
-   * Most common patterns are one of these:
-   *
-   * 1) useGetAppCribs({ page, size })
-   * 2) useGetAppCribs({ query: { page, size } })
-   * 3) useGetAppCribs({ page, size }, { enabled: true })
-   *
-   * Adjust the call below to match your generated client.
-   */
+  const cribParams = useMemo(
+    () => {
+      const params: Record<string, unknown> = {
+        page,
+        size: pageSize,
+        minPrice: appliedSearch.minPrice,
+        maxPrice: appliedSearch.maxPrice,
+      };
+
+      if (appliedSearch.campus) params.campus = appliedSearch.campus;
+      if (appliedSearch.locationQuery) {
+        params.locationQuery = appliedSearch.locationQuery;
+      }
+      if (appliedSearch.listingType !== "sublease") {
+        params.listingType = appliedSearch.listingType;
+      }
+      if (appliedSearch.roomType !== "any") {
+        params.roomType = appliedSearch.roomType;
+      }
+      if (appliedSearch.leaseTerm !== "any") {
+        params.leaseTerm = appliedSearch.leaseTerm;
+      }
+      if (appliedSearch.moveInWindow !== "any") {
+        params.moveInWindow = appliedSearch.moveInWindow;
+      }
+      if (appliedSearch.beginDate) params.beginDate = appliedSearch.beginDate;
+      if (appliedSearch.endDate) params.endDate = appliedSearch.endDate;
+      if (appliedSearch.commuteBucket) {
+        params.commuteBucket =
+          appliedSearch.commuteBucket as GetAppCribsQueryParamsCommuteBucketEnum;
+      }
+      if (appliedSearch.roommates > 0) {
+        params.roommates = appliedSearch.roommates;
+      }
+      if (appliedSearch.tagIds.length > 0) {
+        params.tagIds = appliedSearch.tagIds;
+      }
+      if (appliedSearch.filterKeys.length > 0) {
+        params.filterKeys = appliedSearch.filterKeys;
+      }
+
+      return params;
+    },
+    [appliedSearch, page],
+  );
+
   const {
     data,
     isLoading: isLoadingCribs,
     error,
     isFetching,
-  } = useGetAppCribs(
-    // ✅ try this first:
-    { page, size: pageSize } as any,
-  );
-  console.log("API response", { data, error });
-  const pageData = data?.data as unknown as
-    | PageResponse<ResidenceCardDTO>
-    | undefined;
+  } = useGetAppCribs(cribParams);
 
-  // When a page arrives, append it (or replace if it's page 0)
+  const pageData = data?.data as PageResponse<ResidenceCardDTO> | undefined;
+
   useEffect(() => {
     if (!pageData) return;
 
     setItems((prev) => {
       if (pageData.number === 0) return pageData.content ?? [];
-      // append while preventing duplicates (just in case)
+
       const seen = new Set(prev.map((x) => x.id));
       const merged = [...prev];
-      for (const c of pageData.content ?? []) {
-        if (!seen.has(c.id)) merged.push(c);
+      for (const crib of pageData.content ?? []) {
+        if (!seen.has(crib.id)) merged.push(crib);
       }
       return merged;
     });
-  }, [pageData?.number, pageData?.content]);
+  }, [pageData?.content, pageData?.number]);
 
-  // Infinite scroll: when sentinel is visible, move to next page (if not last)
   useEffect(() => {
     if (!inView) return;
     if (isLoadingCribs || isFetching) return;
-    if (!pageData) return;
-    if (pageData.last) return;
+    if (!pageData || pageData.last) return;
 
-    setPage((p) => p + 1);
-  }, [inView, isLoadingCribs, isFetching, pageData?.last]);
+    setPage((current) => current + 1);
+  }, [inView, isFetching, isLoadingCribs, pageData]);
 
-  // Decide UI status
   const status: "loading" | "ready" | "empty" | "error" = useMemo(() => {
     if (error) return "error";
     if (isLoadingCribs && items.length === 0) return "loading";
@@ -273,23 +315,31 @@ export default function CribsPage() {
     return "ready";
   }, [error, isLoadingCribs, items.length]);
 
+  const reminderSummary = useMemo(
+    () => getReminderSummaryLines(appliedSearch),
+    [appliedSearch],
+  );
+
   return (
-    <div className="flex flex-col gap-4">
-      {/* Search opener */}
-      <div className="flex w-full p-2 justify-center items-center">
-        <div
-          className="shadow-sm px-5 py-3 rounded-2xl flex justify-center items-center bg-white border border-black/10 font-semibold text-black/70 cursor-pointer w-full max-w-md"
+    <div className="flex flex-col gap-1">
+      <div className="flex w-full items-center justify-center p-3">
+        <button
+          type="button"
+          className="w-full max-w-md rounded-[24px] border border-neutral-200 bg-white px-4 py-3 shadow-sm transition hover:shadow-md"
           onClick={() => setOpenSearch(!openSearch)}
         >
-          <Search className="mr-2 text-black/70" />
-          Start your search
-        </div>
+          <div className="flex items-center gap-3">
+            <div className="rounded-xl bg-neutral-100 p-2.5 text-neutral-700">
+              <Search className="h-4.5 w-4.5" />
+            </div>
+            <div className="text-lg font-semibold text-neutral-900">Search</div>
+          </div>
+        </button>
       </div>
 
-      {/* Content */}
       <div className="w-full">
         {status === "loading" && (
-          <div className="flex w-full h-[400px] justify-center items-center">
+          <div className="flex h-[400px] w-full items-center justify-center">
             <div className="flex flex-col items-center justify-center">
               <Lottie
                 animationData={house}
@@ -303,9 +353,9 @@ export default function CribsPage() {
         )}
 
         {status === "error" && (
-          <div className="flex w-full h-[400px] justify-center items-center">
+          <div className="flex h-[400px] w-full items-center justify-center">
             <div className="flex flex-col items-center">
-              <div className="flex justify-center mb-4">
+              <div className="mb-4 flex justify-center">
                 <CircleX size={82} />
               </div>
               <div className="text-black/70">An error occurred</div>
@@ -314,38 +364,111 @@ export default function CribsPage() {
         )}
 
         {status === "empty" && (
-          <div className="flex w-full h-[400px] justify-center items-center">
-            <div className="flex flex-col items-center">
-              <div className="flex justify-center mb-4">
+          <div className="flex h-[400px] w-full items-center justify-center">
+            <div className="flex max-w-sm flex-col items-center px-5 text-center">
+              <div className="mb-4 flex justify-center">
                 <SearchX size={82} />
               </div>
               <div className="text-black/70">No residences found</div>
+              <div className="mt-2 text-sm text-black/55">
+                We can notify you when a crib matches these current filters.
+              </div>
+              <div className="mt-4 w-full rounded-2xl border border-neutral-200 bg-white p-4 text-left">
+                <div className="text-sm font-semibold text-neutral-900">
+                  Current filters
+                </div>
+                <div className="mt-3 space-y-2">
+                  {reminderSummary.map((line) => (
+                    <div key={line} className="text-sm text-neutral-600">
+                      {line}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setOpenReminder(true)}
+                className="mt-4 rounded-2xl bg-neutral-900 px-4 py-3 text-sm font-semibold text-white"
+              >
+                Set reminder
+              </button>
             </div>
           </div>
         )}
 
         {status === "ready" && (
           <>
-            <div className="grid grid-cols-2 gap-1 w-full p-2">
+            <div className="grid w-full grid-cols-2 gap-1 p-2">
               {items.map((crib) => (
                 <ResidenceCard key={crib.id} data={crib} />
               ))}
             </div>
 
-            {/* infinite scroll sentinel */}
             {!pageData?.last && <div ref={ref} className="h-10" />}
 
-            {/* optional small loader when fetching next page */}
             {isFetching && (
-              <div className="w-full flex justify-center py-3 text-sm text-black/60">
+              <div className="flex w-full justify-center py-3 text-sm text-black/60">
                 Loading more...
+              </div>
+            )}
+
+            {pageData?.last && items.length > 0 && (
+              <div className="px-3 pb-6 pt-2">
+                <div className="rounded-[28px] border border-neutral-200 bg-white p-4 shadow-sm">
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <div className="text-sm font-semibold text-neutral-900">
+                        You reached the end of current matches
+                      </div>
+                      <div className="mt-1 text-sm text-neutral-500">
+                        We can notify you when new cribs match these filters.
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setOpenReminder(true)}
+                      className="rounded-full bg-neutral-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-neutral-800"
+                    >
+                      Set notification
+                    </button>
+                  </div>
+                </div>
               </div>
             )}
           </>
         )}
       </div>
 
-      {openSearch && <GuidedSearch setOpenSearch={setOpenSearch} />}
+      {reminderCreated && (
+        <div className="px-3">
+          <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
+            Reminder created for your current crib filters.
+          </div>
+        </div>
+      )}
+
+      {openSearch && (
+        <GuidedSearch
+          setOpenSearch={setOpenSearch}
+          onApply={(filters) => {
+            setReminderCreated(false);
+            setAppliedSearch(filters);
+            setItems([]);
+            setPage(0);
+          }}
+        />
+      )}
+
+      <ReminderModal
+        open={openReminder}
+        onClose={() => setOpenReminder(false)}
+        filters={appliedSearch}
+        onSubmit={(filters) => {
+          console.log("create reminder:", filters);
+          setReminderCreated(true);
+        }}
+      />
     </div>
   );
 }

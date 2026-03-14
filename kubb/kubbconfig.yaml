@@ -10,16 +10,58 @@ paths:
   /app/cribs:
     $ref: ./paths/Cribs.yaml
 
-  /app/community:
-    $ref: ./paths/Community.yaml
+  # /app/community:
+  #   $ref: ./paths/Community.yaml
 
-  /app/individualcrib/{postId}:
+  /app/cribs/{postId}:
     $ref: ./paths/IndividualCrib.yaml
+
+  /app/cribs/{id}/report:
+    $ref: ./paths/IndividualCribReport.yaml
+
+  /app/post/tags:
+    $ref: ./paths/post/Tags.yaml
+
+  /app/post/drafts:
+    $ref: ./paths/post/Drafts.yaml
+
+  /app/post/drafts/{draftId}:
+    $ref: ./paths/post/DraftById.yaml
+
+  /app/onboarding/education:
+    $ref: ./paths/onboarding/Education.yaml
+
+  /app/onboarding/phone:
+    $ref: ./paths/onboarding/Phone.yaml
+
+  /app/onboarding/phone/verify:
+    $ref: ./paths/onboarding/PhoneVerify.yaml
+
+  /app/onboarding/complete:
+    $ref: ./paths/onboarding/Complete.yaml
+
+  /app/media/drafts/{draftId}:
+    $ref: ./paths/media/DraftMedia.yaml
+
+  /app/media/{mediaId}/complete:
+    $ref: ./paths/media/MediaComplete.yaml
 
   # /app/individualcommunity/{postId}:
 
   /app/profile/{username}:
     $ref: ./paths/profile.yaml
+
+  /app/settings/account:
+    $ref: ./paths/settings/Account.yaml
+
+  /app/settings/profile:
+    $ref: ./paths/settings/Profile.yaml
+
+  /app/settings/notifications:
+    $ref: ./paths/settings/Notifications.yaml
+
+  /app/settings/privacy:
+    $ref: ./paths/settings/Privacy.yaml
 
   /app/chats:
     $ref: ./paths/chats/Chats.yaml

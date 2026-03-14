@@ -1,0 +1,41 @@
+components:
+  schemas:
+    CreateDraftMediaUploadRequest:
+      type: object
+      required:
+      - fileName
+      - contentType
+      properties:
+        fileName:
+          type: string
+          example: living-room.jpg
+        contentType:
+          type: string
+          example: image/jpeg
+
+    CreateDraftMediaUploadResponse:
+      type: object
+      required:
+      - mediaId
+      - uploadUrl
+      properties:
+        mediaId:
+          type: string
+          example: media_123
+        uploadUrl:
+          type: string
+          format: uri
+          example: https://minio.example.com/presigned-upload-url
+
+    CompleteMediaUploadResponse:
+      type: object
+      required:
+      - mediaId
+      - uploaded
+      properties:
+        mediaId:
+          type: string
+          example: media_123
+        uploaded:
+          type: boolean
+          example: true

@@ -42,14 +42,14 @@ export function FeedbackButton({
               onClick={() => setOpen(true)}
               className={[
                 "pointer-events-auto",
-                "rounded-full border border-black/10 bg-white",
-                "px-4 py-3 text-sm font-semibold text-black/80",
-                "shadow-sm hover:bg-black/[0.03] transition",
+                "rounded-full border border-neutral-300 bg-neutral-100",
+                "px-4 py-3 text-sm font-semibold text-black",
+                "shadow-md transition hover:bg-neutral-200",
                 "inline-flex items-center gap-2",
               ].join(" ")}
               aria-label="Send feedback"
             >
-              <MessageSquare size={16} className="text-black/60" />
+              <MessageSquare size={16} className="text-black" />
               Feedback
             </button>
           </div>

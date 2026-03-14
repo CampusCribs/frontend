@@ -1,0 +1,97 @@
+components:
+  schemas:
+    ProfileSettingsPageData:
+      type: object
+      required:
+      - id
+      - firstName
+      - lastName
+      - username
+      - bio
+      - email
+      - phone
+      properties:
+        id:
+          type: string
+          example: user_123
+
+        firstName:
+          type: string
+          example: John
+
+        lastName:
+          type: string
+          example: Doe
+
+        username:
+          type: string
+          example: johndoe
+
+        bio:
+          type: string
+          example: Student at NYU. Love exploring the city and finding cool places to live!
+
+        email:
+          type: string
+          format: email
+          example: john@campuscribs.com
+
+        phone:
+          type: string
+          example: 123-456-7890
+
+        thumbnailMediaId:
+          type: string
+          format: uuid
+          nullable: true
+          example: 550e8400-e29b-41d4-a716-446655440000
+
+    UpdateProfileSettingsRequest:
+      type: object
+      required:
+      - firstName
+      - lastName
+      - username
+      - bio
+      - email
+      - phone
+      - thumbnailMediaId
+      properties:
+        firstName:
+          type: string
+          example: John
+
+        lastName:
+          type: string
+          example: Doe
+
+        username:
+          type: string
+          example: johndoe
+
+        bio:
+          type: string
+          example: Student at NYU. Love exploring the city and finding cool places to live!
+
+        email:
+          type: string
+          format: email
+          example: john@campuscribs.com
+
+        phone:
+          type: string
+          example: 123-456-7890
+
+        thumbnailMediaId:
+          type: string
+          format: uuid
+          nullable: true
+          example: 550e8400-e29b-41d4-a716-446655440000
+
+    ProfileSettingsResponse:
+      type: object
+      required:
+      - profile
+      properties:
+        profile:
+          $ref: "#/components/schemas/ProfileSettingsPageData"

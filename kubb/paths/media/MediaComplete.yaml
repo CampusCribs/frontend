@@ -1,0 +1,18 @@
+post:
+  summary: Mark a media upload as complete
+  operationId: completeMediaUpload
+  parameters:
+  - in: path
+    name: mediaId
+    required: true
+    schema:
+      type: string
+  responses:
+    "200":
+      description: Upload confirmed
+      content:
+        application/json:
+          schema:
+            $ref: ../../components/schemas/MediaUpload.yaml#/components/schemas/CompleteMediaUploadResponse
+    "400":
+      $ref: ../../components/responses/ErrorResponse.yaml#/components/responses/BadRequest

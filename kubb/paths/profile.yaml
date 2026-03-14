@@ -1,11 +1,9 @@
 get:
-  summary: List curated cribs
+  summary: Get profile by username
+  operationId: getProfileByUsername
   parameters:
-  - $ref: ../components/params/Parameters.yaml#/components/parameters/PageParam
-  - $ref: ../components/params/Parameters.yaml#/components/parameters/SizeParam
-  - $ref: ../components/params/Parameters.yaml#/components/parameters/SortParam
-  - name: username
-    in: path
+  - in: path
+    name: username
     required: true
     schema:
       type: string
@@ -15,7 +13,7 @@ get:
       content:
         application/json:
           schema:
-            $ref: ../components/responses/ProfileResponse.yaml#/components/schemas/ProfilePageResponse
+            $ref: ../components/schemas/Profile.yaml#/components/schemas/ProfileResponse
 
     "400":
       $ref: ../components/responses/ErrorResponse.yaml#/components/responses/BadRequest
